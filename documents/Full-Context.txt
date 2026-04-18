@@ -1,0 +1,167 @@
+A lot of ways people manage to infect computers are by typosquatting. Is there a plugin for Firefox that identifies if a character in a URL or the address bar is not a standard character you can type on your currently selected keyboard?16 AprSearched the webSearched the webGood summary of what's available. There are a few angles here worth knowing:
+The built-in Firefox approach (most reliable)
+Firefox has a native about:config flag that handles the IDN homograph attack (the technically precise name for what you're describing — Unicode lookalike characters rather than pure typosquatting):
+
+Go to about:config
+Search for network.IDN_show_punycode
+Set it to true
+
+This causes Firefox to display Unicode domains in Punycode form — so instead of seeing what looks like apple.com in Cyrillic, you'd see xn--80ak6aa92e.com, making it immediately obvious something is off. Bleeping Computer The tradeoff is that if you visit a lot of legitimate sites with internationalized domain names (Korean, Arabic, etc.), you'll lose the readable Unicode rendering for those too. Wordfence
+The extension option
+TypoProtect is an open-source extension compatible with both Chrome/Edge and Firefox that covers homoglyph detection (suspicious Unicode/IDN/punycode attacks), typosquatting detection against a list of trusted domains, and phishing database lookups via OpenPhish. GitHub It's on GitHub at wanetty/TypoProtect-Extension. Being open source is a big plus for a security tool — you can audit what it's actually doing.
+The hard reality
+Worth noting the architectural limitation: Firefox's own approach is based on checking whether all characters in a domain label come from the same script or an allowed combination — the hope being that intra-script near-homographs will be recognisable to speakers of that script. MozillaWiki But this doesn't catch "whole-script" attacks where the entire domain is spoofed using a single foreign script consistently.
+Typosquatting (e.g. gooogle.com) and homoglyph attacks are actually distinct threats — typosquatting only works if you mistype, but a homoglyph attack can fool you even on a copy-paste or link click because the text visually appears correct. DeepStrike
+My recommendation: For someone with your background, the network.IDN_show_punycode = true flag is the lowest-overhead solution with no third-party trust required. Add TypoProtect on top if you want the phishing DB lookups and fuzzy typosquatting detection against a custom list of domains you care about.i was hoping for an option where any character not in my selected keyboard layout in any url causes the whole URL to be blocked, as i am using 100% english16 AprThat's a very clean security model — essentially a strict ASCII-only (or Latin keyboard character set) allowlist for domain names. Let me check if anything that precise exists.Searched the webSearched the webThe honest answer is: that specific extension doesn't appear to exist. Nothing in the Firefox addon ecosystem does exactly what you're describing — a hard block on navigation if the domain contains any character outside your active keyboard layout's character set.
+What does exist is close but not quite:
+
+The network.IDN_show_punycode flag alerts visually but doesn't block
+TypoProtect detects homoglyphs but uses heuristics, not a strict character set allowlist
+General URL blocking extensions let you write regex rules, but you'd have to author that yourself
+
+The closest practical approximation using what exists would be the "Block these URLs, Domains or Keywords" extension (or uBlock Origin), where you could write a regex rule that blocks any URL whose hostname contains a non-ASCII character — something like:
+/^https?:\/\/[^\/]*[^\x00-\x7F][^\/]*/
+That regex matches any URL where the hostname portion contains a character outside the ASCII range (U+0000–U+007F). You could drop that into uBlock Origin's "My filters" as a dynamic rule or into a blocking extension as a regex pattern. It won't read your OS keyboard layout dynamically, but since you're English-only, blocking anything outside straight ASCII in the hostname is effectively the same thing — and is actually a stricter and more defensible boundary than keyboard layout anyway, since keyboard layouts can vary and ASCII is a fixed, auditable set.
+The gap is that no extension currently does this automatically and natively with browser-level integration into the address bar pre-navigation. That's honestly a missing tool in the ecosystem — it would need to hook into Firefox's webRequest or webNavigation API, check the hostname against a Unicode range, and cancel the request. Entirely buildable as a custom extension if you were inclined, and it would be quite small — probably 50–80 lines of JS.i enabled network.IDN_show_punycode  i am wondering if an extention might be worth writing16 AprGiven your background, it would be a pretty small project. Here's the lay of the land:
+The core logic is trivial
+Firefox's webRequest or webNavigation API lets you intercept navigations before they happen. The hostname check is essentially:
+javascriptfunction hasNonASCII(hostname) {
+    return /[^\x00-\x7F]/.test(hostname);
+}
+With network.IDN_show_punycode already on, Firefox will have already decoded the punycode back to Unicode in the display, but the actual hostname you get in the API will be the raw punycode (xn--...). So you'd actually want to decode it first:
+javascript// The browser API gives you punycode; decode it to catch the Unicode chars
+const decoded = new URL(details.url).hostname; // Firefox decodes this for you
+Worth verifying that behaviour though — there's some inconsistency historically in whether the webRequest API hands you the encoded or decoded form.
+Manifest V2 vs V3
+Firefox still supports MV2, which gives you webRequest with blocking capability straightforwardly. MV3 (which Chrome forced and Firefox is gradually adopting) complicates blocking via webRequest — you'd want to target MV2 for now, with an eye on MV3's declarativeNetRequest for future-proofing. The tricky part is that declarativeNetRequest regex rules have limited Unicode support, so the MV2 webRequest blocking approach is currently cleaner for this use case.
+What the extension would need
+
+manifest.json — permissions: webRequest, webRequestBlocking, <all_urls>
+A background script with a webRequest.onBeforeRequest listener that checks hostnames and returns {cancel: true} on non-ASCII
+Optionally a small blocked-page UI explaining why navigation was stopped
+A whitelist mechanism for the rare legitimate IDN you might actually want (e.g. if you ever need to reach an IDN you trust)
+
+Things worth thinking about
+
+Path and query strings often legitimately contain non-ASCII (percent-encoded or otherwise) — you'd want to restrict the check to the hostname only, not the full URL
+Subdomains need checking too, not just the registered domain
+You might want an allow-list escape hatch surfaced as a toolbar button, so you can one-click permit a specific domain if you ever need to
+The extension would be a local, unpacked install — no need to publish it
+
+The whole thing is probably an afternoon's work given your experience. The trickiest part will likely be confirming exactly what encoding the webRequest API gives you for the hostname in practice, since the MDN docs and real behaviour have historically had some drift there. Worth a quick console.log test with a known IDN domain before writing the blocking logic.is it viable for manifest V3? or is it a non starter for V3?16 AprIt's viable in MV3, but with a meaningful tradeoff.Searched the webSearched the webGood news: it's viable in MV3 on Firefox specifically, and here's why:
+Firefox's MV3 is not Chrome's MV3
+Firefox will continue supporting both blockingWebRequest and declarativeNetRequest in MV3 — giving developers more flexibility and keeping powerful tools available. Google's approach replaces blockingWebRequest entirely with declarativeNetRequest, which limits how extensions can filter content. Mozilla
+So on Firefox MV3 you can still use the programmatic webRequest blocking approach. That's the clean path for this extension since your logic is inherently dynamic (regex against a decoded hostname), not a static rule list.
+The declarativeNetRequest path on pure MV3 (cross-browser)
+If you wanted to write it declaratively, declarativeNetRequest does support regexFilter in rule conditions. The problem for your use case is that declarativeNetRequest rules operate against the raw URL string — which means the hostname will be in punycode (xn--...) at that point, not Unicode. So a simple [^\x00-\x7F] regex would never match because punycode is all ASCII by definition. You'd need a regex that matches the xn-- prefix pattern itself as a proxy signal, which is workable but feels fragile.
+Practical recommendation
+For Firefox, write it as MV3 but use webRequest with blocking — which Firefox explicitly preserves. You get the clean programmatic approach, future compatibility with Firefox's MV3, and you're not locked into Chrome's more restrictive interpretation. The manifest would just declare "manifest_version": 3 alongside the webRequest + webRequestBlocking permissions, and Firefox will honour it.
+If cross-browser compatibility to Chrome ever mattered, that's where you'd hit the wall — but for a personal security tool targeting Firefox, it's a non-issue.is there an easy way to export this chat so i can import it into claude code or use it later?16 AprThere's no native export function in claude.ai that produces a Claude Code-importable format directly. Your options are:
+From the claude.ai interface
+
+There's a "download conversation" option in some versions of the UI — check the ... menu on the conversation or in Settings → Privacy/Data. It typically exports as JSON or text, but the format isn't directly consumable by Claude Code as a project context file.
+
+For use in Claude Code specifically
+The most practical approach is just to copy the relevant technical decisions from this chat into a CONTEXT.md or README.md in your project directory. Claude Code reads those naturally. The actionable content from this conversation is compact enough:
+- Firefox extension to block URLs containing non-ASCII hostnames
+- Target: Firefox MV3, using webRequest with blocking (Firefox preserves this in MV3)
+- Core check: decode punycode hostname first, then test /[^\x00-\x7F]/
+- Permissions needed: webRequest, webRequestBlocking, <all_urls>
+- Check hostname only, not path/query
+- Need allowlist escape hatch
+- network.IDN_show_punycode already enabled on target browser
+That's genuinely more useful to paste into Claude Code than a raw chat export, since it's just the decisions without the back-and-forth.
+For saving the chat itself
+Browser's print-to-PDF or a simple select-all + copy into a text file works reliably if you just want an archive. Not elegant but lossless.are all characters from all locales ASCII? The idea is to block all characters that do not match your current locale, so i could give it to someone in eg Ukraine and it would work for them too16 AprNo, ASCII is absolutely the wrong boundary for this. ASCII is only 128 characters (0x00–0x7F) — essentially the US English keyboard. You'd be blocking legitimate Cyrillic, Greek, Arabic, CJK, etc. domains for anyone outside the Latin-script world.
+The correct concept here is Unicode script detection, not ASCII. What you actually want is:
+
+"Block any domain whose characters don't all belong to the script(s) associated with the user's locale"
+
+So for a Ukrainian user, Cyrillic + Latin + digits + hyphens would be allowed. For a Japanese user, Hiragana + Katakana + Kanji + Latin + digits. For an English user, just Basic Latin + digits + hyphens.
+The relevant standard is Unicode's Script property
+Every Unicode codepoint has a Script property — Cyrillic, Latin, Arabic, Han, etc. JavaScript (since ES2018) supports this natively in regex:
+javascript// Test if a string contains characters outside a given script
+/\p{Script=Cyrillic}/u  // matches Cyrillic chars
+/\p{Script=Latin}/u     // matches Latin chars
+How the extension logic would work
+
+Detect the browser's locale via navigator.language (e.g. uk → Ukrainian → Cyrillic + Latin allowed)
+Build a set of permitted scripts for that locale
+Decode the punycode hostname to Unicode
+Check every character — if any character's script isn't in the permitted set, block it
+
+The locale → permitted scripts mapping is the interesting part. It's not huge — there are only ~160 scripts in Unicode and most locales map to 1–3 scripts. You'd also want to always allow:
+
+Common script (digits, hyphens, dots — characters shared across all scripts)
+Inherited script (combining marks that inherit from surrounding text)
+Latin is probably always permitted since so many legitimate domains use it regardless of locale
+
+The tricky edge cases
+
+Some languages legitimately use multiple scripts (Japanese uses three simultaneously)
+The Common and Inherited script categories need to always be whitelisted
+A user might have multiple preferred locales set (navigator.languages returns an array)
+
+This is a more interesting problem than the ASCII version, but not dramatically more complex — the Unicode regex support in modern JS makes the script detection straightforward. The locale-to-scripts mapping table is probably the most labour-intensive part, but it's a finite, static dataset you could hardcode.
+It also makes the extension genuinely useful as a distributable tool rather than just an English-only personal utility.it is the sort of feature i am very surprised isn't in we browsers already16 AprIt really is surprising. The threat has been well understood for a long time — the original IDN homograph attack paper was 2001, and browsers have been patching around it reactively ever since rather than solving it properly.
+The fundamental issue is that browser vendors are caught between two legitimate constituencies:
+The security side — users who need protection from homograph/IDN attacks, which are a real and growing phishing vector.
+The internationalisation side — users in non-Latin-script countries who have an entirely legitimate expectation that their native-script domains just work, without their browser second-guessing them or showing them ugly punycode.
+These two goals are genuinely in tension, and browser vendors have consistently prioritised not breaking the international web experience over providing strong security guarantees. The result is the awkward middle ground you see now — heuristics, TLD whitelists, same-script rules — none of which are as clean as "does this match what your locale expects."
+The locale-aware approach you're describing actually resolves that tension elegantly. A Ukrainian user's browser would be more permissive than an English user's, not less — it would just be permissive about the right things for that user's context. Nobody's experience gets degraded.
+The cynical read is also that the major browser vendors have their own threat intelligence pipelines (Google Safe Browsing, Microsoft SmartScreen) and tend to prefer centralised blocklist approaches over local heuristics — which also happens to funnel browsing metadata through their infrastructure. A clean locale-based script filter is entirely local and needs no phone-home, which may not align with their interests.
+It would make a genuinely good Mozilla bug/feature request if you ever wanted to push it upstream after building the extension, since you'd have a working proof of concept.2 additional features i think it needs is;
+- add a whitelist feature to allow specific URLs that would normaly be blocked or users who just need a one off exception
+- Add additional allowed character sets to the allowed list (country by country) so someone with eg a latin keyboard can beowseg Japanese domains easily without constant warnings16 AprBoth of those are well thought out and they complement each other nicely. Together they basically cover every legitimate use case:
+
+Whitelist = "I trust this specific domain despite it being unusual"
+Additional character sets = "I regularly browse content in this script"
+
+A few design thoughts on each:
+Whitelist
+The granularity question matters here. Options are:
+
+Exact domain (xn--e1afmapc.com)
+Registered domain + all subdomains (*.example.укр)
+The decoded Unicode form for human readability in the UI
+
+Storing the decoded Unicode form visually but matching against the punycode form internally is probably the right call — users shouldn't have to think about punycode at all. You'd also want the block page to have a one-click "add to whitelist" button rather than forcing them into a settings UI, otherwise the friction is too high for casual users.
+Additional character sets
+Structurally this is just extending the permitted scripts set, but the UX question is whether you expose it as:
+
+A list of languages/locales (friendlier, "add Japanese")
+A list of Unicode scripts (more precise, "add Hiragana, Katakana, Han")
+
+Languages are friendlier but scripts are more correct — Japanese needing three scripts simultaneously is a good example of why the mapping needs care. A language picker that silently adds the right scripts underneath is probably the best of both worlds.
+Where they intersect
+There's a natural hierarchy emerging:
+Auto-detected locale scripts     ← always on
++ User-added language scripts    ← opt-in per script group
++ Whitelisted specific domains   ← per-domain escape hatch
+That's a clean mental model that scales from "English only, maximum paranoia" all the way to "I browse a lot of international content" without ever being confusing about what's allowed and why.
+One more feature worth considering while you're at it — a "why was this blocked" explanation on the block page that identifies the specific offending character(s) and their Unicode codepoints. Useful for power users and also for deciding whether to whitelist or add a script. Something like:
+
+Blocked: xn--e1afmapc.com
+Contains: а (U+0430, Cyrillic Small Letter A) — not in your allowed scripts (Latin)
+
+That turns the block page from a dead end into an educational/decision-making moment.Even just blocking URLs with mixed character locales on a system that only has Latin characters would be a help16 AprYes, and that's actually what Firefox's own IDN algorithm already tries to do — but incompletely. It blocks mixed-script domains in many cases but has enough exceptions and edge cases that it's not reliable as a security guarantee.
+The "mixed script" rule alone is a surprisingly strong defence though. The vast majority of homograph attacks work by substituting one or two Cyrillic/Greek characters into an otherwise Latin domain — exactly the mixed-script pattern. A pure single-script domain in Cyrillic is far less dangerous because it won't fool a Latin-script user visually.
+It's essentially the same logic as your full proposal but with a simpler implementation:
+javascriptfunction hasMultipleScripts(hostname) {
+    const scripts = new Set();
+    for (const char of hostname) {
+        const script = getScript(char); // via Unicode script property
+        if (script !== 'Common' && script !== 'Inherited') {
+            scripts.add(script);
+        }
+    }
+    return scripts.size > 1;
+}
+Block if scripts.size > 1. That's it. No locale detection needed, no mapping tables, works identically for every user regardless of their language.
+The tradeoff versus your fuller proposal is that it would still allow a purely-Cyrillic domain through to a Latin-script user — but as you say, that's a much smaller real-world risk since it wouldn't visually fool anyone. The dangerous attack is always the mixed case.
+It also means you could ship a v1 with just:
+
+Mixed-script blocking
+Whitelist
+
+And defer the "add additional scripts" feature to v2 once you see how the core works in practice. Much lower scope for an initial build while still catching the vast majority of real attacks.
