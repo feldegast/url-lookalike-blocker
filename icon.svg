@@ -1,4 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
-  <rect width="32" height="32" rx="4" fill="#4CAF50"/>
-  <text x="16" y="20" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="16" font-weight="bold">🛡️</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <rect width="128" height="128" rx="24" fill="#ffffff"/>
+  <circle cx="64" cy="64" r="50" fill="#ffffff" stroke="#d32f2f" stroke-width="14"/>
+  <path d="M 35 35 L 93 93" stroke="#d32f2f" stroke-width="14" stroke-linecap="round"/>
+  <text x="64" y="82" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="54" font-weight="700" letter-spacing="-3">
+    <tspan fill="#000000">U</tspan>
+    <tspan fill="#d32f2f">Я</tspan>
+    <tspan fill="#000000">L</tspan>
+  </text>
 </svg>
