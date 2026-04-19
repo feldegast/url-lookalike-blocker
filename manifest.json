@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "URL Lookalike Blocker",
+  "version": "1.0",
+  "description": "Blocks navigation to domains containing characters outside the scripts associated with the user's locale to protect against IDN homograph attacks.",
+  "permissions": [
+    "webRequest",
+    "webRequestBlocking",
+    "storage",
+    "<all_urls>"
+  ],
+  "background": {
+    "scripts": ["unicode-scripts.js", "background.js"]
+  },
+  "action": {
+    "default_popup": "options.html",
+    "default_title": "URL Lookalike Blocker Options"
+  },
+  "options_page": "options.html"
+}
