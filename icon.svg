@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-  <circle cx="64" cy="64" r="50" fill="none" stroke="#d32f2f" stroke-width="14"/>
-  <path d="M 35 35 L 93 93" stroke="#d32f2f" stroke-width="14" stroke-linecap="round"/>
+  <circle cx="64" cy="64" r="50" fill="none" stroke="#b71c1c" stroke-width="14"/>
+  <path d="M 35 35 L 93 93" stroke="#b71c1c" stroke-width="14" stroke-linecap="round"/>
   <text x="64" y="82" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="54" font-weight="700" letter-spacing="-3">
     <tspan fill="#000000">U</tspan>
     <tspan fill="#d32f2f">Ր</tspan>
