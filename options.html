@@ -47,38 +47,78 @@
     .remove-btn:hover {
       background: #d32f2f;
     }
-    .add-script select {
-      padding: 8px;
-      margin-right: 10px;
+    .script-tree {
       border: 1px solid #ddd;
       border-radius: 4px;
+      background: white;
+      max-height: 400px;
+      overflow-y: auto;
     }
-    .add-script button {
-      background: #4caf50;
-      color: white;
-    }
-    .add-script button:hover {
-      background: #45a049;
-    }
-    .current-scripts {
-      margin-top: 10px;
-      padding: 10px;
-      background: #e8f5e8;
-      border-radius: 4px;
-    }
-    .script-tag {
-      display: inline-block;
-      background: #4caf50;
-      color: white;
+    .tree-node {
+      display: flex;
+      align-items: center;
       padding: 4px 8px;
-      margin: 2px;
-      border-radius: 12px;
-      font-size: 12px;
-    }
-    .script-tag .remove {
-      margin-left: 5px;
       cursor: pointer;
-      color: #fff;
+    }
+    .tree-node:hover {
+      background: #f5f5f5;
+    }
+    .tree-node.language {
+      font-weight: bold;
+      background: #f8f8f8;
+      border-bottom: 1px solid #eee;
+    }
+    .tree-node.script {
+      padding-left: 32px;
+      font-weight: normal;
+    }
+    .tree-toggle {
+      width: 16px;
+      height: 16px;
+      margin-right: 8px;
+      cursor: pointer;
+      display: inline-block;
+      text-align: center;
+      line-height: 16px;
+      font-size: 12px;
+      color: #666;
+    }
+    .tree-checkbox {
+      margin-right: 8px;
+    }
+    .tree-checkbox input[type="checkbox"]:indeterminate {
+      background: #ccc;
+      border-radius: 2px;
+    }
+    .tree-checkbox.partial {
+      background: #ccc;
+      border-radius: 2px;
+      padding: 2px;
+    }
+    .tree-checkbox.partial input[type="checkbox"] {
+      opacity: 0.5;
+    }
+    .tree-children {
+      display: none;
+    }
+    .tree-children.expanded {
+      display: block;
+    }
+    .tree-controls {
+      margin-top: 10px;
+      text-align: center;
+    }
+    .tree-controls button {
+      margin: 0 5px;
+      padding: 6px 12px;
+      background: #2196f3;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .tree-controls button:hover {
+      background: #1976d2;
     }
   </style>
 </head>
@@ -92,26 +132,16 @@
   </div>
 
   <div class="section">
-    <h2>Additional Permitted Scripts</h2>
-    <p>Add extra scripts beyond your locale defaults. For example, add Japanese if you frequently visit Japanese sites.</p>
-    <div class="add-script">
-      <select id="language-select">
-        <option value="">Select a language...</option>
-        <option value="ja">Japanese</option>
-        <option value="ko">Korean</option>
-        <option value="zh">Chinese</option>
-        <option value="ru">Russian</option>
-        <option value="ar">Arabic</option>
-        <option value="he">Hebrew</option>
-        <option value="hi">Hindi</option>
-        <option value="th">Thai</option>
-        <!-- Add more as needed -->
-      </select>
-      <button id="add-script-btn">Add Script</button>
+    <h2>Permitted Scripts</h2>
+    <p>Configure which Unicode scripts are permitted beyond your locale defaults. Check individual scripts or entire languages.</p>
+    
+    <div id="script-tree" class="script-tree">
+      <!-- Tree structure will be populated by JavaScript -->
     </div>
-    <div class="current-scripts">
-      <strong>Additional Scripts:</strong>
-      <div id="additional-scripts"></div>
+    
+    <div class="tree-controls">
+      <button id="collapse-all">Collapse All</button>
+      <button id="reset-scripts">Reset to Defaults</button>
     </div>
   </div>
 

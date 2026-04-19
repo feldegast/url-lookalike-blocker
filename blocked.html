@@ -34,9 +34,11 @@
       font-weight: bold;
       color: #f57c00;
     }
-    .codepoint {
+    .unicode-domain {
       font-family: monospace;
-      color: #666;
+      background: #f8f8f8;
+      padding: 2px 4px;
+      border-radius: 2px;
     }
     .buttons {
       margin-top: 30px;
@@ -73,6 +75,8 @@
 
     <div class="details">
       <strong>Blocked URL:</strong> <span id="blocked-url"></span><br>
+      <strong>Punycode Domain:</strong> <span id="punycode-domain"></span><br>
+      <strong>Unicode Domain:</strong> <span id="unicode-domain" class="unicode-domain"></span><br>
       <strong>Offending Character:</strong> <span id="offending-char" class="char-display"></span><br>
       <strong>Unicode Codepoint:</strong> <span id="codepoint" class="codepoint"></span><br>
       <strong>Script:</strong> <span id="script"></span>

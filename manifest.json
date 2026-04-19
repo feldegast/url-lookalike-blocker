@@ -2,12 +2,24 @@
   "manifest_version": 3,
   "name": "URL Lookalike Blocker",
   "version": "1.0",
-  "description": "Blocks navigation to domains containing characters outside the scripts associated with the user's locale to protect against IDN homograph attacks.",
+  "icons": {
+    "32": "icon.svg",
+    "48": "icon.svg",
+    "96": "icon.svg"
+  },
   "permissions": [
     "webRequest",
     "webRequestBlocking",
-    "storage",
+    "storage"
+  ],
+  "host_permissions": [
     "<all_urls>"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["blocked.html", "blocked.js", "icon.svg"],
+      "matches": ["<all_urls>"]
+    }
   ],
   "background": {
     "scripts": ["unicode-scripts.js", "background.js"]

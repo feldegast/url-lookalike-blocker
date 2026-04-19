@@ -291,6 +291,17 @@ const KNOWN_SCRIPTS = [
 function getCharScript(char) {
   if (char.length !== 1) return null;
 
+  const code = char.codePointAt(0);
+  // Fast-range detection for Cyrillic to avoid any engine-specific Unicode script edge cases
+  if (
+    (code >= 0x0400 && code <= 0x04FF) ||
+    (code >= 0x0500 && code <= 0x052F) ||
+    (code >= 0x2DE0 && code <= 0x2DFF) ||
+    (code >= 0xA640 && code <= 0xA69F)
+  ) {
+    return 'Cyrillic';
+  }
+
   for (const script of KNOWN_SCRIPTS) {
     try {
       const regex = new RegExp(`\\p{Script=${script}}`, 'u');
@@ -316,21 +327,121 @@ function isHostnameAllowed(hostname, permittedScripts) {
   for (const char of hostname) {
     const script = getCharScript(char);
     if (script && !permittedScripts.has(script)) {
+      console.log('URL Lookalike Blocker: offending char', char, 'script', script, 'hostname', hostname);
       return { allowed: false, offendingChar: char, script: script };
+    }
+    if (char !== '.' && char !== '-' && char !== '_' && !/^[\x00-\x7F]$/.test(char)) {
+      console.log('URL Lookalike Blocker: char with no script mapping', char, 'hostname', hostname);
     }
   }
   return { allowed: true };
 }
 
 /**
+ * Minimal punycode decoder (RFC 3492)
+ * Decodes xn-- prefixed labels to Unicode
+ *
+ * @param {string} punycode - Punycode label (without xn-- prefix)
+ * @returns {string} Decoded Unicode string
+ */
+function decodePunycode(punycode) {
+  // Minimal punycode decoder for IDN homograph detection
+  // Based on RFC 3492 simplified implementation
+  const BASE = 36;
+  const TMIN = 1;
+  const TMAX = 26;
+  const SKEW = 38;
+  const DAMP = 700;
+  const INITIAL_BIAS = 72;
+  const INITIAL_N = 128;
+
+  let n = INITIAL_N;
+  let i = 0;
+  let bias = INITIAL_BIAS;
+  let output = [];
+
+  // Split at last hyphen delimiter
+  const lastHyphen = punycode.lastIndexOf('-');
+  let encoded;
+  if (lastHyphen >= 0) {
+    // Add basic code points before the delimiter
+    for (let j = 0; j < lastHyphen; j++) {
+      output.push(punycode.charCodeAt(j));
+    }
+    encoded = punycode.slice(lastHyphen + 1);
+  } else {
+    encoded = punycode;
+  }
+
+  let pos = 0;
+  while (pos < encoded.length) {
+    let oldi = i;
+    let w = 1;
+    for (let k = BASE; ; k += BASE) {
+      const cp = encoded.charCodeAt(pos++);
+      let val;
+      if (cp >= 48 && cp <= 57) {
+        val = cp - 22; // '0'..'9' -> 26..35
+      } else if (cp >= 65 && cp <= 90) {
+        val = cp - 65; // 'A'..'Z' -> 0..25
+      } else if (cp >= 97 && cp <= 122) {
+        val = cp - 97; // 'a'..'z' -> 0..25
+      } else {
+        return punycode; // Invalid character
+      }
+      if (pos > encoded.length) return punycode; // Invalid
+      i += val * w;
+      const t = k <= bias ? TMIN : k >= bias + TMAX ? TMAX : k - bias;
+      if (val < t) break;
+      w *= BASE - t;
+    }
+    bias = adapt(i - oldi, output.length + 1, oldi === 0);
+    n += Math.floor(i / (output.length + 1));
+    i %= output.length + 1;
+    output.splice(i, 0, n);
+    i++;
+  }
+
+  return String.fromCodePoint(...output);
+}
+
+/**
+ * Adapt bias for punycode decoding
+ */
+function adapt(delta, numpoints, first) {
+  const BASE = 36;
+  const TMIN = 1;
+  const TMAX = 26;
+  const SKEW = 38;
+  const DAMP = 700;
+  
+  delta = first ? Math.floor(delta / DAMP) : Math.floor(delta / 2);
+  delta += Math.floor(delta / numpoints);
+  let k = 0;
+  while (delta > ((BASE - TMIN) * TMAX) / 2) {
+    delta = Math.floor(delta / (BASE - TMIN));
+    k += BASE;
+  }
+  return k + Math.floor((BASE - TMIN + 1) * delta / (delta + SKEW));
+}
+
+/**
  * Decodes a punycode-encoded hostname to Unicode.
+ * Handles domains with multiple labels (e.g., www.xn--example.com)
  *
  * @param {string} url - Full URL string
  * @returns {string} Decoded hostname
  */
 function decodeHostname(url) {
   try {
-    return new URL(url).hostname;
+    let hostname = new URL(url).hostname;
+    // Decode each label separated by dots
+    return hostname.split('.').map(label => {
+      if (label.toLowerCase().startsWith('xn--')) {
+        return decodePunycode(label.slice(4)); // Remove 'xn--' prefix
+      }
+      return label;
+    }).join('.');
   } catch (e) {
     // Invalid URL, return as-is or empty
     return '';
