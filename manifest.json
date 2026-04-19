@@ -3,9 +3,9 @@
   "name": "URL Lookalike Blocker",
   "version": "1.0",
   "icons": {
-    "32": "icon.svg",
-    "48": "icon.svg",
-    "96": "icon.svg"
+    "32": "icon.png",
+    "48": "icon.png",
+    "96": "icon.png"
   },
   "permissions": [
     "webRequest",
@@ -17,7 +17,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["blocked.html", "blocked.js", "icon.svg"],
+      "resources": ["blocked.html", "blocked.js", "icon.svg", "icon.png"],
       "matches": ["<all_urls>"]
     }
   ],
