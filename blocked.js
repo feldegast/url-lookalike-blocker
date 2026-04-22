@@ -93,8 +93,24 @@ function decodeHostname(url) {
 document.addEventListener('DOMContentLoaded', () => {
   const urlParams = new URLSearchParams(window.location.search);
   const blockedUrl = urlParams.get('url');
-  const offendingChar = urlParams.get('char');
-  const script = urlParams.get('script');
+
+  // Re-derive all non-compliant characters from the decoded hostname.
+  // This is more reliable than passing them through URL params.
+  // getCharScript is available via the unicode-scripts.js script tag.
+  const alwaysPermitted = new Set(['Common', 'Inherited', 'Latin']);
+  const unicodeDomainForScan = decodeHostname(blockedUrl || '');
+  const offendingChars = [];
+  const seen = new Set();
+  for (const char of unicodeDomainForScan) {
+    if (!seen.has(char)) {
+      const s = getCharScript(char);
+      if (s && !alwaysPermitted.has(s)) {
+        offendingChars.push({ char, script: s });
+        seen.add(char);
+      }
+    }
+  }
+  const offendingSet = new Set(offendingChars.map(o => o.char));
 
   // Display blocked URL
   document.getElementById('blocked-url').textContent = blockedUrl || 'Unknown';
@@ -105,32 +121,38 @@ document.addEventListener('DOMContentLoaded', () => {
       const urlObj = new URL(blockedUrl);
       const punycodeDomain = urlObj.hostname;
       const unicodeDomain = decodeHostname(blockedUrl);
-      
+
       document.getElementById('punycode-domain').textContent = punycodeDomain;
-      
-      // Highlight offending characters in Unicode domain
-      if (offendingChar && unicodeDomain) {
-        const highlighted = unicodeDomain.split('').map(char => {
-          if (char === offendingChar) {
-            return `<span style="color: red; font-weight: bold;">${char}</span>`;
-          }
-          return char;
-        }).join('');
-        document.getElementById('unicode-domain').innerHTML = highlighted;
-      } else {
-        document.getElementById('unicode-domain').textContent = unicodeDomain;
-      }
+
+      // Highlight all offending characters in the Unicode domain
+      const highlighted = unicodeDomain.split('').map(char => {
+        if (offendingSet.has(char)) {
+          return `<span style="color: red; font-weight: bold;">${char}</span>`;
+        }
+        return char;
+      }).join('');
+      document.getElementById('unicode-domain').innerHTML = highlighted;
     } catch (e) {
       document.getElementById('punycode-domain').textContent = 'Error parsing URL';
       document.getElementById('unicode-domain').textContent = 'Error parsing URL';
     }
   }
 
-  // Display offending character details
-  if (offendingChar) {
-    document.getElementById('offending-char').textContent = offendingChar;
-    document.getElementById('codepoint').textContent = `U+${offendingChar.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')}`;
-    document.getElementById('script').textContent = script || 'Unknown';
+  // Set description text based on number of non-compliant characters
+  const descEl = document.getElementById('script-description');
+  if (offendingChars.length === 1) {
+    descEl.textContent = "This character belongs to a script not permitted by this plugin's settings.";
+  } else {
+    descEl.textContent = "These characters belong to scripts not permitted by this plugin's settings.";
+  }
+
+  // Populate all non-compliant characters table
+  const tbody = document.getElementById('offending-chars-body');
+  for (const { char, script: s } of offendingChars) {
+    const codepoint = `U+${char.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')}`;
+    const row = document.createElement('tr');
+    row.innerHTML = `<td class="offending-char-glyph">${char}</td><td>${codepoint}</td><td>${s}</td>`;
+    tbody.appendChild(row);
   }
 
   // Allow button
@@ -153,5 +175,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Back button
   document.getElementById('back-btn').addEventListener('click', () => {
     window.history.back();
+  });
+
+  // Settings button
+  document.getElementById('settings-btn').addEventListener('click', () => {
+    browser.runtime.openOptionsPage();
   });
 });

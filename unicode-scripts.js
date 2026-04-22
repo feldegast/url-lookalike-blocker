@@ -324,15 +324,20 @@ function getCharScript(char) {
  * @returns {object} { allowed: boolean, offendingChar?: string, script?: string }
  */
 function isHostnameAllowed(hostname, permittedScripts) {
+  const seen = new Map(); // char -> script, deduped
   for (const char of hostname) {
     const script = getCharScript(char);
-    if (script && !permittedScripts.has(script)) {
-      console.log('URL Lookalike Blocker: offending char', char, 'script', script, 'hostname', hostname);
-      return { allowed: false, offendingChar: char, script: script };
+    if (script && !permittedScripts.has(script) && !seen.has(char)) {
+      seen.set(char, script);
     }
     if (char !== '.' && char !== '-' && char !== '_' && !/^[\x00-\x7F]$/.test(char)) {
       console.log('URL Lookalike Blocker: char with no script mapping', char, 'hostname', hostname);
     }
+  }
+  if (seen.size > 0) {
+    const offendingChars = Array.from(seen.entries()).map(([char, script]) => ({ char, script }));
+    console.log('URL Lookalike Blocker: offending chars', offendingChars, 'hostname', hostname);
+    return { allowed: false, offendingChar: offendingChars[0].char, script: offendingChars[0].script, offendingChars };
   }
   return { allowed: true };
 }

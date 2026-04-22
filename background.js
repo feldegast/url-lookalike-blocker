@@ -66,7 +66,7 @@ browser.webRequest.onBeforeRequest.addListener(
     if (!result.allowed) {
       // Block and redirect to blocked page
       const blockedUrl = browser.runtime.getURL('blocked.html') +
-        `?url=${encodeURIComponent(url)}&char=${encodeURIComponent(result.offendingChar)}&script=${encodeURIComponent(result.script)}`;
+        `?url=${encodeURIComponent(url)}&char=${encodeURIComponent(result.offendingChar)}&script=${encodeURIComponent(result.script)}&chars=${encodeURIComponent(JSON.stringify(result.offendingChars))}`;
       console.log('URL Lookalike Blocker: redirecting to', blockedUrl);
       return { redirectUrl: blockedUrl };
     }

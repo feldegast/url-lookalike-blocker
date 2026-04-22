@@ -34,6 +34,26 @@
       font-weight: bold;
       color: #f57c00;
     }
+    .offending-chars-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-family: monospace;
+    }
+    .offending-chars-table th {
+      text-align: left;
+      font-size: 12px;
+      color: #888;
+      padding: 2px 8px 2px 0;
+    }
+    .offending-chars-table td {
+      padding: 2px 8px 2px 0;
+    }
+    .offending-char-glyph {
+      font-size: 20px;
+      font-weight: bold;
+      color: #d32f2f;
+    }
     .unicode-domain {
       font-family: monospace;
       background: #f8f8f8;
@@ -66,6 +86,14 @@
     .back-btn:hover {
       background: #1976d2;
     }
+    .settings-btn {
+      background: #757575;
+      color: white;
+      margin-top: 20px;
+    }
+    .settings-btn:hover {
+      background: #616161;
+    }
   </style>
 </head>
 <body>
@@ -77,19 +105,23 @@
       <strong>Blocked URL:</strong> <span id="blocked-url"></span><br>
       <strong>Punycode Domain:</strong> <span id="punycode-domain"></span><br>
       <strong>Unicode Domain:</strong> <span id="unicode-domain" class="unicode-domain"></span><br>
-      <strong>Offending Character:</strong> <span id="offending-char" class="char-display"></span><br>
-      <strong>Unicode Codepoint:</strong> <span id="codepoint" class="codepoint"></span><br>
-      <strong>Script:</strong> <span id="script"></span>
+      <strong>Non-Compliant Characters:</strong>
+      <table class="offending-chars-table">
+        <thead><tr><th>Character</th><th>Codepoint</th><th>Script</th></tr></thead>
+        <tbody id="offending-chars-body"></tbody>
+      </table>
     </div>
 
-    <p>This character belongs to a script not permitted for your locale settings.</p>
+    <p id="script-description"></p>
 
     <div class="buttons">
       <button id="allow-btn" class="allow-btn">Allow This Domain</button>
       <button id="back-btn" class="back-btn">Go Back</button>
+      <button id="settings-btn" class="settings-btn">Open Extension Settings</button>
     </div>
   </div>
 
+  <script src="unicode-scripts.js"></script>
   <script src="blocked.js"></script>
 </body>
 </html>
