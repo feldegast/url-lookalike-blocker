@@ -75,6 +75,9 @@ const LANGUAGE_SCRIPTS = {
   'Cherokee': ['Cherokee']
 };
 
+// Scripts that are always permitted regardless of settings (hardcoded in unicode-scripts.js)
+const ALWAYS_PERMITTED = new Set(['Latin', 'Common', 'Inherited']);
+
 // Build reverse mapping: script -> languages that use it
 function buildScriptToLanguages() {
   const map = {};
@@ -135,27 +138,39 @@ function buildScriptTree() {
   const container = document.getElementById('script-tree');
   container.innerHTML = '';
 
-  // Sort languages alphabetically
   const sortedLanguages = Object.keys(LANGUAGE_SCRIPTS).sort();
+  const latinOnly = lang => LANGUAGE_SCRIPTS[lang].every(s => ALWAYS_PERMITTED.has(s));
 
-  sortedLanguages.forEach(language => {
+  const toggleable = sortedLanguages.filter(lang => !latinOnly(lang));
+  const alwaysOn   = sortedLanguages.filter(lang =>  latinOnly(lang));
+
+  function appendLanguage(language, showBadge) {
     const scripts = LANGUAGE_SCRIPTS[language];
-    const languageNode = createTreeNode(language, scripts, 'language');
+    const languageNode = createTreeNode(language, scripts, 'language', showBadge);
     container.appendChild(languageNode);
 
     const languageChildren = document.createElement('div');
-    languageChildren.className = 'tree-children expanded'; // Start expanded
+    languageChildren.className = 'tree-children expanded';
 
     scripts.forEach(script => {
-      const scriptNode = createTreeNode(script, script, 'script');
+      const scriptNode = createTreeNode(script, script, 'script', showBadge);
       languageChildren.appendChild(scriptNode);
     });
 
     languageNode.appendChild(languageChildren);
-  });
+  }
+
+  toggleable.forEach(lang => appendLanguage(lang, true));
+
+  const separator = document.createElement('div');
+  separator.className = 'latin-only-separator';
+  separator.textContent = 'The following languages use only the Latin script, which is always permitted and cannot be disabled.';
+  container.appendChild(separator);
+
+  alwaysOn.forEach(lang => appendLanguage(lang, false));
 }
 
-function createTreeNode(label, data, type) {
+function createTreeNode(label, data, type, showBadge = true) {
   const node = document.createElement('div');
   node.className = `tree-node ${type}`;
 
@@ -181,7 +196,17 @@ function createTreeNode(label, data, type) {
       input.dataset.script = data;
     }
   }
-  input.addEventListener('change', () => handleCheckboxChange(input));
+  const isAlwaysPermitted = type === 'script'
+    ? ALWAYS_PERMITTED.has(data)
+    : Array.isArray(data) && data.every(s => ALWAYS_PERMITTED.has(s));
+
+  if (isAlwaysPermitted) {
+    input.checked = true;
+    input.disabled = true;
+    node.classList.add('always-permitted');
+  } else {
+    input.addEventListener('change', () => handleCheckboxChange(input));
+  }
   checkbox.appendChild(input);
 
   const text = document.createElement('span');
@@ -190,6 +215,13 @@ function createTreeNode(label, data, type) {
   node.appendChild(toggle);
   node.appendChild(checkbox);
   node.appendChild(text);
+
+  if (isAlwaysPermitted && showBadge) {
+    const badge = document.createElement('span');
+    badge.className = 'always-permitted-label';
+    badge.textContent = 'always permitted';
+    node.appendChild(badge);
+  }
 
   return node;
 }
@@ -288,8 +320,13 @@ function updateLanguageState(languageNode) {
   const languageCheckbox = languageNode.querySelector('input[type="checkbox"]');
   const checkboxContainer = languageNode.querySelector('.tree-checkbox');
 
-  const totalScripts = scriptCheckboxes.length;
-  const checkedScripts = Array.from(scriptCheckboxes).filter(cb => cb.checked).length;
+  // Don't touch always-permitted language rows
+  if (languageCheckbox.disabled) return;
+
+  // Only count non-always-permitted scripts when determining state
+  const toggleableCheckboxes = Array.from(scriptCheckboxes).filter(cb => !cb.disabled);
+  const totalScripts = toggleableCheckboxes.length;
+  const checkedScripts = toggleableCheckboxes.filter(cb => cb.checked).length;
 
   checkboxContainer.classList.remove('partial');
 
