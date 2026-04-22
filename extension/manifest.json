@@ -3,14 +3,14 @@
   "name": "URL Lookalike Blocker",
   "version": "1.0",
   "icons": {
-    "32": "icon.png",
-    "48": "icon.png",
-    "96": "icon.png"
+    "48": "icon.svg",
+    "96": "icon.svg"
   },
   "permissions": [
     "webRequest",
     "webRequestBlocking",
-    "storage"
+    "storage",
+    "tabs"
   ],
   "host_permissions": [
     "<all_urls>"
@@ -25,8 +25,8 @@
     "scripts": ["unicode-scripts.js", "background.js"]
   },
   "action": {
-    "default_popup": "options.html",
-    "default_title": "URL Lookalike Blocker Options"
+    "default_title": "URL Lookalike Blocker Options",
+    "default_icon": "icon.svg"
   },
   "options_page": "options.html"
 }

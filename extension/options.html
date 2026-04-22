@@ -51,8 +51,12 @@
       border: 1px solid #ddd;
       border-radius: 4px;
       background: white;
-      max-height: 400px;
-      overflow-y: auto;
+    }
+    .latin-only-list {
+      padding: 8px 12px;
+      color: #666;
+      font-size: 14px;
+      line-height: 1.8;
     }
     .tree-node {
       display: flex;
@@ -134,16 +138,45 @@
     .latin-only-separator {
       padding: 8px 12px;
       background: #f0f0f0;
-      border-top: 1px solid #ddd;
       border-bottom: 1px solid #ddd;
       font-size: 12px;
       color: #888;
       font-style: italic;
     }
+    .apply-controls {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    .unsaved-indicator {
+      font-size: 13px;
+      color: #f57c00;
+      font-style: italic;
+      margin-right: auto;
+    }
+    .apply-btn {
+      background: #4caf50;
+      color: white;
+      padding: 10px 20px;
+      font-size: 15px;
+    }
+    .apply-btn:hover {
+      background: #388e3c;
+    }
+    .discard-btn {
+      background: #757575;
+      color: white;
+      padding: 10px 20px;
+      font-size: 15px;
+    }
+    .discard-btn:hover {
+      background: #616161;
+    }
   </style>
 </head>
 <body>
-  <h1><img src="icon.png" alt="URL" style="height: 1.25em; vertical-align: middle; margin-right: 0.5em;"> Lookalike Blocker Options</h1>
+  <h1><img src="icon.svg" alt="" style="height: 1.25em; vertical-align: middle; margin-right: 0.5em;"> Lookalike Blocker Options</h1>
 
   <div class="section">
     <h2>Whitelisted Domains</h2>
@@ -156,12 +189,25 @@
     <p>Configure which Unicode scripts are permitted beyond your locale defaults. Check individual scripts or entire languages.</p>
     
     <div id="script-tree" class="script-tree">
-      <!-- Tree structure will be populated by JavaScript -->
+      <!-- Toggleable tree populated by JavaScript -->
     </div>
-    
+
     <div class="tree-controls">
       <button id="collapse-all">Collapse All</button>
+      <button id="expand-all">Expand All</button>
       <button id="reset-scripts">Reset to Defaults</button>
+    </div>
+
+    <div id="latin-section" class="script-tree">
+      <!-- Always-permitted Latin languages populated by JavaScript -->
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="apply-controls">
+      <span id="unsaved-indicator" class="unsaved-indicator" style="display:none">Unsaved changes</span>
+      <button id="discard-btn" class="discard-btn">Discard Changes</button>
+      <button id="apply-btn" class="apply-btn">Apply Changes</button>
     </div>
   </div>
 

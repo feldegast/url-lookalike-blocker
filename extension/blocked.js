@@ -177,8 +177,11 @@ document.addEventListener('DOMContentLoaded', () => {
     window.history.back();
   });
 
-  // Settings button
+  // Settings button — open options in a new tab, passing the blocked URL so the
+  // options page can navigate this tab back to it after the user applies changes.
   document.getElementById('settings-btn').addEventListener('click', () => {
-    browser.runtime.openOptionsPage();
+    const optionsUrl = browser.runtime.getURL('options.html') +
+      (blockedUrl ? '?blockedUrl=' + encodeURIComponent(blockedUrl) : '');
+    browser.tabs.create({ url: optionsUrl });
   });
 });

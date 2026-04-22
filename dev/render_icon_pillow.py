@@ -49,5 +49,8 @@ draw.ellipse(
 d = circle_r / math.sqrt(2)
 draw.line((cx - d, cy - d, cx + d, cy + d), fill=circle_color, width=stroke_width)
 
-img.save('icon.png')
-print('rendered icon.png')
+# Output path is relative to this script's location in dev/.
+# The extension reads icon.png from extension/, so we write directly there
+# rather than copying manually after each render.
+img.save('../extension/icon.png')
+print('rendered ../extension/icon.png')

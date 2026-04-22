@@ -6,7 +6,7 @@
 # [FULL FLOW]      = real site exists; can test the full block -> allow -> navigate flow.
 
 # --- CYRILLIC ---
-# "apple.com" with Cyrillic 'а' (U+0430) replacing Latin 'a' [DETECTION ONLY]
+# "apple.com" with Cyrillic characters
 https://www.xn--80ak6aa92e.com/
 
 # --- JAPANESE (Han + Hiragana + Katakana) ---
