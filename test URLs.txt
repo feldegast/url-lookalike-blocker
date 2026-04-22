@@ -1,56 +1,59 @@
 # Test URLs for URL Lookalike Blocker
 # Each URL should be BLOCKED for a default English-locale user unless noted.
-# Punycode domains can be pasted into the browser address bar directly.
+#
+# [DETECTION ONLY] = block page fires correctly but domain does not resolve to a
+#                    real site, so "Allow This Domain" will result in a DNS error.
+# [FULL FLOW]      = real site exists; can test the full block -> allow -> navigate flow.
 
 # --- CYRILLIC ---
-# "apple.com" with Cyrillic 'а' (U+0430) replacing Latin 'a'
+# "apple.com" with Cyrillic 'а' (U+0430) replacing Latin 'a' [DETECTION ONLY]
 https://www.xn--80ak6aa92e.com/
 
 # --- JAPANESE (Han + Hiragana + Katakana) ---
-# 例え.テスト  — should be blocked for English, allowed if Japanese is permitted
+# 例え.テスト — .テスト is a real IANA test TLD but this hostname has no server [DETECTION ONLY]
 https://xn--r8jz45g.xn--zckzah/
 
 # --- GREEK ---
-# "google.com" with Greek 'ο' (U+03BF) replacing Latin 'o'
+# "google.com" with Greek 'ο' (U+03BF) replacing Latin 'o' [DETECTION ONLY]
 https://xn--ggle-0nd42c.com/
 
 # --- ARABIC ---
-# Mixed Arabic/Latin domain
+# Mixed Arabic/Latin domain [DETECTION ONLY]
 https://xn--4cabco7dq6a.com/
 
 # --- HEBREW ---
-# Mixed Hebrew/Latin domain
+# Mixed Hebrew/Latin domain [DETECTION ONLY]
 https://xn--4db7d.com/
 
 # --- KOREAN (Hangul) ---
-# 한국.com — Korean characters
+# 한국.com — Korean characters [DETECTION ONLY]
 https://xn--3e0b707e.com/
 
 # --- THAI ---
-# ไทย.com — Thai characters
+# ไทย.com — Thai characters [DETECTION ONLY]
 https://xn--o3cw4h.com/
 
 # --- DEVANAGARI (Hindi) ---
-# भारत.com — Devanagari characters
+# भारत.com — Devanagari characters [DETECTION ONLY]
 https://xn--h2brj9c.com/
 
 # --- GEORGIAN ---
-# გე.com — Georgian characters
+# გე.com — Georgian characters [DETECTION ONLY]
 https://xn--node.com/
 
 # --- ARMENIAN ---
-# հայ.com — Armenian characters
+# հայ.com — Armenian characters [DETECTION ONLY]
 https://xn--y9a3aq.com/
 
 # --- CHINESE (Han) ---
-# 中国.com — Simplified Chinese
+# 中国.com — Simplified Chinese [DETECTION ONLY]
 https://xn--fiqs8s.com/
 
 # --- MIXED SCRIPTS (multiple non-compliant) ---
-# Domain mixing Cyrillic and Greek — should flag both scripts
+# Domain mixing Cyrillic and Greek — should flag both scripts [DETECTION ONLY]
 https://xn--e1afmapc.xn--e1afmapc.com/
 
 # --- SHOULD BE ALLOWED (Latin only) ---
-# Standard ASCII domain — must never be blocked
+# Standard ASCII domains — must never be blocked [FULL FLOW]
 https://www.example.com/
 https://www.google.com/
