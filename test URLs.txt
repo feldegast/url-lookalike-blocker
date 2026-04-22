@@ -1,2 +1,56 @@
+# Test URLs for URL Lookalike Blocker
+# Each URL should be BLOCKED for a default English-locale user unless noted.
+# Punycode domains can be pasted into the browser address bar directly.
+
+# --- CYRILLIC ---
+# "apple.com" with Cyrillic 'а' (U+0430) replacing Latin 'a'
 https://www.xn--80ak6aa92e.com/
+
+# --- JAPANESE (Han + Hiragana + Katakana) ---
+# 例え.テスト  — should be blocked for English, allowed if Japanese is permitted
 https://xn--r8jz45g.xn--zckzah/
+
+# --- GREEK ---
+# "google.com" with Greek 'ο' (U+03BF) replacing Latin 'o'
+https://xn--ggle-0nd42c.com/
+
+# --- ARABIC ---
+# Mixed Arabic/Latin domain
+https://xn--4cabco7dq6a.com/
+
+# --- HEBREW ---
+# Mixed Hebrew/Latin domain
+https://xn--4db7d.com/
+
+# --- KOREAN (Hangul) ---
+# 한국.com — Korean characters
+https://xn--3e0b707e.com/
+
+# --- THAI ---
+# ไทย.com — Thai characters
+https://xn--o3cw4h.com/
+
+# --- DEVANAGARI (Hindi) ---
+# भारत.com — Devanagari characters
+https://xn--h2brj9c.com/
+
+# --- GEORGIAN ---
+# გე.com — Georgian characters
+https://xn--node.com/
+
+# --- ARMENIAN ---
+# հայ.com — Armenian characters
+https://xn--y9a3aq.com/
+
+# --- CHINESE (Han) ---
+# 中国.com — Simplified Chinese
+https://xn--fiqs8s.com/
+
+# --- MIXED SCRIPTS (multiple non-compliant) ---
+# Domain mixing Cyrillic and Greek — should flag both scripts
+https://xn--e1afmapc.xn--e1afmapc.com/
+
+# --- SHOULD BE ALLOWED (Latin only) ---
+# Standard ASCII domain — must never be blocked
+https://www.example.com/
+https://www.google.com/
