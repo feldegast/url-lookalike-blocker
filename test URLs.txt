@@ -53,6 +53,31 @@ https://xn--fiqs8s.com/
 # Domain mixing Cyrillic and Greek — should flag both scripts [DETECTION ONLY]
 https://xn--e1afmapc.xn--e1afmapc.com/
 
+# --- REALISTIC HOMOGRAPH ATTACKS (mixed Latin + one non-Latin character) ---
+# These are the most dangerous attacks — the domain looks almost identical to
+# the real site. All should be BLOCKED. [DETECTION ONLY]
+
+# Cyrillic 'а' (U+0430) replacing 'a' in apple.com  →  аpple.com
+https://xn--pple-43d.com/
+
+# Cyrillic 'е' (U+0435) replacing 'e' in google.com  →  googlе.com
+https://xn--googl-3we.com/
+
+# Cyrillic 'р' (U+0440) replacing 'p' in paypal.com  →  рaypal.com
+https://xn--aypal-uye.com/
+
+# Cyrillic 'о' (U+043E) replacing 'o' in microsoft.com  →  microsоft.com
+https://xn--microsft-sbh.com/
+
+# Cyrillic 'а' (U+0430) replacing 'a' in amazon.com  →  аmazon.com
+https://xn--mazon-3ve.com/
+
+# Greek 'ο' (U+03BF) replacing both 'o's in yahoo.com  →  yahοο.com
+https://xn--yah-czca.com/
+
+# Greek 'ν' (U+03BD) replacing 'n' in nvidia.com  →  νvidia.com
+https://xn--vidia-ece.com/
+
 # --- SHOULD BE ALLOWED (Latin only) ---
 # Standard ASCII domains — must never be blocked [FULL FLOW]
 https://www.example.com/
