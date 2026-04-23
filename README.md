@@ -33,4 +33,4 @@ Changes are **not saved automatically**. Click **Apply Changes** (or **Apply & R
 
 ## License
 
-Dual-licensed under **GPL-3.0 OR MPL-2.0** — choose whichever suits your use case. See `LICENSE.md` for details.
+Dual-licensed under **GPL-3.0 OR MPL-2.0** — choose whichever suits your use case. See `dual-licensing.md` for details.
