@@ -66,7 +66,7 @@ const LANGUAGE_SCRIPTS = {
   'Persian': ['Arabic'],
   'Pashto': ['Arabic'],
   'Hebrew': ['Hebrew'],
-  'Japanese': ['Hiragana', 'Katakana', 'Han'],
+  'Japanese': ['Hiragana', 'Han', 'Katakana'],
   'Chinese (Simplified)': ['Han'],
   'Chinese (Traditional)': ['Han'],
   'Korean': ['Hangul', 'Han'],
