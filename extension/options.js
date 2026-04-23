@@ -6,8 +6,15 @@
 let whitelist = [];
 let additionalScripts = new Set();
 
-// Whether the user has made any changes since the page loaded or was last saved.
-// Used to warn before closing the tab with unsaved work.
+// Snapshots of the state as loaded from storage, used to detect whether the
+// current state truly differs from what was saved (so toggling back to the
+// original state correctly clears the "Unsaved changes" indicator).
+let initialScripts = new Set();
+let initialWhitelist = [];
+
+// Whether the current state differs from the saved state.
+// Recomputed after every change rather than set on first edit, so it goes
+// back to false if the user undoes all their changes.
 let isDirty = false;
 
 // If the options page was opened from a blocked page, this holds the URL that
@@ -119,16 +126,36 @@ async function loadSettings() {
   const result = await browser.storage.local.get(['whitelist', 'additionalScripts']);
   whitelist = result.whitelist || [];
   additionalScripts = new Set(result.additionalScripts || []);
+  // Snapshot the loaded state so checkDirty can compare against it
+  initialScripts = new Set(additionalScripts);
+  initialWhitelist = [...whitelist];
   renderWhitelist();
   updateTableState();
-  // Loading from storage is not a user change — do not mark dirty
 }
 
-// Show the unsaved-changes indicator and set the dirty flag.
-// Called whenever the user makes any change to the UI.
-function markDirty() {
-  isDirty = true;
-  document.getElementById('unsaved-indicator').style.display = '';
+// Recompute whether the current state differs from the saved state and
+// update the indicator accordingly. Called after every user change so that
+// undoing all edits correctly hides the "Unsaved changes" text.
+function checkDirty() {
+  const scriptsDiffer = !setsEqual(additionalScripts, initialScripts);
+  const whitelistDiffer = !arraysEqualSorted(whitelist, initialWhitelist);
+  isDirty = scriptsDiffer || whitelistDiffer;
+  document.getElementById('unsaved-indicator').style.display = isDirty ? '' : 'none';
+}
+
+function setsEqual(a, b) {
+  if (a.size !== b.size) return false;
+  for (const item of a) {
+    if (!b.has(item)) return false;
+  }
+  return true;
+}
+
+function arraysEqualSorted(a, b) {
+  if (a.length !== b.length) return false;
+  const sa = [...a].sort();
+  const sb = [...b].sort();
+  return sa.every((v, i) => v === sb[i]);
 }
 
 // Convert a Unicode domain back to its punycode (ACE) form.
@@ -226,11 +253,15 @@ function buildScriptTable() {
   const toggleable = sortedLanguages.filter(lang => !latinOnly(lang));
   const alwaysOn   = sortedLanguages.filter(lang =>  latinOnly(lang));
 
+  // Max scripts any single language has — sets the number of script columns.
+  // Japanese (Hiragana, Katakana, Han) is currently the maximum at 3.
+  const MAX_SCRIPTS = 3;
+
   const table = document.createElement('table');
   table.className = 'script-table';
 
   const thead = document.createElement('thead');
-  thead.innerHTML = '<tr><th>Language</th><th>Scripts</th></tr>';
+  thead.innerHTML = `<tr><th>Language</th><th colspan="${MAX_SCRIPTS}">Scripts</th></tr>`;
   table.appendChild(thead);
 
   const tbody = document.createElement('tbody');
@@ -260,10 +291,14 @@ function buildScriptTable() {
     langTd.appendChild(langLabel);
     tr.appendChild(langTd);
 
-    // Scripts cell — individual checkboxes, one per script, shown inline
-    const scriptsTd = document.createElement('td');
-    scripts.forEach(script => {
+    // Script columns — one <td> per script, last cell gets colspan to fill
+    // remaining columns so single-script rows span the full scripts section.
+    scripts.forEach((script, index) => {
       const isAlwaysPermitted = ALWAYS_PERMITTED.has(script);
+      const scriptTd = document.createElement('td');
+      if (index === scripts.length - 1) {
+        scriptTd.colSpan = MAX_SCRIPTS - scripts.length + 1;
+      }
       const scriptLabel = document.createElement('label');
       scriptLabel.className = 'script-label';
       const scriptCheckbox = document.createElement('input');
@@ -285,9 +320,9 @@ function buildScriptTable() {
         badge.textContent = ' (always permitted)';
         scriptLabel.appendChild(badge);
       }
-      scriptsTd.appendChild(scriptLabel);
+      scriptTd.appendChild(scriptLabel);
+      tr.appendChild(scriptTd);
     });
-    tr.appendChild(scriptsTd);
     tbody.appendChild(tr);
   });
 
@@ -325,7 +360,7 @@ function handleCheckboxChange(checkbox) {
     propagateScriptChange(checkbox.dataset.script, checked, row);
   }
 
-  markDirty();
+  checkDirty();
 }
 
 // When a script checkbox changes, sync the same script checkbox in any other language row that shares it.
@@ -392,7 +427,7 @@ function updateTableState() {
 function removeFromWhitelist(domain) {
   whitelist = whitelist.filter(d => d !== domain);
   renderWhitelist();
-  markDirty();
+  checkDirty();
 }
 
 function setupEventListeners() {
@@ -400,7 +435,7 @@ function setupEventListeners() {
   document.getElementById('reset-scripts').addEventListener('click', () => {
     additionalScripts.clear();
     updateTableState();
-    markDirty();
+    checkDirty();
   });
 
   document.getElementById('apply-btn').addEventListener('click', async () => {
