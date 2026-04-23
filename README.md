@@ -30,3 +30,7 @@ The options page has two sections:
 **Permitted Scripts** — a tree of languages and their Unicode scripts. Check a language to permit all its scripts, or expand it to enable individual scripts. Languages that use only the Latin script are listed separately at the bottom and cannot be changed.
 
 Changes are **not saved automatically**. Click **Apply Changes** (or **Apply & Retry** when opened from a blocked page) to save. Closing the tab with unsaved changes will prompt a browser warning. Click **Discard Changes** to reload the page and abandon any changes.
+
+## License
+
+Dual-licensed under **GPL-3.0 OR MPL-2.0** — choose whichever suits your use case. See `LICENSE.md` for details.
