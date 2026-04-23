@@ -6,6 +6,10 @@ let permittedScripts = getPermittedScripts([navigator.language || 'en']);
 let whitelist = new Set();
 let additionalScripts = new Set();
 
+// Domains the user has chosen to continue past the mixed-script warning for
+// this browser session. Stored in memory only — cleared on browser restart.
+const sessionAllowed = new Set();
+
 // Track the most recent tab that was blocked so the options page can navigate
 // it back to the original URL after the user applies new script permissions.
 // Only the most recent blocked tab is tracked; if multiple tabs are blocked
@@ -62,6 +66,24 @@ browser.storage.onChanged.addListener((changes) => {
 // synchronously before we navigate the blocked tab — no race condition between
 // the settings taking effect and the webRequest check for the retried URL.
 browser.runtime.onMessage.addListener((message) => {
+  if (message.type === 'addToWhitelist') {
+    // Sync in-memory whitelist when warning.js allows a domain permanently,
+    // so the webRequest check passes before storage.onChanged can fire.
+    whitelist.add(message.domain);
+  }
+
+  if (message.type === 'allowOnce') {
+    // Add to session-allowed Set then navigate the warning tab to the original
+    // URL. The webRequest check will pass because sessionAllowed is checked
+    // before the mixed-script scan.
+    sessionAllowed.add(message.domain);
+    if (message.url && lastBlockedTabId !== null) {
+      browser.tabs.update(lastBlockedTabId, { url: message.url });
+      lastBlockedTabId = null;
+      lastBlockedUrl = null;
+    }
+  }
+
   if (message.type === 'applySettings') {
     if (message.additionalScripts !== undefined) {
       additionalScripts = new Set(message.additionalScripts);
@@ -93,10 +115,17 @@ browser.webRequest.onBeforeRequest.addListener(
       return {};
     }
 
+    // Domains the user has chosen to continue past a mixed-script warning this
+    // session are allowed through without re-showing the warning.
+    if (sessionAllowed.has(hostname)) {
+      return {};
+    }
+
     if (!permittedScripts) {
       permittedScripts = getPermittedScripts([navigator.language || 'en']);
     }
 
+    // Step 1: block if any character's script is not in the permitted set
     const result = isHostnameAllowed(hostname, permittedScripts);
     if (!result.allowed) {
       // Remember which tab was blocked so the options page can retry it after
@@ -107,6 +136,25 @@ browser.webRequest.onBeforeRequest.addListener(
       const blockedPageUrl = browser.runtime.getURL('blocked.html') +
         `?url=${encodeURIComponent(url)}&char=${encodeURIComponent(result.offendingChar)}&script=${encodeURIComponent(result.script)}&chars=${encodeURIComponent(JSON.stringify(result.offendingChars))}`;
       return { redirectUrl: blockedPageUrl };
+    }
+
+    // Step 2: warn if the domain mixes characters from 2+ distinct scripts.
+    // All scripts are permitted (step 1 passed) but the mix is suspicious —
+    // this is the pattern used in homograph attacks like аpple.com (Cyrillic а
+    // + Latin) when Cyrillic is in the user's permitted set.
+    const domainScripts = new Set();
+    for (const char of hostname) {
+      const s = getCharScript(char);
+      if (s && s !== 'Common' && s !== 'Inherited') {
+        domainScripts.add(s);
+      }
+    }
+    if (domainScripts.size >= 2) {
+      lastBlockedTabId = details.tabId;
+      lastBlockedUrl = url;
+      const warningPageUrl = browser.runtime.getURL('warning.html') +
+        `?url=${encodeURIComponent(url)}`;
+      return { redirectUrl: warningPageUrl };
     }
 
     return {};

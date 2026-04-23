@@ -17,7 +17,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["blocked.html", "blocked.js", "icon.svg", "icon.png"],
+      "resources": ["blocked.html", "blocked.js", "warning.html", "warning.js", "icon.svg", "icon.png"],
       "matches": ["<all_urls>"]
     }
   ],
