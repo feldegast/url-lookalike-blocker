@@ -1,0 +1,83 @@
+AMO Submission Details — URL Lookalike Blocker
+===============================================
+Copy/paste the relevant sections into the Firefox Add-ons submission form.
+
+
+NAME
+----
+URL Lookalike Blocker
+
+
+SUMMARY  (max 250 characters, no HTML)
+-------
+Protects against IDN homograph attacks by blocking or warning when a domain contains characters from scripts you have not permitted, or characters that visually resemble a different character.
+
+
+DESCRIPTION  (HTML is supported)
+-----------
+<p>Protects against IDN homograph attacks — attempts by attackers to register domain names that look identical to legitimate sites by substituting visually similar characters from other Unicode scripts (for example, Cyrillic <b>а</b> in place of Latin <b>a</b>).</p>
+
+<p>When you navigate to a URL, the extension decodes the hostname from punycode and checks every character. Three things can happen:</p>
+<ul>
+  <li><b>Blocked</b> — a character belongs to a script that is not in your permitted set.</li>
+  <li><b>Warning</b> — all characters are permitted, but the domain contains a known confusable character (a codepoint that looks like a different character) or mixes characters from two or more scripts.</li>
+  <li><b>Allowed</b> — everything checks out.</li>
+</ul>
+
+<p><b>Blocked and warning pages</b> show the punycode and Unicode forms of the domain, and a table of every suspicious character with its Unicode codepoint, script, and what it visually resembles.</p>
+
+<p><b>From a blocked page</b> you can allow the domain permanently, go back, or open settings to enable the required scripts. If you open settings from a blocked page, clicking Apply automatically retries the blocked URL.</p>
+
+<p><b>From a warning page</b> you can allow the domain permanently, continue for this browser session only, go back, or open settings.</p>
+
+<p><b>Options page</b> (opened from the toolbar icon) lets you manage whitelisted domains and configure which Unicode scripts are permitted beyond your locale defaults. Changes are held in memory until you click Apply — there is no auto-save.</p>
+
+<p><b>Known limitation:</b> the extension detects single characters that look like a different character. It does not detect multi-character sequences that resemble one character (e.g. rn → m, vv → w, cl → d), as doing so without a list of known legitimate domains would cause too many false positives.</p>
+
+<p>Firefox only — Chrome's Manifest V3 removes the blocking webRequest API required for this extension to work.</p>
+
+
+CATEGORIES
+----------
+Primary:   Security & Privacy
+Secondary: (none required)
+
+
+HOMEPAGE URL
+------------
+https://github.com/feldegast/url-lookalike-blocker
+
+
+SUPPORT URL  (optional — can use GitHub issues)
+-----------
+https://github.com/feldegast/url-lookalike-blocker/issues
+
+
+LICENSE
+-------
+Mozilla Public License 2.0
+(The extension is dual-licensed MPL-2.0 OR GPL-3.0 — select MPL-2.0 on AMO
+as that is the file GitHub detects and is the more permissive of the two for
+browser/integration use.)
+
+
+PRIVACY POLICY
+--------------
+This extension collects no data. All processing happens locally in the browser.
+No information about visited URLs, blocked domains, or user settings is transmitted
+to any server. Settings (permitted scripts and whitelisted domains) are stored
+locally using the browser's built-in storage API.
+
+(AMO may ask for a privacy policy URL or inline text. The inline text above
+can be pasted directly into the field if no URL is required.)
+
+
+NOTES FOR REVIEWER  (the AMO reviewer notes field)
+------------------
+This extension uses webRequest with blocking, which requires the "webRequestBlocking"
+permission. This is necessary because the extension must inspect and potentially
+redirect the request before the page loads — there is no way to implement IDN
+homograph detection without intercepting the request synchronously.
+
+The extension does not modify page content, inject scripts into pages, or
+access page data. It only inspects the hostname of navigation requests.
