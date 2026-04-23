@@ -271,6 +271,56 @@ function getPermittedScripts(locales) {
   return scripts;
 }
 
+// Maps characters to the ASCII character they visually resemble.
+// Focused on pairs commonly used in IDN homograph attacks.
+// Derived from UTS #39 confusables.txt (https://unicode.org/reports/tr39/).
+const CONFUSABLES = new Map([
+  // --- Cyrillic → Latin ---
+  ['а', 'a'],  // а CYRILLIC SMALL LETTER A
+  ['е', 'e'],  // е CYRILLIC SMALL LETTER IE
+  ['о', 'o'],  // о CYRILLIC SMALL LETTER O
+  ['р', 'p'],  // р CYRILLIC SMALL LETTER ER
+  ['с', 'c'],  // с CYRILLIC SMALL LETTER ES
+  ['х', 'x'],  // х CYRILLIC SMALL LETTER HA
+  ['у', 'y'],  // у CYRILLIC SMALL LETTER U
+  ['і', 'i'],  // і CYRILLIC SMALL LETTER BYELORUSSIAN-UKRAINIAN I
+  ['ӏ', 'l'],  // ӏ CYRILLIC SMALL LETTER PALOCHKA
+  ['ѕ', 's'],  // ѕ CYRILLIC SMALL LETTER DZE
+  ['ԁ', 'd'],  // ԁ CYRILLIC SMALL LETTER KOMI DE
+  // --- Greek → Latin ---
+  ['ο', 'o'],  // ο GREEK SMALL LETTER OMICRON
+  ['ν', 'v'],  // ν GREEK SMALL LETTER NU
+  ['υ', 'u'],  // υ GREEK SMALL LETTER UPSILON
+  ['α', 'a'],  // α GREEK SMALL LETTER ALPHA
+  ['ρ', 'p'],  // ρ GREEK SMALL LETTER RHO
+  ['ε', 'e'],  // ε GREEK SMALL LETTER EPSILON
+  ['χ', 'x'],  // χ GREEK SMALL LETTER CHI
+  // --- Latin extended → Latin ASCII (same script, different codepoint) ---
+  ['ı', 'i'],  // ı LATIN SMALL LETTER DOTLESS I
+  ['ɡ', 'g'],  // ɡ LATIN SMALL LETTER SCRIPT G
+  ['ɑ', 'a'],  // ɑ LATIN SMALL LETTER ALPHA
+  ['ℓ', 'l'],  // ℓ SCRIPT SMALL L (Common script)
+  // --- Armenian → Latin ---
+  ['հ', 'h'],  // հ ARMENIAN SMALL LETTER HO
+]);
+
+// Returns all confusable characters found in a hostname, deduplicated.
+// Each entry: { char, looksLike, script }
+function getConfusableChars(hostname) {
+  const found = [];
+  const seen = new Set();
+  for (const char of hostname) {
+    if (!seen.has(char)) {
+      const looksLike = CONFUSABLES.get(char);
+      if (looksLike !== undefined) {
+        found.push({ char, looksLike, script: getCharScript(char) });
+        seen.add(char);
+      }
+    }
+  }
+  return found;
+}
+
 // List of all Unicode scripts for character detection
 // This is a subset of known scripts; in practice, we only need to identify the ones that might be offending
 const KNOWN_SCRIPTS = [

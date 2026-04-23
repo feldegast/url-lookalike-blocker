@@ -95,10 +95,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const urlParams = new URLSearchParams(window.location.search);
   const blockedUrl = urlParams.get('url');
 
-  // Find all non-Common/Inherited characters in the domain — these are the
-  // characters that contribute to the mixed-script nature of the domain.
-  const alwaysIgnored = new Set(['Common', 'Inherited']);
   const unicodeDomain = decodeHostname(blockedUrl || '');
+
+  // Check for confusable characters first — these are the highest-confidence
+  // signal (a specific character known to mimic a different character).
+  const confusables = getConfusableChars(unicodeDomain);
+  const confusableSet = new Set(confusables.map(c => c.char));
+
+  // Also collect all non-Common/Inherited characters for the mixed-script case.
+  const alwaysIgnored = new Set(['Common', 'Inherited']);
   const mixedChars = [];
   const seen = new Set();
   for (const char of unicodeDomain) {
@@ -111,8 +116,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Collect the distinct scripts present
+  // Decide which characters to show in the table: confusables if any were
+  // found, otherwise the full mixed-script character set.
+  const tableChars = confusables.length > 0
+    ? confusables.map(({ char, looksLike, script }) => ({ char, looksLike, script }))
+    : mixedChars.map(({ char, script }) => ({ char, looksLike: null, script }));
+
+  // Collect the distinct scripts present (for the description line)
   const scriptsPresent = [...new Set(mixedChars.map(o => o.script))];
+
+  // Characters to highlight in the Unicode domain display
+  const highlightSet = confusables.length > 0 ? confusableSet
+    : new Set(mixedChars.map(o => o.char));
 
   document.getElementById('blocked-url').textContent = blockedUrl || 'Unknown';
 
@@ -121,10 +136,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const urlObj = new URL(blockedUrl);
       document.getElementById('punycode-domain').textContent = urlObj.hostname;
 
-      // Highlight every non-Common/Inherited character in the Unicode domain
-      const charSet = new Set(mixedChars.map(o => o.char));
       const highlighted = unicodeDomain.split('').map(char =>
-        charSet.has(char)
+        highlightSet.has(char)
           ? `<span class="offending-char-glyph">${char}</span>`
           : char
       ).join('');
@@ -136,14 +149,18 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   const descEl = document.getElementById('script-description');
-  descEl.textContent = `This domain mixes ${scriptsPresent.join(' and ')} characters.`;
+  if (confusables.length > 0) {
+    descEl.textContent = 'This domain contains characters that look like different characters and may be impersonating a trusted site.';
+  } else {
+    descEl.textContent = `This domain mixes ${scriptsPresent.join(' and ')} characters.`;
+  }
 
-  // Populate the mixed characters table
+  // Populate the table — includes "Looks like" for confusables, "—" otherwise
   const tbody = document.getElementById('offending-chars-body');
-  for (const { char, script: s } of mixedChars) {
+  for (const { char, looksLike, script: s } of tableChars) {
     const codepoint = `U+${char.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')}`;
     const row = document.createElement('tr');
-    row.innerHTML = `<td class="offending-char-glyph">${char}</td><td>${codepoint}</td><td>${s}</td>`;
+    row.innerHTML = `<td class="offending-char-glyph">${char}</td><td>${looksLike ? `<span class="offending-char-glyph">${looksLike}</span>` : '—'}</td><td>${codepoint}</td><td>${s}</td>`;
     tbody.appendChild(row);
   }
 

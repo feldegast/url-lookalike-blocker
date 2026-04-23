@@ -138,7 +138,19 @@ browser.webRequest.onBeforeRequest.addListener(
       return { redirectUrl: blockedPageUrl };
     }
 
-    // Step 2: warn if the domain mixes characters from 2+ distinct scripts.
+    // Step 2: warn if any character is a known confusable (looks like a
+    // different character). Catches attacks like а (Cyrillic) used in place of
+    // a (Latin) even when Cyrillic is in the user's permitted script set.
+    const confusables = getConfusableChars(hostname);
+    if (confusables.length > 0) {
+      lastBlockedTabId = details.tabId;
+      lastBlockedUrl = url;
+      const warningPageUrl = browser.runtime.getURL('warning.html') +
+        `?url=${encodeURIComponent(url)}`;
+      return { redirectUrl: warningPageUrl };
+    }
+
+    // Step 3: warn if the domain mixes characters from 2+ distinct scripts.
     // All scripts are permitted (step 1 passed) but the mix is suspicious —
     // this is the pattern used in homograph attacks like аpple.com (Cyrillic а
     // + Latin) when Cyrillic is in the user's permitted set.
