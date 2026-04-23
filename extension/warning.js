@@ -131,6 +131,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('blocked-url').textContent = blockedUrl || 'Unknown';
 
+  // Include the Unicode domain in the tab title so multiple warning tabs are
+  // distinguishable without switching to each one.
+  if (unicodeDomain) {
+    document.title = `URL Lookalike Blocker — Mixed Script Domain — ${unicodeDomain}`;
+  }
+
   if (blockedUrl) {
     try {
       const urlObj = new URL(blockedUrl);

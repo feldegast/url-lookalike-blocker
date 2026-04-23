@@ -115,6 +115,13 @@ document.addEventListener('DOMContentLoaded', () => {
   // Display blocked URL
   document.getElementById('blocked-url').textContent = blockedUrl || 'Unknown';
 
+  // Include the Unicode domain in the tab title so multiple blocked tabs are
+  // distinguishable without switching to each one.
+  const titleDomain = decodeHostname(blockedUrl || '');
+  if (titleDomain) {
+    document.title = `URL Lookalike Blocker — Navigation Blocked — ${titleDomain}`;
+  }
+
   // Extract and display domain versions
   if (blockedUrl) {
     try {
