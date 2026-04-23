@@ -15,7 +15,6 @@ let isDirty = false;
 const urlParams = new URLSearchParams(window.location.search);
 const blockedUrl = urlParams.get('blockedUrl');
 
-// Language to scripts mapping
 const LANGUAGE_SCRIPTS = {
   'English': ['Latin'],
   'Spanish': ['Latin'],
@@ -90,6 +89,7 @@ const LANGUAGE_SCRIPTS = {
 const ALWAYS_PERMITTED = new Set(['Latin', 'Common', 'Inherited']);
 
 // Build reverse mapping: script -> languages that use it
+// Used to keep script checkboxes in sync across languages that share a script (e.g. Han in Japanese and Korean)
 function buildScriptToLanguages() {
   const map = {};
   Object.entries(LANGUAGE_SCRIPTS).forEach(([lang, scripts]) => {
@@ -105,9 +105,8 @@ const SCRIPT_TO_LANGUAGES = buildScriptToLanguages();
 
 document.addEventListener('DOMContentLoaded', () => {
   loadSettings();
-  buildScriptTree();
+  buildScriptTable();
   setupEventListeners();
-  updateTreeControls();
 
   // Update the Apply button label when the page was opened from a blocked tab,
   // so the user knows clicking it will also navigate that tab back to the URL.
@@ -121,7 +120,7 @@ async function loadSettings() {
   whitelist = result.whitelist || [];
   additionalScripts = new Set(result.additionalScripts || []);
   renderWhitelist();
-  updateTreeState();
+  updateTableState();
   // Loading from storage is not a user change — do not mark dirty
 }
 
@@ -215,7 +214,7 @@ function renderWhitelist() {
   });
 }
 
-function buildScriptTree() {
+function buildScriptTable() {
   const container = document.getElementById('script-tree');
   container.innerHTML = '';
   const latinContainer = document.getElementById('latin-section');
@@ -227,23 +226,73 @@ function buildScriptTree() {
   const toggleable = sortedLanguages.filter(lang => !latinOnly(lang));
   const alwaysOn   = sortedLanguages.filter(lang =>  latinOnly(lang));
 
-  function appendLanguage(language, showBadge) {
+  const table = document.createElement('table');
+  table.className = 'script-table';
+
+  const thead = document.createElement('thead');
+  thead.innerHTML = '<tr><th>Language</th><th>Scripts</th></tr>';
+  table.appendChild(thead);
+
+  const tbody = document.createElement('tbody');
+
+  toggleable.forEach(language => {
     const scripts = LANGUAGE_SCRIPTS[language];
-    const languageNode = createTreeNode(language, scripts, 'language', showBadge);
-    container.appendChild(languageNode);
+    const tr = document.createElement('tr');
+    tr.dataset.language = language;
 
-    const languageChildren = document.createElement('div');
-    languageChildren.className = 'tree-children expanded';
+    // Language cell — checkbox controls all scripts in this row
+    const langTd = document.createElement('td');
+    const langLabel = document.createElement('label');
+    langLabel.className = 'lang-label';
+    const langCheckbox = document.createElement('input');
+    langCheckbox.type = 'checkbox';
+    langCheckbox.dataset.type = 'language';
+    langCheckbox.dataset.label = language;
+    langCheckbox.dataset.scripts = JSON.stringify(scripts);
+    if (scripts.every(s => ALWAYS_PERMITTED.has(s))) {
+      langCheckbox.checked = true;
+      langCheckbox.disabled = true;
+    } else {
+      langCheckbox.addEventListener('change', () => handleCheckboxChange(langCheckbox));
+    }
+    langLabel.appendChild(langCheckbox);
+    langLabel.appendChild(document.createTextNode(' ' + language));
+    langTd.appendChild(langLabel);
+    tr.appendChild(langTd);
 
+    // Scripts cell — individual checkboxes, one per script, shown inline
+    const scriptsTd = document.createElement('td');
     scripts.forEach(script => {
-      const scriptNode = createTreeNode(script, script, 'script', showBadge);
-      languageChildren.appendChild(scriptNode);
+      const isAlwaysPermitted = ALWAYS_PERMITTED.has(script);
+      const scriptLabel = document.createElement('label');
+      scriptLabel.className = 'script-label';
+      const scriptCheckbox = document.createElement('input');
+      scriptCheckbox.type = 'checkbox';
+      scriptCheckbox.dataset.type = 'script';
+      scriptCheckbox.dataset.label = script;
+      scriptCheckbox.dataset.script = script;
+      if (isAlwaysPermitted) {
+        scriptCheckbox.checked = true;
+        scriptCheckbox.disabled = true;
+      } else {
+        scriptCheckbox.addEventListener('change', () => handleCheckboxChange(scriptCheckbox));
+      }
+      scriptLabel.appendChild(scriptCheckbox);
+      scriptLabel.appendChild(document.createTextNode(' ' + script));
+      if (isAlwaysPermitted) {
+        const badge = document.createElement('span');
+        badge.className = 'always-permitted-label';
+        badge.textContent = ' (always permitted)';
+        scriptLabel.appendChild(badge);
+      }
+      scriptsTd.appendChild(scriptLabel);
     });
+    tr.appendChild(scriptsTd);
+    tbody.appendChild(tr);
+  });
 
-    languageNode.appendChild(languageChildren);
-  }
-
-  toggleable.forEach(lang => appendLanguage(lang, true));
+  table.appendChild(tbody);
+  container.appendChild(table);
 
   const separator = document.createElement('div');
   separator.className = 'latin-only-separator';
@@ -256,136 +305,47 @@ function buildScriptTree() {
   latinContainer.appendChild(latinList);
 }
 
-function createTreeNode(label, data, type, showBadge = true) {
-  const node = document.createElement('div');
-  node.className = `tree-node ${type}`;
-
-  const toggle = document.createElement('span');
-  toggle.className = 'tree-toggle';
-  if (type === 'language') {
-    toggle.textContent = '▼';
-    toggle.addEventListener('click', () => toggleNode(node));
-  } else if (type === 'script') {
-    toggle.textContent = '•';
-  }
-
-  const checkbox = document.createElement('span');
-  checkbox.className = 'tree-checkbox';
-  const input = document.createElement('input');
-  input.type = 'checkbox';
-  input.dataset.label = label;
-  input.dataset.type = type;
-  if (data) {
-    if (Array.isArray(data)) {
-      input.dataset.scripts = JSON.stringify(data);
-    } else {
-      input.dataset.script = data;
-    }
-  }
-  const isAlwaysPermitted = type === 'script'
-    ? ALWAYS_PERMITTED.has(data)
-    : Array.isArray(data) && data.every(s => ALWAYS_PERMITTED.has(s));
-
-  if (isAlwaysPermitted) {
-    input.checked = true;
-    input.disabled = true;
-    node.classList.add('always-permitted');
-  } else {
-    input.addEventListener('change', () => handleCheckboxChange(input));
-  }
-  checkbox.appendChild(input);
-
-  const text = document.createElement('span');
-  text.textContent = label;
-
-  node.appendChild(toggle);
-  node.appendChild(checkbox);
-  node.appendChild(text);
-
-  if (isAlwaysPermitted && showBadge) {
-    const badge = document.createElement('span');
-    badge.className = 'always-permitted-label';
-    badge.textContent = 'always permitted';
-    node.appendChild(badge);
-  }
-
-  return node;
-}
-
-function toggleNode(node) {
-  const children = node.querySelector('.tree-children');
-  const toggle = node.querySelector('.tree-toggle');
-
-  if (children.classList.contains('expanded')) {
-    children.classList.remove('expanded');
-    toggle.textContent = '▶';
-  } else {
-    children.classList.add('expanded');
-    toggle.textContent = '▼';
-  }
-  updateTreeControls();
-}
-
-function updateTreeControls() {
-  const allChildren = Array.from(document.querySelectorAll('.tree-node.language .tree-children'));
-  const expandedCount = allChildren.filter(c => c.classList.contains('expanded')).length;
-  const total = allChildren.length;
-
-  document.getElementById('collapse-all').style.display = expandedCount > 0 ? '' : 'none';
-  document.getElementById('expand-all').style.display   = expandedCount < total ? '' : 'none';
-}
-
 function handleCheckboxChange(checkbox) {
   const type = checkbox.dataset.type;
   const checked = checkbox.checked;
+  const row = checkbox.closest('tr');
 
   if (type === 'language') {
-    const languageNode = checkbox.closest('.tree-node');
-    const scriptCheckboxes = languageNode.querySelectorAll('.tree-node.script input[type="checkbox"]');
-
-    scriptCheckboxes.forEach(scriptCheckbox => {
-      scriptCheckbox.checked = checked;
-      updateScriptState(scriptCheckbox.dataset.script, checked);
-      propagateScriptChange(scriptCheckbox.dataset.script, checked, languageNode);
+    row.querySelectorAll('input[data-type="script"]').forEach(scriptCheckbox => {
+      if (!scriptCheckbox.disabled) {
+        scriptCheckbox.checked = checked;
+        updateScriptState(scriptCheckbox.dataset.script, checked);
+        propagateScriptChange(scriptCheckbox.dataset.script, checked, row);
+      }
     });
-
-    updateLanguageState(languageNode);
+    updateLanguageState(row);
   } else if (type === 'script') {
-    const script = checkbox.dataset.script;
-    const languageNode = checkbox.closest('.tree-node.language');
-
-    updateScriptState(script, checked);
-    updateLanguageState(languageNode);
-    propagateScriptChange(script, checked, languageNode);
+    updateScriptState(checkbox.dataset.script, checked);
+    updateLanguageState(row);
+    propagateScriptChange(checkbox.dataset.script, checked, row);
   }
 
-  // Changes are held in memory until the user clicks Apply
   markDirty();
 }
 
-function propagateScriptChange(script, checked, originLanguageNode) {
-  const otherLanguages = SCRIPT_TO_LANGUAGES[script] || [];
-
-  otherLanguages.forEach(otherLang => {
-    const otherLangNode = findLanguageNode(otherLang);
-    if (otherLangNode && otherLangNode !== originLanguageNode) {
-      const otherScriptCheckbox = otherLangNode.querySelector(`.tree-node.script input[data-script="${script}"]`);
+// When a script checkbox changes, sync the same script checkbox in any other language row that shares it.
+// E.g. enabling Han for Japanese should also check Han for Korean and Chinese.
+function propagateScriptChange(script, checked, originRow) {
+  (SCRIPT_TO_LANGUAGES[script] || []).forEach(otherLang => {
+    const otherRow = findLanguageRow(otherLang);
+    if (otherRow && otherRow !== originRow) {
+      const otherScriptCheckbox = otherRow.querySelector(`input[data-script="${script}"]`);
       if (otherScriptCheckbox && otherScriptCheckbox.checked !== checked) {
         otherScriptCheckbox.checked = checked;
-        updateLanguageState(otherLangNode);
+        updateLanguageState(otherRow);
       }
     }
   });
 }
 
-function findLanguageNode(languageLabel) {
-  const allLanguageInputs = document.querySelectorAll('.tree-node.language input[data-type="language"]');
-  for (let input of allLanguageInputs) {
-    if (input.dataset.label === languageLabel) {
-      return input.closest('.tree-node.language');
-    }
-  }
-  return null;
+function findLanguageRow(languageLabel) {
+  // querySelectorAll attribute values are quoted so parentheses in language names (e.g. "Mongolian (Cyrillic)") are safe
+  return document.querySelector(`tr[data-language="${languageLabel}"]`);
 }
 
 function updateScriptState(script, enabled) {
@@ -396,38 +356,34 @@ function updateScriptState(script, enabled) {
   }
 }
 
-function updateLanguageState(languageNode) {
-  const scriptCheckboxes = languageNode.querySelectorAll('.tree-node.script input[type="checkbox"]');
-  const languageCheckbox = languageNode.querySelector('input[type="checkbox"]');
-  const checkboxContainer = languageNode.querySelector('.tree-checkbox');
+function updateLanguageState(row) {
+  const langCheckbox = row.querySelector('input[data-type="language"]');
+  if (!langCheckbox || langCheckbox.disabled) return;
 
-  if (languageCheckbox.disabled) return;
+  const scriptCheckboxes = Array.from(row.querySelectorAll('input[data-type="script"]')).filter(cb => !cb.disabled);
+  const checkedCount = scriptCheckboxes.filter(cb => cb.checked).length;
 
-  const toggleableCheckboxes = Array.from(scriptCheckboxes).filter(cb => !cb.disabled);
-  const checkedScripts = toggleableCheckboxes.filter(cb => cb.checked).length;
-
-  checkboxContainer.classList.remove('partial');
-
-  if (checkedScripts === 0) {
-    languageCheckbox.checked = false;
-    languageCheckbox.indeterminate = false;
-  } else if (checkedScripts === toggleableCheckboxes.length) {
-    languageCheckbox.checked = true;
-    languageCheckbox.indeterminate = false;
+  if (checkedCount === 0) {
+    langCheckbox.checked = false;
+    langCheckbox.indeterminate = false;
+  } else if (checkedCount === scriptCheckboxes.length) {
+    langCheckbox.checked = true;
+    langCheckbox.indeterminate = false;
   } else {
-    languageCheckbox.checked = false;
-    languageCheckbox.indeterminate = true;
-    checkboxContainer.classList.add('partial');
+    // Some but not all scripts checked — show indeterminate state
+    langCheckbox.checked = false;
+    langCheckbox.indeterminate = true;
   }
 }
 
-function updateTreeState() {
-  document.querySelectorAll('.tree-node.script input[type="checkbox"]').forEach(checkbox => {
-    checkbox.checked = additionalScripts.has(checkbox.dataset.script);
+function updateTableState() {
+  document.querySelectorAll('input[data-type="script"]').forEach(checkbox => {
+    if (!checkbox.disabled) {
+      checkbox.checked = additionalScripts.has(checkbox.dataset.script);
+    }
   });
-
-  document.querySelectorAll('.tree-node.language').forEach(languageNode => {
-    updateLanguageState(languageNode);
+  document.querySelectorAll('tr[data-language]').forEach(row => {
+    updateLanguageState(row);
   });
 }
 
@@ -440,30 +396,10 @@ function removeFromWhitelist(domain) {
 }
 
 function setupEventListeners() {
-  document.getElementById('collapse-all').addEventListener('click', () => {
-    document.querySelectorAll('.tree-node.language').forEach(langNode => {
-      const children = langNode.querySelector('.tree-children');
-      if (children) children.classList.remove('expanded');
-      const toggle = langNode.querySelector('.tree-toggle');
-      if (toggle) toggle.textContent = '▶';
-    });
-    updateTreeControls();
-  });
-
-  document.getElementById('expand-all').addEventListener('click', () => {
-    document.querySelectorAll('.tree-node.language').forEach(langNode => {
-      const children = langNode.querySelector('.tree-children');
-      if (children) children.classList.add('expanded');
-      const toggle = langNode.querySelector('.tree-toggle');
-      if (toggle) toggle.textContent = '▼';
-    });
-    updateTreeControls();
-  });
-
   // Reset clears scripts in memory only — still requires Apply to take effect
   document.getElementById('reset-scripts').addEventListener('click', () => {
     additionalScripts.clear();
-    updateTreeState();
+    updateTableState();
     markDirty();
   });
 

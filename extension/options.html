@@ -88,89 +88,52 @@
       border-radius: 4px;
       background: white;
     }
+    .script-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .script-table th {
+      text-align: left;
+      padding: 8px 12px;
+      background: #f8f8f8;
+      border-bottom: 1px solid #ddd;
+      font-size: 13px;
+      color: #555;
+    }
+    .script-table td {
+      padding: 5px 12px;
+      border-bottom: 1px solid #eee;
+      vertical-align: middle;
+    }
+    .script-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+    .script-table tbody tr:hover td {
+      background: #f5f5f5;
+    }
+    .lang-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+    .script-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-right: 16px;
+      cursor: pointer;
+    }
+    .always-permitted-label {
+      font-size: 11px;
+      color: #999;
+      font-style: italic;
+    }
     .latin-only-list {
       padding: 8px 12px;
       color: #666;
       font-size: 14px;
       line-height: 1.8;
-    }
-    .tree-node {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      padding: 4px 8px;
-      cursor: pointer;
-    }
-    .tree-node:hover {
-      background: #f5f5f5;
-    }
-    .tree-node.language {
-      font-weight: bold;
-      background: #f8f8f8;
-      border-bottom: 1px solid #eee;
-    }
-    .tree-node.script {
-      padding-left: 32px;
-      font-weight: normal;
-    }
-    .tree-toggle {
-      width: 16px;
-      height: 16px;
-      margin-right: 8px;
-      cursor: pointer;
-      display: inline-block;
-      text-align: center;
-      line-height: 16px;
-      font-size: 12px;
-      color: #666;
-    }
-    .tree-checkbox {
-      margin-right: 8px;
-    }
-    .tree-checkbox input[type="checkbox"]:indeterminate {
-      background: #ccc;
-      border-radius: 2px;
-    }
-    .tree-checkbox.partial {
-      background: #ccc;
-      border-radius: 2px;
-      padding: 2px;
-    }
-    .tree-checkbox.partial input[type="checkbox"] {
-      opacity: 0.5;
-    }
-    .tree-children {
-      display: none;
-      flex-basis: 100%;
-    }
-    .tree-children.expanded {
-      display: block;
-    }
-    .tree-controls {
-      margin-top: 10px;
-      margin-bottom: 10px;
-      text-align: center;
-    }
-    .tree-controls button {
-      margin: 0 5px;
-      padding: 6px 12px;
-      background: #2196f3;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    .tree-controls button:hover {
-      background: #1976d2;
-    }
-    .always-permitted input[type="checkbox"] {
-      cursor: not-allowed;
-    }
-    .always-permitted-label {
-      font-size: 11px;
-      color: #999;
-      margin-left: 6px;
-      font-style: italic;
     }
     .latin-only-separator {
       padding: 8px 12px 10px 12px;
@@ -179,17 +142,29 @@
       font-weight: bold;
       color: #333;
     }
+    .script-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 10px 0;
+    }
+    #reset-scripts {
+      padding: 6px 12px;
+      background: #2196f3;
+      color: white;
+    }
+    #reset-scripts:hover {
+      background: #1976d2;
+    }
     .apply-controls {
       display: flex;
       align-items: center;
-      justify-content: flex-end;
       gap: 10px;
     }
     .unsaved-indicator {
       font-size: 13px;
       color: #f57c00;
       font-style: italic;
-      margin-right: auto;
     }
     .apply-btn {
       background: #4caf50;
@@ -223,27 +198,22 @@
   <div class="section">
     <h2>Permitted Scripts</h2>
     <p>Configure which Unicode scripts are permitted beyond your locale defaults. Check individual scripts or entire languages.</p>
-    
+
     <div id="script-tree" class="script-tree">
-      <!-- Toggleable tree populated by JavaScript -->
+      <!-- 2-column table populated by JavaScript -->
     </div>
 
-    <div class="tree-controls">
-      <button id="collapse-all">Collapse All</button>
-      <button id="expand-all">Expand All</button>
+    <div class="script-controls">
       <button id="reset-scripts">Reset to Defaults</button>
+      <div class="apply-controls">
+        <span id="unsaved-indicator" class="unsaved-indicator" style="display:none">Unsaved changes</span>
+        <button id="discard-btn" class="discard-btn">Discard Changes</button>
+        <button id="apply-btn" class="apply-btn">Apply Changes</button>
+      </div>
     </div>
 
     <div id="latin-section" class="script-tree">
       <!-- Always-permitted Latin languages populated by JavaScript -->
-    </div>
-  </div>
-
-  <div class="section">
-    <div class="apply-controls">
-      <span id="unsaved-indicator" class="unsaved-indicator" style="display:none">Unsaved changes</span>
-      <button id="discard-btn" class="discard-btn">Discard Changes</button>
-      <button id="apply-btn" class="apply-btn">Apply Changes</button>
     </div>
   </div>
 
