@@ -132,6 +132,34 @@ function markDirty() {
   document.getElementById('unsaved-indicator').style.display = '';
 }
 
+// Convert a Unicode domain back to its punycode (ACE) form.
+// The URL constructor handles IDN encoding natively.
+function encodeToPunycode(unicodeDomain) {
+  try {
+    return new URL('http://' + unicodeDomain).hostname;
+  } catch (e) {
+    return unicodeDomain;
+  }
+}
+
+// Return the non-Latin/Common/Inherited characters in a domain,
+// using the same detection logic as blocked.js and background.js.
+function getOffendingChars(unicodeDomain) {
+  const alwaysPermitted = new Set(['Common', 'Inherited', 'Latin']);
+  const chars = [];
+  const seen = new Set();
+  for (const char of unicodeDomain) {
+    if (!seen.has(char)) {
+      const s = getCharScript(char);
+      if (s && !alwaysPermitted.has(s)) {
+        chars.push({ char, script: s });
+        seen.add(char);
+      }
+    }
+  }
+  return chars;
+}
+
 function renderWhitelist() {
   const container = document.getElementById('whitelist');
   container.innerHTML = '';
@@ -142,19 +170,48 @@ function renderWhitelist() {
   }
 
   whitelist.forEach(domain => {
+    const punycode = encodeToPunycode(domain);
+    const offending = getOffendingChars(domain);
+    const offendingSet = new Set(offending.map(o => o.char));
+
+    // Highlight offending characters in the Unicode domain display
+    const highlightedDomain = [...domain].map(char =>
+      offendingSet.has(char)
+        ? `<span class="offending-char-glyph">${char}</span>`
+        : char
+    ).join('');
+
+    // Build the offending characters table rows
+    const rows = offending.map(({ char, script: s }) => {
+      const codepoint = `U+${char.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')}`;
+      return `<tr><td class="offending-char-glyph">${char}</td><td>${codepoint}</td><td>${s}</td></tr>`;
+    }).join('');
+
     const item = document.createElement('div');
     item.className = 'whitelist-item';
-    item.innerHTML = `
-      <span>${domain}</span>
-      <button class="remove-btn" data-domain="${domain}">Remove</button>
-    `;
-    container.appendChild(item);
-  });
 
-  document.querySelectorAll('.remove-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      removeFromWhitelist(e.target.dataset.domain);
-    });
+    const info = document.createElement('div');
+    info.className = 'whitelist-info';
+    info.innerHTML = `
+      <div><strong>Unicode Domain:</strong> <span class="whitelist-unicode-domain">${highlightedDomain}</span></div>
+      <div><strong>Punycode:</strong> <span class="whitelist-punycode">${punycode}</span></div>
+      ${offending.length > 0 ? `
+      <table class="offending-chars-table">
+        <thead><tr><th>Character</th><th>Codepoint</th><th>Script</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>` : ''}
+    `;
+
+    // Use a closure over domain rather than a data attribute to avoid encoding issues
+    // with Unicode characters in HTML attributes.
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'remove-btn';
+    removeBtn.textContent = 'Remove';
+    removeBtn.addEventListener('click', () => removeFromWhitelist(domain));
+
+    item.appendChild(info);
+    item.appendChild(removeBtn);
+    container.appendChild(item);
   });
 }
 
