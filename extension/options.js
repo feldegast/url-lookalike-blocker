@@ -260,6 +260,19 @@ function buildScriptTable() {
   const table = document.createElement('table');
   table.className = 'script-table';
 
+  // Fix column widths so all 3 script columns are equal regardless of content.
+  // 40% for the language column, remaining 60% split evenly across script columns.
+  const colgroup = document.createElement('colgroup');
+  const langCol = document.createElement('col');
+  langCol.style.width = '40%';
+  colgroup.appendChild(langCol);
+  for (let i = 0; i < MAX_SCRIPTS; i++) {
+    const scriptCol = document.createElement('col');
+    scriptCol.style.width = `${60 / MAX_SCRIPTS}%`;
+    colgroup.appendChild(scriptCol);
+  }
+  table.appendChild(colgroup);
+
   const thead = document.createElement('thead');
   thead.innerHTML = `<tr><th>Language</th><th colspan="${MAX_SCRIPTS}">Scripts</th></tr>`;
   table.appendChild(thead);
