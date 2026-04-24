@@ -156,8 +156,8 @@ const LOCALE_SCRIPTS_MAP = {
   'pa': ['Gurmukhi'],                           // Punjabi (Gurmukhi script)
   'pa-IN': ['Gurmukhi'],                        // Punjabi (India)
   'pa-PK': ['Arabic'],                          // Punjabi (Pakistan) - uses Arabic
-  'or': ['Odia'],                               // Odia/Oriya
-  'or-IN': ['Odia'],                            // Odia (India)
+  'or': ['Oriya'],                              // Odia/Oriya (JS Unicode property name is Oriya)
+  'or-IN': ['Oriya'],                           // Odia (India)
   'si': ['Sinhala'],                            // Sinhala (Sinhalese)
   'si-LK': ['Sinhala'],                         // Sinhala (Sri Lanka)
 
@@ -215,31 +215,31 @@ const LOCALE_SCRIPTS_MAP = {
  * Note: Always append Common, Inherited, Latin to the result in calling code.
  */
 function getScriptsForLocale(locale) {
-  // Normalize to lowercase
-  const normalizedLocale = locale.toLowerCase();
+  // Try exact match first (BCP 47 conventional casing: en-US, zh-TW, sr-Cyrl)
+  if (LOCALE_SCRIPTS_MAP[locale]) {
+    return LOCALE_SCRIPTS_MAP[locale];
+  }
 
-  // Try exact match first
-  if (LOCALE_SCRIPTS_MAP[normalizedLocale]) {
-    return LOCALE_SCRIPTS_MAP[normalizedLocale];
+  // Try all-lowercase (handles browsers that send lowercase locale codes)
+  const lowerLocale = locale.toLowerCase();
+  if (LOCALE_SCRIPTS_MAP[lowerLocale]) {
+    return LOCALE_SCRIPTS_MAP[lowerLocale];
   }
 
   // Try language-only code (before first hyphen)
-  const languageOnly = normalizedLocale.split('-')[0];
+  const languageOnly = lowerLocale.split('-')[0];
   if (LOCALE_SCRIPTS_MAP[languageOnly]) {
     return LOCALE_SCRIPTS_MAP[languageOnly];
   }
 
   // Try to extract language from script tag (if present)
   // e.g., 'zh-Hans-CN' -> try 'zh-CN' or 'zh'
-  const parts = normalizedLocale.split('-');
-  if (parts.length > 1) {
-    // Common pattern: lang-Script-Region
-    // Try lang-Region by skipping the middle part if it looks like a script
-    if (parts.length >= 3 && /^[A-Z][a-z]{3}$/.test(parts[1])) {
-      const langAndRegion = parts[0] + '-' + parts[2];
-      if (LOCALE_SCRIPTS_MAP[langAndRegion]) {
-        return LOCALE_SCRIPTS_MAP[langAndRegion];
-      }
+  const parts = lowerLocale.split('-');
+  if (parts.length >= 3) {
+    // Common pattern: lang-Script-Region — skip the middle script subtag
+    const langAndRegion = parts[0] + '-' + parts[2].toUpperCase();
+    if (LOCALE_SCRIPTS_MAP[langAndRegion]) {
+      return LOCALE_SCRIPTS_MAP[langAndRegion];
     }
   }
 
@@ -327,7 +327,7 @@ const KNOWN_SCRIPTS = [
   'Common', 'Inherited', 'Latin', 'Cyrillic', 'Greek', 'Arabic', 'Hebrew', 'Han',
   'Hiragana', 'Katakana', 'Hangul', 'Thai', 'Lao', 'Khmer', 'Myanmar', 'Georgian',
   'Armenian', 'Tamil', 'Telugu', 'Kannada', 'Malayalam', 'Devanagari', 'Bengali',
-  'Gujarati', 'Gurmukhi', 'Odia', 'Sinhala', 'Mongolian', 'Tibetan', 'Thaana',
+  'Gujarati', 'Gurmukhi', 'Oriya', 'Sinhala', 'Mongolian', 'Tibetan', 'Thaana',
   'Canadian_Aboriginal', 'Cherokee'
   // Add more if needed, but this covers the mapped ones
 ];
@@ -541,6 +541,7 @@ if (typeof module !== 'undefined' && module.exports) {
     getCharScript,
     isHostnameAllowed,
     decodeHostname,
+    getConfusableChars,
     runTests
   };
 }
