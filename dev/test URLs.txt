@@ -6,7 +6,7 @@
 # [FULL FLOW]      = real site exists; can test the full block -> allow -> navigate flow.
 
 # --- CYRILLIC ---
-# "apple.com" with Cyrillic characters
+# "apple.com" with Cyrillic characters - test both for is NOT LATIN and is CONFUSIBLE when cerylic is allowed
 https://www.xn--80ak6aa92e.com/
 
 # --- JAPANESE (Han + Hiragana + Katakana) ---
@@ -77,6 +77,48 @@ https://xn--yah-czca.com/
 
 # Greek 'ν' (U+03BD) replacing 'n' in nvidia.com  →  νvidia.com
 https://xn--vidia-ece.com/
+
+
+🌏 Example URLs by Script
+East Asian
+Chinese (Han): https://例子.测试/路径
+Japanese (mixed): https://例え.テスト/パス
+Korean (Hangul): https://예제.테스트/경로
+South & Southeast Asian
+Devanagari: https://उदाहरण.परीक्षा/मार्ग
+Bengali: https://উদাহরণ.পরীক্ষা/পথ
+Gujarati: https://ઉદાહરણ.પરીક્ષણ/માર્ગ
+Gurmukhi: https://ਉਦਾਹਰਨ.ਪਰੀਖਿਆ/ਰਾਹ
+Tamil: https://உதாரணம்.சோதனை/பாதை
+Telugu: https://ఉదాహరణ.పరీక్ష/మార్గం
+Kannada: https://ಉದಾಹರಣೆ.ಪರೀಕ್ಷೆ/ಮಾರ್ಗ
+Malayalam: https://ഉദാഹരണം.പരിശോധന/പാത
+Sinhala: https://උදාහරණ.පරීක්ෂණ/මාර්ගය
+Thai: https://ตัวอย่าง.ทดสอบ/เส้นทาง
+Lao: https://ຕົວຢ່າງ.ທົດສອບ/ເສັ້ນທາງ
+Khmer: https://ឧទាហរណ៍.សាកល្បង/ផ្លូវ
+Myanmar: https://ဥပမာ.စမ်းသပ်/လမ်း
+Middle Eastern & Central Asian
+Arabic: https://مثال.اختبار/مسار
+Hebrew: https://דוגמה.בדיקה/נתיב
+Syriac: https://ܡܬܠܐ.ܒܘܚܢܐ/ܐܘܪܚܐ
+Thaana: https://މިސާލު.އިމްތިޙާން/މަގު
+N’Ko: https://ߡߊ߬ߛߊ߬ߟߌ.ߛߐ߬ߞߐ߲/ߞߊ߲߬ߘߊ
+European (non-Latin)
+Cyrillic: https://пример.испытание/путь
+Greek: https://παράδειγμα.δοκιμή/διαδρομή
+Armenian: https://օրինակ.փորձարկում/ուղի
+Georgian: https://მაგალითი.ტესტი/გზა
+African Scripts
+Ethiopic (Ge’ez): https://ምሳሌ.ሙከራ/መንገድ
+Tifinagh: https://ⴰⵎⴰⵣⵉⵖ.ⵜⴰⵙⴰⵔⵓⵜ/ⴰⴱⵔⵉⴷ
+Vai: https://ꕙꔤ.ꕮꕱ/ꕉꔤ
+Osmanya: https://𐒖𐒘𐒑𐒖.𐒙𐒖𐒚/𐒖𐒘
+Indigenous & Other
+Canadian Aboriginal Syllabics: https://ᐊᐃᐧᐁᐤ.ᑎᐱ/ᒪᓯᓐ
+Cherokee: https://ᎠᏓᎨᏫ.ᎤᏬᏂ/ᎧᎾ
+Mongolian (traditional): https://ᠮᠢᠰᠠᠯ.ᠲᠤᠷᠪᠠ/ᠵᠠᠮ
+Tibetan: https://དཔེར་ན.ཚོད་ལྟ/ལམ
 
 # --- SHOULD BE ALLOWED (Latin only) ---
 # Standard ASCII domains — must never be blocked [FULL FLOW]

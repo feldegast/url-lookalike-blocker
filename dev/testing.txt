@@ -1,0 +1,22 @@
+● You've got a solid test file already. Based on the options page changes made today, here's a structured sequence to
+  cover everything:
+
+  Blocking detection
+  - Run a few from each script group (Cyrillic, Greek, Japanese, Chinese) — confirm the block page shows the correct
+  Unicode domain, punycode, and character table
+
+  Options page — scripts
+  - Enable a script (e.g. Cyrillic), visit a Cyrillic URL — confirm it passes through
+  - Disable it again, revisit — confirm it blocks again
+  - Enable all 3 Japanese scripts via the language checkbox, check the indeterminate state appears when you uncheck one
+  - Check that enabling Han for Japanese also checks Han for Korean and Chinese (the cross-language propagation)
+  - Toggle everything back to default and confirm "Unsaved changes" disappears
+  - Click Reset to Defaults and confirm it clears correctly
+
+  Options page — whitelist
+  - Allow a domain from the blocked page, check it appears in the whitelist with punycode and character table
+  - Remove it from the whitelist, confirm "Unsaved changes" appears
+  - Apply and revisit the URL — confirm it blocks again
+
+  Always-allowed check
+  - Visit google.com and example.com — confirm they are never blocked

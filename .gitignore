@@ -2,3 +2,4 @@
 .vscode/
 CLAUDE.md
 url-lookalike-blocker.code-workspace
+node_modules/

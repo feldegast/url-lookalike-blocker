@@ -1,0 +1,11 @@
+{
+  "name": "url-lookalike-blocker",
+  "version": "1.0.0",
+  "description": "Unit tests for URL Lookalike Blocker extension core logic",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0"
+  }
+}
