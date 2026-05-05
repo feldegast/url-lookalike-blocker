@@ -1,0 +1,58 @@
+  URL: xn--r8jz45g.xn--zckzah                      
+  Enable this language: Japanese                   
+  Expected with language: ✓ pass (done)            
+  Expected with Latin only: blocked              
+  ────────────────────────────────────────      
+  URL: xn--ggle-0nd42c.com                         
+  Enable this language: Greek
+  Expected with language: ✓ pass                   
+  Expected with Latin only: blocked              
+  ────────────────────────────────────────         
+  URL: xn--4cabco7dq6a.com                         
+  Enable this language: Arabic
+  Expected with language: ✓ pass
+  Expected with Latin only: blocked
+  ────────────────────────────────────────
+  URL: xn--4db7d.com                               
+  Enable this language: Hebrew
+  Expected with language: ✓ pass                   
+  Expected with Latin only: blocked              
+  ────────────────────────────────────────
+  URL: xn--3e0b707e.com
+  Enable this language: Korean
+  Expected with language: ✓ pass
+  Expected with Latin only: blocked
+  ────────────────────────────────────────
+  URL: xn--o3cw4h.com                              
+  Enable this language: Thai
+  Expected with language: ✓ pass                   
+  Expected with Latin only: blocked              
+  ────────────────────────────────────────
+  URL: xn--h2brj9c.com                             
+  Enable this language: Hindi (Devanagari)
+  Expected with language: ✓ pass                   
+  Expected with Latin only: blocked              
+  ────────────────────────────────────────
+  URL: xn--node.com
+  Enable this language: Georgian
+  Expected with language: ✓ pass
+  Expected with Latin only: blocked
+  ────────────────────────────────────────
+  URL: xn--y9a3aq.com
+  Enable this language: Armenian
+  Expected with language: ✓ pass
+  Expected with Latin only: blocked
+  ────────────────────────────────────────
+  URL: xn--fiqs8s.com                              
+  Enable this language: Chinese
+  Expected with language: ✓ pass                   
+  Expected with Latin only: blocked              
+  ────────────────────────────────────────
+  URL: www.xn--80ak6aa92e.com                      
+  Enable this language: Russian (done)
+  Expected with language: ✓ pass (done)            
+  Expected with Latin only: blocked              
+
+  The mixed-script and homograph attack URLs at the
+   bottom should behave differently — we can
+  discuss those when you get to them.    

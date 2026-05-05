@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>URL Lookalike Blocker — Test URLs</title>
+  <style>
+    body { font-family: sans-serif; max-width: 700px; margin: 2rem auto; padding: 0 1rem; }
+    h1 { font-size: 1.2rem; }
+    h2 { font-size: 1rem; margin-top: 1.5rem; border-bottom: 1px solid #ccc; padding-bottom: 0.2rem; }
+    ul { list-style: none; padding: 0; }
+    li { margin: 0.3rem 0; }
+    a { font-family: monospace; font-size: 0.9rem; }
+    .tag { font-size: 0.75rem; color: #888; margin-left: 0.5rem; }
+    .allowed { color: green; }
+    .allowed .tag { color: #5a5; }
+  </style>
+</head>
+<body>
+  <h1>URL Lookalike Blocker — Test URLs</h1>
+  <p>Click a link to navigate. The extension should block all links unless marked <span class="allowed">ALLOWED</span>.</p>
+
+  <h2>Cyrillic</h2>
+  <ul>
+    <li><a href="https://www.xn--80ak6aa92e.com/" target="_blank">www.xn--80ak6aa92e.com</a><span class="tag">"apple.com" in Cyrillic [DETECTION ONLY]</span></li>
+    <li><a href="https://xn--pple-43d.com/" target="_blank">xn--pple-43d.com</a><span class="tag">аpple.com — Cyrillic 'а' [DETECTION ONLY]</span></li>
+    <li><a href="https://xn--googl-3we.com/" target="_blank">xn--googl-3we.com</a><span class="tag">googlе.com — Cyrillic 'е' [DETECTION ONLY]</span></li>
+    <li><a href="https://xn--aypal-uye.com/" target="_blank">xn--aypal-uye.com</a><span class="tag">рaypal.com — Cyrillic 'р' [DETECTION ONLY]</span></li>
+    <li><a href="https://xn--microsft-sbh.com/" target="_blank">xn--microsft-sbh.com</a><span class="tag">microsоft.com — Cyrillic 'о' [DETECTION ONLY]</span></li>
+    <li><a href="https://xn--mazon-3ve.com/" target="_blank">xn--mazon-3ve.com</a><span class="tag">аmazon.com — Cyrillic 'а' [DETECTION ONLY]</span></li>
+  </ul>
+
+  <h2>Greek</h2>
+  <ul>
+    <li><a href="https://xn--ggle-0nda.com/" target="_blank">xn--ggle-0nda.com</a><span class="tag">gοοgle.com — Greek 'ο' replacing both o's [DETECTION ONLY]</span></li>
+    <li><a href="https://xn--yah-czca.com/" target="_blank">xn--yah-czca.com</a><span class="tag">yahοο.com — Greek 'ο' [DETECTION ONLY]</span></li>
+    <li><a href="https://xn--vidia-ece.com/" target="_blank">xn--vidia-ece.com</a><span class="tag">νvidia.com — Greek 'ν' [DETECTION ONLY]</span></li>
+  </ul>
+
+  <h2>Japanese (Han + Hiragana + Katakana)</h2>
+  <ul>
+    <li><a href="https://xn--r8jz45g.xn--zckzah/" target="_blank">xn--r8jz45g.xn--zckzah</a><span class="tag">例え.テスト [DETECTION ONLY]</span></li>
+  </ul>
+
+  <h2>Arabic</h2>
+  <ul>
+    <li><span style="color:#aaa">xn--4cabco7dq6a.com</span><span class="tag">Decodes to Latin Extended (æùåöäéý) — correctly NOT blocked; needs a real Arabic test URL</span></li>
+  </ul>
+
+  <h2>Hebrew</h2>
+  <ul>
+    <li><a href="https://xn--4db7d.com/" target="_blank">xn--4db7d.com</a><span class="tag">Mixed Hebrew/Latin [DETECTION ONLY]</span></li>
+  </ul>
+
+  <h2>Korean (Hangul)</h2>
+  <ul>
+    <li><a href="https://xn--3e0b707e.com/" target="_blank">xn--3e0b707e.com</a><span class="tag">한국.com [DETECTION ONLY]</span></li>
+  </ul>
+
+  <h2>Thai</h2>
+  <ul>
+    <li><a href="https://xn--o3cw4h.com/" target="_blank">xn--o3cw4h.com</a><span class="tag">ไทย.com [DETECTION ONLY]</span></li>
+  </ul>
+
+  <h2>Devanagari (Hindi)</h2>
+  <ul>
+    <li><a href="https://xn--h2brj9c.com/" target="_blank">xn--h2brj9c.com</a><span class="tag">भारत.com [DETECTION ONLY]</span></li>
+  </ul>
+
+  <h2>Georgian</h2>
+  <ul>
+    <li><a href="https://xn--node.com/" target="_blank">xn--node.com</a><span class="tag">გე.com [DETECTION ONLY]</span></li>
+  </ul>
+
+  <h2>Armenian</h2>
+  <ul>
+    <li><a href="https://xn--y9a3aq.com/" target="_blank">xn--y9a3aq.com</a><span class="tag">հայ.com [DETECTION ONLY]</span></li>
+  </ul>
+
+  <h2>Chinese (Han)</h2>
+  <ul>
+    <li><a href="https://xn--fiqs8s.com/" target="_blank">xn--fiqs8s.com</a><span class="tag">中国.com [DETECTION ONLY]</span></li>
+  </ul>
+
+  <h2>Mixed Scripts</h2>
+  <ul>
+    <li><span style="color:#aaa">xn--e1afmapc.xn--e1afmapc.com</span><span class="tag">Decodes to pure Cyrillic (риммпе) — blocked, but not actually a mixed-script domain</span></li>
+  </ul>
+
+  <h2 class="allowed">Should be ALLOWED (Latin only)</h2>
+  <ul>
+    <li><a class="allowed" href="https://www.example.com/" target="_blank">www.example.com</a><span class="tag allowed">[FULL FLOW]</span></li>
+    <li><a class="allowed" href="https://www.google.com/" target="_blank">www.google.com</a><span class="tag allowed">[FULL FLOW]</span></li>
+  </ul>
+</body>
+</html>

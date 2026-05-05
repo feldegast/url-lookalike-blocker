@@ -488,17 +488,25 @@ function adapt(delta, numpoints, first) {
  * @returns {string} Decoded hostname
  */
 function decodeHostname(url) {
+  let hostname;
   try {
-    let hostname = new URL(url).hostname;
-    // Decode each label separated by dots
+    hostname = new URL(url).hostname;
+  } catch (e) {
+    // Some IDN hostnames fail IDNA validation in the URL parser (e.g. mixed-script
+    // domains like xn--ggle-0nd42c.com). Fall back to regex extraction so we still
+    // scan the raw punycode labels rather than passing the URL through unblocked.
+    const match = url.match(/^[a-z][a-z0-9+\-.]*:\/\/([^/?#@]+)/i);
+    if (!match) return '';
+    hostname = match[1].replace(/:\d+$/, '');
+  }
+  try {
     return hostname.split('.').map(label => {
       if (label.toLowerCase().startsWith('xn--')) {
-        return decodePunycode(label.slice(4)); // Remove 'xn--' prefix
+        return decodePunycode(label.slice(4));
       }
       return label;
     }).join('.');
   } catch (e) {
-    // Invalid URL, return as-is or empty
     return '';
   }
 }

@@ -14,12 +14,13 @@ https://www.xn--80ak6aa92e.com/
 https://xn--r8jz45g.xn--zckzah/
 
 # --- GREEK ---
-# "google.com" with Greek 'ο' (U+03BF) replacing Latin 'o' [DETECTION ONLY]
-https://xn--ggle-0nd42c.com/
+# "google.com" with both 'o' replaced by Greek ο (U+03BF) → gοοgle.com [DETECTION ONLY]
+https://xn--ggle-0nda.com/
 
 # --- ARABIC ---
-# Mixed Arabic/Latin domain [DETECTION ONLY]
-https://xn--4cabco7dq6a.com/
+# NOTE: xn--4cabco7dq6a.com actually decodes to Latin Extended (æùåöäéý) — correctly NOT blocked.
+# Replace with a genuine Arabic-script domain when one is found.
+# https://xn--4cabco7dq6a.com/
 
 # --- HEBREW ---
 # Mixed Hebrew/Latin domain [DETECTION ONLY]
@@ -50,8 +51,9 @@ https://xn--y9a3aq.com/
 https://xn--fiqs8s.com/
 
 # --- MIXED SCRIPTS (multiple non-compliant) ---
-# Domain mixing Cyrillic and Greek — should flag both scripts [DETECTION ONLY]
-https://xn--e1afmapc.xn--e1afmapc.com/
+# NOTE: xn--e1afmapc.xn--e1afmapc.com decodes to pure Cyrillic (риммпе) — correctly blocked,
+# but the "Cyrillic + Greek" label was wrong. Replace with a genuine mixed-script domain.
+# https://xn--e1afmapc.xn--e1afmapc.com/
 
 # --- REALISTIC HOMOGRAPH ATTACKS (mixed Latin + one non-Latin character) ---
 # These are the most dangerous attacks — the domain looks almost identical to
