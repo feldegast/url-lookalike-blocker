@@ -145,15 +145,11 @@
       font-weight: bold;
       color: #333;
     }
-    .detection-note {
+    .scope-note {
       font-size: 13px;
       color: #666;
       font-style: italic;
       margin: 10px 0 0 0;
-    }
-    .confusable-example {
-      font-family: monospace;
-      font-style: normal;
     }
     .script-controls {
       display: flex;
@@ -216,7 +212,7 @@
       <!-- language table populated by JavaScript -->
     </div>
 
-    <p class="detection-note">Note: the extension detects single characters that visually resemble a different character (e.g. Cyrillic <span class="confusable-example">а</span> looking like Latin <span class="confusable-example">a</span>). It does not currently detect multi-character sequences that resemble a single character (e.g. <span class="confusable-example">rn</span>&nbsp;→&nbsp;<span class="confusable-example">m</span>, <span class="confusable-example">vv</span>&nbsp;→&nbsp;<span class="confusable-example">w</span>, <span class="confusable-example">cl</span>&nbsp;→&nbsp;<span class="confusable-example">d</span>).</p>
+    <p class="scope-note">This extension intercepts domain names that use characters from scripts not associated with your enabled languages, or that mix scripts in ways typical of lookalike spoofing attacks.</p>
 
     <div class="script-controls">
       <button id="reset-scripts">Disable All Languages</button>

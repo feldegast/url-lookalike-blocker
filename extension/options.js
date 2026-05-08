@@ -260,7 +260,7 @@ function buildLanguageTable() {
     scripts.forEach(script => {
       const tag = document.createElement('span');
       tag.className = ALWAYS_PERMITTED.has(script) ? 'script-tag always-permitted' : 'script-tag';
-      tag.textContent = script;
+      tag.textContent = script.replace(/_/g, ' ');
       scriptsTd.appendChild(tag);
     });
     tr.appendChild(scriptsTd);
