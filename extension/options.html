@@ -91,7 +91,6 @@
     .script-table {
       width: 100%;
       border-collapse: collapse;
-      table-layout: fixed;
     }
     .script-table th {
       text-align: left;
@@ -118,17 +117,20 @@
       gap: 6px;
       cursor: pointer;
     }
-    .script-label {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      margin-right: 16px;
-      cursor: pointer;
+    .script-tag {
+      display: inline-block;
+      font-size: 12px;
+      color: #555;
+      background: #f0f0f0;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      padding: 1px 6px;
+      margin-right: 4px;
     }
-    .always-permitted-label {
-      font-size: 11px;
+    .script-tag.always-permitted {
       color: #999;
-      font-style: italic;
+      background: #fafafa;
+      border-color: #e0e0e0;
     }
     .latin-only-list {
       padding: 8px 12px;
@@ -207,17 +209,17 @@
   </div>
 
   <div class="section">
-    <h2>Permitted Scripts</h2>
-    <p>Configure which Unicode scripts are permitted beyond your locale defaults. Check individual scripts or entire languages.</p>
+    <h2>Permitted Languages</h2>
+    <p>Select which languages are permitted beyond your locale defaults. Enabling a language allows its scripts in domain names and permits mixing those scripts within a single domain label.</p>
 
     <div id="script-tree" class="script-tree">
-      <!-- 2-column table populated by JavaScript -->
+      <!-- language table populated by JavaScript -->
     </div>
 
     <p class="detection-note">Note: the extension detects single characters that visually resemble a different character (e.g. Cyrillic <span class="confusable-example">а</span> looking like Latin <span class="confusable-example">a</span>). It does not currently detect multi-character sequences that resemble a single character (e.g. <span class="confusable-example">rn</span>&nbsp;→&nbsp;<span class="confusable-example">m</span>, <span class="confusable-example">vv</span>&nbsp;→&nbsp;<span class="confusable-example">w</span>, <span class="confusable-example">cl</span>&nbsp;→&nbsp;<span class="confusable-example">d</span>).</p>
 
     <div class="script-controls">
-      <button id="reset-scripts">Reset to Defaults</button>
+      <button id="reset-scripts">Disable All Languages</button>
       <div class="apply-controls">
         <span id="unsaved-indicator" class="unsaved-indicator" style="display:none">Unsaved changes</span>
         <button id="discard-btn" class="discard-btn">Discard Changes</button>

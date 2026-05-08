@@ -7,6 +7,8 @@ const {
   isHostnameAllowed,
   decodeHostname,
   getConfusableChars,
+  isSingleLocaleScriptMix,
+  getEnabledLangScriptSets,
 } = require('../extension/unicode-scripts.js');
 
 // ---------------------------------------------------------------------------
@@ -317,6 +319,131 @@ describe('isHostnameAllowed — per-script block/allow', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Previously-failing scripts: getCharScript returns correct script name
+// ---------------------------------------------------------------------------
+describe('getCharScript — previously failing scripts', () => {
+  test('Syriac letter ܡ returns Syriac',     () => expect(getCharScript('ܡ')).toBe('Syriac'));
+  test("N'Ko letter ߊ returns Nko",          () => expect(getCharScript('ߊ')).toBe('Nko'));
+  test('Ethiopic letter ም returns Ethiopic', () => expect(getCharScript('ም')).toBe('Ethiopic'));
+  test('Tifinagh letter ⴰ returns Tifinagh', () => expect(getCharScript('ⴰ')).toBe('Tifinagh'));
+  test('Vai letter ꕙ returns Vai',           () => expect(getCharScript('ꕙ')).toBe('Vai'));
+  test('Osmanya letter 𐒖 returns Osmanya',   () => expect(getCharScript('𐒖')).toBe('Osmanya'));
+});
+
+// ---------------------------------------------------------------------------
+// test-urls.html — every script blocked for English (Latin-only) locale
+// ---------------------------------------------------------------------------
+describe('test-urls.html — blocked for English', () => {
+  const en = getPermittedScripts(['en']);
+
+  const cases = [
+    // Cyrillic
+    ['Cyrillic example domain',       'https://пример.испытание/путь'],
+    ['Cyrillic homograph xn--',       'https://xn--pple-43d.com/'],
+    // Greek
+    ['Greek example domain',          'https://παράδειγμα.δοκιμή/διαδρομή'],
+    ['Greek homograph xn--',          'https://xn--ggle-0nda.com/'],
+    // Japanese
+    ['Japanese xn-- domain',          'https://xn--r8jz45g.xn--zckzah/'],
+    // Arabic
+    ['Arabic example domain',         'https://مثال.اختبار/مسار'],
+    // Hebrew
+    ['Hebrew example domain',         'https://דוגמה.בדיקה/נתיב'],
+    ['Hebrew xn-- domain',            'https://xn--4db7d.com/'],
+    // Korean
+    ['Korean example domain',         'https://예제.테스트/경로'],
+    ['Korean xn-- domain',            'https://xn--3e0b707e.com/'],
+    // Thai
+    ['Thai example domain',           'https://ตัวอย่าง.ทดสอบ/เส้นทาง'],
+    ['Thai xn-- domain',              'https://xn--o3cw4h.com/'],
+    // Devanagari
+    ['Devanagari example domain',     'https://उदाहरण.परीक्षा/मार्ग'],
+    ['Devanagari xn-- domain',        'https://xn--h2brj9c.com/'],
+    // Georgian
+    ['Georgian example domain',       'https://მაგალითი.ტესტი/გზა'],
+    ['Georgian xn-- domain',          'https://xn--node.com/'],
+    // Armenian
+    ['Armenian xn-- domain',          'https://xn--y9a3aq.com/'],
+    // Chinese
+    ['Chinese example domain',        'https://例子.测试/路径'],
+    ['Chinese xn-- domain',           'https://xn--fiqs8s.com/'],
+    // Bengali
+    ['Bengali example domain',        'https://উদাহরণ.পরীক্ষা/পথ'],
+    // Tamil
+    ['Tamil example domain',          'https://உதாரணம்.சோதனை/பாதை'],
+    // Lao
+    ['Lao example domain',            'https://ຕົວຢ່າງ.ທົດສອບ/ເສັ້ນທາງ'],
+    // Canadian Aboriginal
+    ['Canadian Aboriginal domain',    'https://ᐊᐃᐧᐁᐤ.ᑎᐱ/ᒪᓯᓐ'],
+    // Cherokee
+    ['Cherokee example domain',       'https://ᎠᏓᎨᏫ.ᎤᏬᏂ/ᎧᎾ'],
+    // Mongolian
+    ['Mongolian example domain',      'https://ᠮᠢᠰᠠᠯ.ᠲᠤᠷᠪᠠ/ᠵᠠᠮ'],
+    // Tibetan
+    ['Tibetan example domain',        'https://དཔེར་ན.ཚོད་ལྟ/ལམ'],
+    // Syriac (previously failing)
+    ['Syriac example domain',         'https://ܡܬܠܐ.ܒܘܚܢܐ/ܐܘܪܚܐ'],
+    ["N'Ko example domain",           'https://ߡߊ߬ߛߊ߬ߟߌ.ߛߐ߬ߞߐ߲/ߞߊ߲߬ߘߊ'],
+    // Ethiopic (previously failing)
+    ['Ethiopic example domain',       'https://ምሳሌ.ሙከራ/መንገድ'],
+    // Tifinagh (previously failing)
+    ['Tifinagh example domain',       'https://ⴰⵎⴰⵣⵉⵖ.ⵜⴰⵙⴰⵔⵓⵜ/ⴰⴱⵔⵉⴷ'],
+    // Vai (previously failing)
+    ['Vai example domain',            'https://ꕙꔤ.ꕮꕱ/ꕉꔤ'],
+    // Osmanya (previously failing)
+    ['Osmanya example domain',        'https://𐒖𐒘𐒑𐒖.𐒙𐒖𐒚/𐒖𐒘'],
+    // punycode-encoded forms of the previously failing URLs
+    ['N\'Ko xn-- encoded',            'https://xn--lsbag2dvai2fc.xn--rsba5an3eub/'],
+    ['Tifinagh xn-- encoded',         'https://xn--4lja9esa6b8d.xn--4lja9hdxqf/'],
+    ['Vai xn-- encoded',              'https://xn--io8ayd.xn--mq8ag/'],
+    ['Osmanya xn-- encoded',          'https://xn--hm8cjabg.xn--mm8cfe/'],
+  ];
+
+  cases.forEach(([label, url]) => {
+    test(`blocks ${label}`, () => {
+      const hostname = decodeHostname(url);
+      expect(hostname).not.toBe('');
+      expect(isHostnameAllowed(hostname, en).allowed).toBe(false);
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// test-urls.html — scripts allowed for their native locale
+// ---------------------------------------------------------------------------
+describe('test-urls.html — allowed for appropriate locale', () => {
+  const cases = [
+    ['Cyrillic for Russian (ru)',         'https://пример.испытание/',        'ru'],
+    ['Greek for Greek (el)',              'https://παράδειγμα.δοκιμή/',       'el'],
+    ['Japanese for Japanese (ja)',        'https://xn--r8jz45g.xn--zckzah/', 'ja'],
+    ['Arabic for Arabic (ar)',            'https://مثال.اختبار/',             'ar'],
+    ['Hebrew for Hebrew (he)',            'https://דוגמה.בדיקה/',             'he'],
+    ['Korean for Korean (ko)',            'https://예제.테스트/',              'ko'],
+    ['Thai for Thai (th)',                'https://ตัวอย่าง.ทดสอบ/',          'th'],
+    ['Devanagari for Hindi (hi)',         'https://उदाहरण.परीक्षा/',          'hi'],
+    ['Georgian for Georgian (ka)',        'https://მაგალითი.ტესტი/',          'ka'],
+    ['Armenian for Armenian (hy)',        'https://xn--y9a3aq.com/',          'hy'],
+    ['Han for Chinese (zh)',              'https://例子.测试/',                'zh'],
+    ['Bengali for Bengali (bn)',          'https://উদাহরণ.পরীক্ষা/',         'bn'],
+    ['Tamil for Tamil (ta)',              'https://உதாரணம்.சோதனை/',           'ta'],
+    ['Lao for Lao (lo)',                  'https://ຕົວຢ່າງ.ທົດສອບ/',          'lo'],
+    ['Canadian_Aboriginal for iu',        'https://ᐊᐃᐧᐁᐤ.ᑎᐱ/',              'iu'],
+    ['Cherokee for Cherokee (chr)',       'https://ᎠᏓᎨᏫ.ᎤᏬᏂ/',              'chr'],
+    ['Mongolian for Mongolian (mn-CN)',   'https://ᠮᠢᠰᠠᠯ.ᠲᠤᠷᠪᠠ/',            'mn-CN'],
+    ['Tibetan for Tibetan (bo)',          'https://དཔེར་ན.ཚོད་ལྟ/',            'bo'],
+  ];
+
+  cases.forEach(([label, url, locale]) => {
+    test(`allows ${label}`, () => {
+      const localeScripts = getPermittedScripts([locale]);
+      const hostname = decodeHostname(url);
+      expect(hostname).not.toBe('');
+      expect(isHostnameAllowed(hostname, localeScripts).allowed).toBe(true);
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Full-flow: test URLs from dev/test URLs.txt
 // ---------------------------------------------------------------------------
 describe('Full detection flow', () => {
@@ -353,5 +480,113 @@ describe('Full detection flow', () => {
       const hostname = decodeHostname(url);
       expect(isHostnameAllowed(hostname, englishScripts).allowed).toBe(true);
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// getEnabledLangScriptSets
+// ---------------------------------------------------------------------------
+describe('getEnabledLangScriptSets', () => {
+  test('English locale produces a set containing Latin', () => {
+    const sets = getEnabledLangScriptSets(['en'], []);
+    expect(sets.some(s => s.has('Latin'))).toBe(true);
+  });
+
+  test('Japanese locale produces a set containing Han, Hiragana, Katakana', () => {
+    const sets = getEnabledLangScriptSets(['ja'], []);
+    expect(sets.some(s => s.has('Han') && s.has('Hiragana') && s.has('Katakana'))).toBe(true);
+  });
+
+  test('additional lang scripts are included as sets', () => {
+    const sets = getEnabledLangScriptSets(['en'], [['Cyrillic', 'Latin']]);
+    expect(sets.some(s => s.has('Cyrillic') && s.has('Latin'))).toBe(true);
+  });
+
+  test('empty locales and empty additional produces empty array', () => {
+    expect(getEnabledLangScriptSets([], [])).toHaveLength(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// isSingleLocaleScriptMix
+// ---------------------------------------------------------------------------
+describe('isSingleLocaleScriptMix', () => {
+  const enOnly     = getEnabledLangScriptSets(['en'], []);
+  const jaLocale   = getEnabledLangScriptSets(['ja'], []);
+  const koLocale   = getEnabledLangScriptSets(['ko'], []);
+  const srLocale   = getEnabledLangScriptSets(['sr'], []);
+  const enPlusSr   = getEnabledLangScriptSets(['en'], [['Cyrillic', 'Latin']]);
+  const enPlusCyrl = getEnabledLangScriptSets(['en'], [['Cyrillic']]); // Russian added, not Serbian
+
+  test('single script returns true', () => {
+    expect(isSingleLocaleScriptMix(new Set(['Cyrillic']), enOnly)).toBe(true);
+  });
+
+  test('empty set returns true', () => {
+    expect(isSingleLocaleScriptMix(new Set(), enOnly)).toBe(true);
+  });
+
+  test('Common + Inherited only returns true', () => {
+    expect(isSingleLocaleScriptMix(new Set(['Common', 'Inherited']), enOnly)).toBe(true);
+  });
+
+  // Japanese: only allowed when Japanese is active (browser locale or explicitly enabled)
+  test('Han + Hiragana returns true for Japanese browser locale', () => {
+    expect(isSingleLocaleScriptMix(new Set(['Han', 'Hiragana']), jaLocale)).toBe(true);
+  });
+
+  test('Han + Hiragana returns false without Japanese locale', () => {
+    expect(isSingleLocaleScriptMix(new Set(['Han', 'Hiragana']), enOnly)).toBe(false);
+  });
+
+  test('Han + Hiragana + Katakana returns true for Japanese browser locale', () => {
+    expect(isSingleLocaleScriptMix(new Set(['Han', 'Hiragana', 'Katakana']), jaLocale)).toBe(true);
+  });
+
+  // Korean
+  test('Hangul + Han returns true for Korean browser locale', () => {
+    expect(isSingleLocaleScriptMix(new Set(['Hangul', 'Han']), koLocale)).toBe(true);
+  });
+
+  test('Hangul + Han returns false without Korean locale', () => {
+    expect(isSingleLocaleScriptMix(new Set(['Hangul', 'Han']), enOnly)).toBe(false);
+  });
+
+  // Serbian: Latin+Cyrillic requires Serbian to be explicitly enabled
+  test('Cyrillic + Latin returns false for English-only locale (no Serbian)', () => {
+    expect(isSingleLocaleScriptMix(new Set(['Cyrillic', 'Latin']), enOnly)).toBe(false);
+  });
+
+  test('Cyrillic + Latin returns false when only Cyrillic is additionally enabled (Russian, not Serbian)', () => {
+    expect(isSingleLocaleScriptMix(new Set(['Cyrillic', 'Latin']), enPlusCyrl)).toBe(false);
+  });
+
+  test('Cyrillic + Latin returns true for Serbian browser locale', () => {
+    expect(isSingleLocaleScriptMix(new Set(['Cyrillic', 'Latin']), srLocale)).toBe(true);
+  });
+
+  test('Cyrillic + Latin returns true when Serbian is explicitly enabled', () => {
+    expect(isSingleLocaleScriptMix(new Set(['Cyrillic', 'Latin']), enPlusSr)).toBe(true);
+  });
+
+  // Cross-locale mixes always false regardless of what is enabled
+  test('Latin + Hiragana returns false (no single locale covers both)', () => {
+    expect(isSingleLocaleScriptMix(new Set(['Latin', 'Hiragana']), jaLocale)).toBe(false);
+  });
+
+  test('Latin + Katakana returns false', () => {
+    expect(isSingleLocaleScriptMix(new Set(['Latin', 'Katakana']), jaLocale)).toBe(false);
+  });
+
+  test('Latin + Han returns false', () => {
+    expect(isSingleLocaleScriptMix(new Set(['Latin', 'Han']), jaLocale)).toBe(false);
+  });
+
+  test('Cyrillic + Greek returns false', () => {
+    expect(isSingleLocaleScriptMix(new Set(['Cyrillic', 'Greek']), enOnly)).toBe(false);
+  });
+
+  test('Greek + Arabic returns false', () => {
+    expect(isSingleLocaleScriptMix(new Set(['Greek', 'Arabic']), enOnly)).toBe(false);
   });
 });

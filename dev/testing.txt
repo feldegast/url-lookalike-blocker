@@ -1,4 +1,4 @@
-● You've got a solid test file already. Based on the options page changes made today, here's a structured sequence to
+i intend to use the ● You've got a solid test file already. Based on the options page changes made today, here's a structured sequence to
   cover everything:
 
   Blocking detection

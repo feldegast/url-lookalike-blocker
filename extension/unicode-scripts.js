@@ -321,15 +321,64 @@ function getConfusableChars(hostname) {
   return found;
 }
 
-// List of all Unicode scripts for character detection
-// This is a subset of known scripts; in practice, we only need to identify the ones that might be offending
+// Returns true if the set of scripts in a single domain label is covered by at
+// least one of the user's explicitly enabled language script-sets. Prevents
+// false-positive mixed-script warnings for languages like Japanese
+// (Han + Hiragana + Katakana) while still flagging cross-locale mixes like
+// Latin + Hiragana. enabledLangScriptSets comes from getEnabledLangScriptSets.
+function isSingleLocaleScriptMix(labelScripts, enabledLangScriptSets) {
+  const scripts = [...labelScripts].filter(s => s !== 'Common' && s !== 'Inherited');
+  if (scripts.length <= 1) return true;
+  for (const localeSet of enabledLangScriptSets) {
+    if (scripts.every(s => localeSet.has(s))) return true;
+  }
+  return false;
+}
+
+// Builds the list of script-sets that represent legitimate single-label script
+// combinations for the current user. One Set per locale/language: a label's
+// script mix is acceptable if every script in the label is present in at least
+// one of these sets.
+// locales       — BCP 47 codes from navigator.languages
+// additionalLangScripts — array of string arrays from explicitly enabled
+//                 languages in the options page, e.g. [['Cyrillic','Latin']]
+function getEnabledLangScriptSets(locales, additionalLangScripts) {
+  const sets = [];
+  for (const locale of (locales || [])) {
+    sets.push(new Set(getScriptsForLocale(locale)));
+  }
+  for (const scripts of (additionalLangScripts || [])) {
+    sets.push(new Set(scripts));
+  }
+  return sets;
+}
+
+// List of Unicode scripts for character detection.
+// Always-permitted scripts are listed first so getCharScript returns early for
+// the most common case (ASCII / Latin characters on Latin-locale hostnames).
 const KNOWN_SCRIPTS = [
-  'Common', 'Inherited', 'Latin', 'Cyrillic', 'Greek', 'Arabic', 'Hebrew', 'Han',
-  'Hiragana', 'Katakana', 'Hangul', 'Thai', 'Lao', 'Khmer', 'Myanmar', 'Georgian',
-  'Armenian', 'Tamil', 'Telugu', 'Kannada', 'Malayalam', 'Devanagari', 'Bengali',
-  'Gujarati', 'Gurmukhi', 'Oriya', 'Sinhala', 'Mongolian', 'Tibetan', 'Thaana',
-  'Canadian_Aboriginal', 'Cherokee'
-  // Add more if needed, but this covers the mapped ones
+  'Common', 'Inherited', 'Latin',
+  // High-traffic scripts
+  'Cyrillic', 'Greek', 'Arabic', 'Hebrew', 'Han',
+  'Hiragana', 'Katakana', 'Hangul', 'Thai', 'Devanagari',
+  // Other scripts present in the locale map
+  'Lao', 'Khmer', 'Myanmar', 'Georgian', 'Armenian',
+  'Tamil', 'Telugu', 'Kannada', 'Malayalam', 'Bengali',
+  'Gujarati', 'Gurmukhi', 'Oriya', 'Sinhala', 'Mongolian',
+  'Tibetan', 'Thaana', 'Canadian_Aboriginal', 'Cherokee',
+  // Extended: scripts used in actual IDN registrations
+  'Ethiopic', 'Syriac', 'Nko', 'Tifinagh', 'Vai', 'Osmanya',
+  'Adlam', 'Bamum', 'Balinese', 'Batak', 'Bopomofo',
+  'Buginese', 'Buhid', 'Cham', 'Coptic', 'Glagolitic',
+  'Hanunoo', 'Javanese', 'Kayah_Li', 'Lisu', 'Mandaic',
+  'Meetei_Mayek', 'Miao', 'New_Tai_Lue', 'Newa', 'Nushu',
+  'Ogham', 'Ol_Chiki', 'Osage', 'Pahawh_Hmong', 'Phags_Pa',
+  'Rejang', 'Runic', 'Samaritan', 'Saurashtra', 'Sharada',
+  'Shavian', 'Sundanese', 'Syloti_Nagri', 'Tagalog', 'Tagbanwa',
+  'Tai_Le', 'Tai_Tham', 'Tai_Viet', 'Takri', 'Tirhuta',
+  'Ugaritic', 'Warang_Citi', 'Yi', 'Deseret', 'Limbu',
+  'Lepcha', 'Sora_Sompeng', 'Chakma', 'Mro', 'Pau_Cin_Hau',
+  'Mende_Kikakui', 'Old_Hungarian', 'Zanabazar_Square',
 ];
 
 /**
@@ -339,7 +388,10 @@ const KNOWN_SCRIPTS = [
  * @returns {string|null} Unicode script name, or null if unknown/not a letter
  */
 function getCharScript(char) {
-  if (char.length !== 1) return null;
+  // Supplementary-plane characters (code point > U+FFFF, e.g. Osmanya U+10480+)
+  // occupy two UTF-16 code units and have .length === 2. Count code points via
+  // spread so they are processed correctly instead of being silently dropped.
+  if ([...char].length !== 1) return null;
 
   const code = char.codePointAt(0);
   // Fast-range detection for Cyrillic to avoid any engine-specific Unicode script edge cases
@@ -363,7 +415,14 @@ function getCharScript(char) {
       continue;
     }
   }
-  return null; // Unknown script or non-letter
+
+  // Safety net: any non-ASCII character that reached this point was not matched
+  // by any known script — treat it as 'Unknown' so it is blocked rather than
+  // silently permitted. ASCII characters (code <= 0x7F) are left as null so
+  // that hyphens, dots, and digits are correctly ignored.
+  if (code > 0x7F) return 'Unknown';
+
+  return null;
 }
 
 /**
@@ -550,6 +609,8 @@ if (typeof module !== 'undefined' && module.exports) {
     isHostnameAllowed,
     decodeHostname,
     getConfusableChars,
+    isSingleLocaleScriptMix,
+    getEnabledLangScriptSets,
     runTests
   };
 }

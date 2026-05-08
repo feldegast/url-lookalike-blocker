@@ -5,6 +5,8 @@
 let permittedScripts = getPermittedScripts([navigator.language || 'en']);
 let whitelist = new Set();
 let additionalScripts = new Set();
+let additionalLangScripts = []; // array of script arrays for explicitly-enabled languages
+let enabledLangScriptSets = []; // derived from locale + additionalLangScripts; used by step 3
 
 // Domains the user has chosen to continue past the mixed-script warning for
 // this browser session. Stored in memory only — cleared on browser restart.
@@ -25,9 +27,10 @@ async function initialize() {
 }
 
 async function loadSettings() {
-  const result = await browser.storage.local.get(['whitelist', 'additionalScripts']);
+  const result = await browser.storage.local.get(['whitelist', 'additionalScripts', 'additionalLangScripts']);
   whitelist = new Set(result.whitelist || []);
   additionalScripts = new Set(result.additionalScripts || []);
+  additionalLangScripts = result.additionalLangScripts || [];
 }
 
 function updatePermittedScripts() {
@@ -36,6 +39,7 @@ function updatePermittedScripts() {
   for (const script of additionalScripts) {
     permittedScripts.add(script);
   }
+  enabledLangScriptSets = getEnabledLangScriptSets(locales, additionalLangScripts);
 }
 
 // Toolbar icon click — open options in a new tab rather than a popup.
@@ -56,6 +60,11 @@ browser.storage.onChanged.addListener((changes) => {
   }
   if (changes.additionalScripts) {
     additionalScripts = new Set(changes.additionalScripts.newValue || []);
+  }
+  if (changes.additionalLangScripts) {
+    additionalLangScripts = changes.additionalLangScripts.newValue || [];
+  }
+  if (changes.additionalScripts || changes.additionalLangScripts) {
     updatePermittedScripts();
   }
 });
@@ -87,6 +96,11 @@ browser.runtime.onMessage.addListener((message) => {
   if (message.type === 'applySettings') {
     if (message.additionalScripts !== undefined) {
       additionalScripts = new Set(message.additionalScripts);
+    }
+    if (message.additionalLangScripts !== undefined) {
+      additionalLangScripts = message.additionalLangScripts;
+    }
+    if (message.additionalScripts !== undefined || message.additionalLangScripts !== undefined) {
       updatePermittedScripts();
     }
     if (message.whitelist !== undefined) {
@@ -150,18 +164,21 @@ browser.webRequest.onBeforeRequest.addListener(
       return { redirectUrl: warningPageUrl };
     }
 
-    // Step 3: warn if the domain mixes characters from 2+ distinct scripts.
-    // All scripts are permitted (step 1 passed) but the mix is suspicious —
-    // this is the pattern used in homograph attacks like аpple.com (Cyrillic а
-    // + Latin) when Cyrillic is in the user's permitted set.
-    const domainScripts = new Set();
-    for (const char of hostname) {
-      const s = getCharScript(char);
-      if (s && s !== 'Common' && s !== 'Inherited') {
-        domainScripts.add(s);
+    // Step 3: warn if any single label mixes scripts from 2+ locales.
+    // Checks per-label (not per-hostname) so Latin TLDs like .com don't trigger
+    // false positives. Uses isSingleLocaleScriptMix to allow legitimate multi-
+    // script languages (Japanese: Han + Hiragana + Katakana) while flagging
+    // cross-locale mixes like Latin + Hiragana in the same label.
+    const labels = hostname.split('.');
+    const hasSuspiciousMix = labels.some(label => {
+      const labelScripts = new Set();
+      for (const char of label) {
+        const s = getCharScript(char);
+        if (s && s !== 'Common' && s !== 'Inherited') labelScripts.add(s);
       }
-    }
-    if (domainScripts.size >= 2) {
+      return labelScripts.size >= 2 && !isSingleLocaleScriptMix(labelScripts, enabledLangScriptSets);
+    });
+    if (hasSuspiciousMix) {
       lastBlockedTabId = details.tabId;
       lastBlockedUrl = url;
       const warningPageUrl = browser.runtime.getURL('warning.html') +
