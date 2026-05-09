@@ -2,11 +2,13 @@
 // Handles webRequest interception for blocking suspicious domains
 
 // Global state
-let permittedScripts = getPermittedScripts([navigator.language || 'en']);
+// Permitted scripts are derived solely from user-enabled languages — browser
+// locale is intentionally ignored so permissions are always visible in the UI.
+let permittedScripts = new Set(['Latin', 'Common', 'Inherited']);
 let whitelist = new Set();
 let additionalScripts = new Set();
 let additionalLangScripts = []; // array of script arrays for explicitly-enabled languages
-let enabledLangScriptSets = []; // derived from locale + additionalLangScripts; used by step 3
+let enabledLangScriptSets = []; // derived from user-enabled languages only; used by step 3
 
 // Domains the user has chosen to continue past the mixed-script warning for
 // this browser session. Stored in memory only — cleared on browser restart.
@@ -34,12 +36,11 @@ async function loadSettings() {
 }
 
 function updatePermittedScripts() {
-  const locales = navigator.languages || [navigator.language || 'en'];
-  permittedScripts = getPermittedScripts(locales);
+  permittedScripts = new Set(['Latin', 'Common', 'Inherited']);
   for (const script of additionalScripts) {
     permittedScripts.add(script);
   }
-  enabledLangScriptSets = getEnabledLangScriptSets(locales, additionalLangScripts);
+  enabledLangScriptSets = additionalLangScripts.map(scripts => new Set(scripts));
 }
 
 // Toolbar icon click — open options in a new tab rather than a popup.
@@ -136,7 +137,7 @@ browser.webRequest.onBeforeRequest.addListener(
     }
 
     if (!permittedScripts) {
-      permittedScripts = getPermittedScripts([navigator.language || 'en']);
+      permittedScripts = new Set(['Latin', 'Common', 'Inherited']);
     }
 
     // Step 1: block if any character's script is not in the permitted set

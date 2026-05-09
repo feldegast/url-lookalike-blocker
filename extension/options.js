@@ -91,6 +91,72 @@ const LANGUAGE_SCRIPTS = {
 // Scripts that are always permitted regardless of settings (hardcoded in unicode-scripts.js)
 const ALWAYS_PERMITTED = new Set(['Latin', 'Common', 'Inherited']);
 
+// Maps browser locale codes to language display names in LANGUAGE_SCRIPTS.
+// Used to pre-populate permissions on first run and on reset.
+const LOCALE_TO_LANGUAGE = {
+  'ru': 'Russian',
+  'uk': 'Ukrainian',
+  'bg': 'Bulgarian',
+  'sr': 'Serbian',
+  'mk': 'Macedonian',
+  'be': 'Belarusian',
+  'kk': 'Kazakh',
+  'ky': 'Kyrgyz',
+  'tg': 'Tajik',
+  'uz': 'Uzbek',
+  'mn': 'Mongolian (Cyrillic)',
+  'el': 'Greek',
+  'ar': 'Arabic',
+  'ur': 'Urdu',
+  'fa': 'Persian',
+  'ps': 'Pashto',
+  'he': 'Hebrew',
+  'ja': 'Japanese',
+  'ko': 'Korean',
+  'hi': 'Hindi',
+  'mr': 'Marathi',
+  'sa': 'Sanskrit',
+  'bn': 'Bengali',
+  'pa': 'Punjabi (Gurmukhi)',
+  'gu': 'Gujarati',
+  'or': 'Odia',
+  'ta': 'Tamil',
+  'te': 'Telugu',
+  'kn': 'Kannada',
+  'ml': 'Malayalam',
+  'th': 'Thai',
+  'lo': 'Lao',
+  'km': 'Khmer',
+  'my': 'Burmese',
+  'si': 'Sinhala',
+  'hy': 'Armenian',
+  'ka': 'Georgian',
+  'iu': 'Canadian Aboriginal',
+  'chr': 'Cherokee'
+};
+
+// Returns language display names matching the browser's current locale list.
+// Latin-script languages are excluded — they are always permitted anyway.
+function getLocaleLanguages() {
+  const languages = new Set();
+  for (const locale of (navigator.languages || [navigator.language || 'en'])) {
+    const lower = locale.toLowerCase();
+    const prefix = lower.split('-')[0];
+    // Chinese: distinguish Simplified vs Traditional by script subtag or region
+    if (prefix === 'zh') {
+      if (lower.includes('hant') || lower.includes('tw') || lower.includes('hk') || lower.includes('mo')) {
+        languages.add('Chinese (Traditional)');
+      } else {
+        languages.add('Chinese (Simplified)');
+      }
+      continue;
+    }
+    const lang = LOCALE_TO_LANGUAGE[prefix];
+    if (lang) languages.add(lang);
+  }
+  return [...languages];
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   loadSettings();
   buildLanguageTable();
@@ -104,11 +170,35 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadSettings() {
   const result = await browser.storage.local.get(['whitelist', 'additionalLanguages']);
   whitelist = result.whitelist || [];
-  additionalLanguages = new Set(result.additionalLanguages || []);
+
+  if (result.additionalLanguages === undefined) {
+    // First run: no saved preferences yet — seed from the browser locale so the
+    // user can immediately see what has been permitted and adjust if needed.
+    additionalLanguages = new Set(getLocaleLanguages());
+    await applyToStorage();
+  } else {
+    additionalLanguages = new Set(result.additionalLanguages);
+  }
+
   initialLanguages = new Set(additionalLanguages);
   initialWhitelist = [...whitelist];
   renderWhitelist();
   updateTableState();
+}
+
+// Saves the current additionalLanguages to storage and notifies background.js.
+// Used on first run and on reset so permissions are active immediately without
+// requiring the user to click Apply.
+async function applyToStorage() {
+  const langs = Array.from(additionalLanguages);
+  const scripts = [...new Set(langs.flatMap(l => LANGUAGE_SCRIPTS[l] || []))];
+  const langScripts = langs.map(l => LANGUAGE_SCRIPTS[l]).filter(Boolean);
+  await browser.storage.local.set({ additionalLanguages: langs, additionalScripts: scripts });
+  await browser.runtime.sendMessage({
+    type: 'applySettings',
+    additionalScripts: scripts,
+    additionalLangScripts: langScripts
+  });
 }
 
 function checkDirty() {
@@ -295,8 +385,10 @@ function removeFromWhitelist(domain) {
 }
 
 function setupEventListeners() {
-  document.getElementById('reset-scripts').addEventListener('click', () => {
-    additionalLanguages.clear();
+  document.getElementById('reset-scripts').addEventListener('click', async () => {
+    additionalLanguages = new Set(getLocaleLanguages());
+    await applyToStorage();
+    initialLanguages = new Set(additionalLanguages);
     updateTableState();
     checkDirty();
   });

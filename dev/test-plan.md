@@ -4,6 +4,22 @@ Use `test-urls.html` for all links. Reset the options page to defaults before st
 
 ---
 
+## 0. Locale detection on first run and reset
+
+On first run and after "Reset to Locale Defaults", the extension reads Firefox's
+language settings and pre-populates the Permitted Languages list so the user can
+see exactly what is enabled. No permissions are ever granted silently — everything
+is visible and editable in the options page.
+
+Add a non-Latin language to Firefox (Settings → General → Language) before testing.
+
+- [ ] Fresh install: open options — the language matching your Firefox locale is already checked
+- [ ] A domain using that script passes through without the user manually enabling anything
+- [ ] Remove that language from the options page and apply — the domain is now blocked
+- [ ] Click "Reset to Locale Defaults" — the language is re-checked and the domain passes again
+
+---
+
 ## 1. Latin pass-through (false positive check)
 
 These must NEVER be blocked regardless of settings.
