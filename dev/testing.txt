@@ -5,13 +5,25 @@ i intend to use the ● You've got a solid test file already. Based on the optio
   - Run a few from each script group (Cyrillic, Greek, Japanese, Chinese) — confirm the block page shows the correct
   Unicode domain, punycode, and character table
 
+  Locale seeding — first run
+  - Install the extension fresh (or clear its storage via about:debugging > Inspect > Storage tab > clear)
+  - Open the options page immediately — the scripts for your browser locale should already be checked
+    (e.g. for an English locale: no extras; for Russian: Cyrillic pre-checked; for Japanese: Hiragana, Katakana, Han pre-checked)
+  - Confirm the seeded scripts are visible in the list, not silently allowed in the background
+
+  Locale seeding — Reset to Defaults
+  - Click "Reset to Defaults" on the options page
+  - Confirm the list is NOT left blank — locale scripts should be re-seeded and checked automatically
+  - Confirm any manually added extra languages (non-locale ones) are removed by the reset
+  - Apply and visit a URL matching your locale script — confirm it still passes through after reset
+
   Options page — scripts
   - Enable a script (e.g. Cyrillic), visit a Cyrillic URL — confirm it passes through
   - Disable it again, revisit — confirm it blocks again
   - Enable all 3 Japanese scripts via the language checkbox, check the indeterminate state appears when you uncheck one
   - Check that enabling Han for Japanese also checks Han for Korean and Chinese (the cross-language propagation)
   - Toggle everything back to default and confirm "Unsaved changes" disappears
-  - Click Reset to Defaults and confirm it clears correctly
+  - Click Reset to Defaults and confirm locale scripts are re-seeded (not blanked)
 
   Options page — whitelist
   - Allow a domain from the blocked page, check it appears in the whitelist with punycode and character table

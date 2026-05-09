@@ -1,5 +1,13 @@
 # TODO / Future Features
 
+## Dark Mode / Light Mode Theming
+
+**Goal:** Make the options, block, and warning pages respect the user's OS dark/light preference rather than always showing a white background.
+
+**Approach:** Use the `prefers-color-scheme` CSS media query across all three HTML files (`options.html`, `blocked.html`, `warning.html`). No JavaScript needed — CSS-only change.
+
+**Decided against** Firefox Theme API (too many theme combinations to test) — OS-level dark/light covers the vast majority of users with minimal complexity.
+
 ## Domain Age Check (RDAP)
 
 **Goal:** Catch typosquatting by flagging recently registered domains.

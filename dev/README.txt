@@ -5,26 +5,32 @@ These files are used during development but are not included in the
 extension package submitted to the Firefox Add-ons store.
 
 render_icon_pillow.py
-  Python script that generates icon.png using the Pillow library.
-  Run this whenever the icon design needs to change. The output
-  (icon.png in the project root) is what the extension actually uses.
+  Python script that generates extension/icon.png using the Pillow library.
+  Run this whenever the icon design needs to change.
   Requires: pip install Pillow
 
-test URLs.txt
-  A set of manually curated URLs for testing the extension against
-  known homograph attacks. Includes both URLs that should be blocked
-  (Cyrillic, Greek, Arabic, mixed-script homographs) and URLs that
-  should always be allowed (standard Latin domains). Each entry is
-  annotated with whether it resolves to a real site [FULL FLOW] or
-  is detection-only [DETECTION ONLY].
+test-urls.html
+  Clickable test page covering all supported scripts. Open in Firefox with the
+  extension loaded to manually verify blocking and allow behaviour. Each link is
+  annotated with whether it resolves to a real site [FULL FLOW] or is
+  detection-only [DETECTION ONLY].
 
-url-lookalike-blocker.code-workspace
-  VS Code workspace configuration for this project.
+testing.txt
+  Structured manual test checklist covering: locale seeding on first run and
+  reset, blocking detection, options page behaviour, and whitelist cycle.
 
-Full-Context.txt
-  Full design and implementation context document used as a reference
-  when building the extension.
+test-plan.md
+  Detailed step-by-step test plan with checkboxes. Use this for a full
+  regression test before an AMO submission.
 
-prompt.txt
-  Original specification prompt used to define the extension's
-  requirements and behaviour.
+unicode-scripts.test.js
+  Jest unit tests for the core detection logic in extension/unicode-scripts.js.
+  Run from the project root with: npm test
+
+amo-submission.txt
+  Copy/paste content for the Firefox Add-ons (AMO) submission form:
+  name, summary, description, categories, licence, privacy policy,
+  and reviewer notes.
+
+../url-lookalike-blocker.code-workspace
+  VS Code workspace configuration for this project (at the project root).

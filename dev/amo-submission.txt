@@ -32,7 +32,12 @@ DESCRIPTION  (HTML is supported)
 
 <p><b>Options page</b> (opened from the toolbar icon) lets you manage whitelisted domains and configure which Unicode scripts are permitted beyond your locale defaults. Changes are held in memory until you click Apply — there is no auto-save.</p>
 
-<p><b>Known limitation:</b> the extension detects single characters that look like a different character. It does not detect multi-character sequences that resemble one character (e.g. rn → m, vv → w, cl → d), as doing so without a list of known legitimate domains would cause too many false positives.</p>
+<p><b>Known limitations:</b></p>
+<ul>
+  <li>The extension detects single characters that look like a different character. It does not detect multi-character sequences that resemble one character (e.g. rn → m, vv → w, cl → d), as doing so without a list of known legitimate domains would cause too many false positives.</li>
+  <li>It does not detect lookalike domains constructed entirely from one script (e.g. a Latin-only domain designed to visually mimic another Latin domain). Protection is specifically against cross-script substitution attacks (IDN homographs).</li>
+  <li>It does not detect subdomain-style phishing where a legitimate-looking name appears as a subdomain of an attacker-controlled domain (e.g. apple.com.attacker.com). That domain is Latin-only and passes all script checks correctly.</li>
+</ul>
 
 <p>Firefox only — Chrome's Manifest V3 removes the blocking webRequest API required for this extension to work.</p>
 
