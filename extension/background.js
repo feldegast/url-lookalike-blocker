@@ -14,13 +14,15 @@ let enabledLangScriptSets = []; // derived from user-enabled languages only; use
 // this browser session. Stored in memory only — cleared on browser restart.
 const sessionAllowed = new Set();
 
-// Track the most recent tab that was blocked so the options page can navigate
-// it back to the original URL after the user applies new script permissions.
-// Only the most recent blocked tab is tracked; if multiple tabs are blocked
-// simultaneously the user would need to retry the others manually, but this
-// covers the common case of one blocked page leading to one settings change.
-let lastBlockedTabId = null;
-let lastBlockedUrl = null;
+// Per-tab record of blocked navigations: tabId -> original url.
+// Lets the options page navigate the correct tab back to the original URL
+// after the user applies new permissions, even when multiple tabs are blocked.
+const blockedTabs = new Map();
+
+// Cache of hostname detection results. Keyed by hostname; value is the
+// redirect URL string to return, or '' for allow. Cleared whenever settings
+// or the whitelist change so stale results are never served.
+const hostnameCache = new Map();
 
 // Initialize on startup
 async function initialize() {
@@ -41,6 +43,17 @@ function updatePermittedScripts() {
     permittedScripts.add(script);
   }
   enabledLangScriptSets = additionalLangScripts.map(scripts => new Set(scripts));
+  hostnameCache.clear();
+}
+
+// Returns true if hostname exactly matches a whitelisted domain or is a
+// subdomain of one. Suffix matching means allowing example.com also allows
+// www.example.com and login.example.com without requiring separate entries.
+function isWhitelisted(hostname) {
+  for (const domain of whitelist) {
+    if (hostname === domain || hostname.endsWith(`.${domain}`)) return true;
+  }
+  return false;
 }
 
 // Toolbar icon click — open options in a new tab rather than a popup.
@@ -58,6 +71,7 @@ browser.action.onClicked.addListener(() => {
 browser.storage.onChanged.addListener((changes) => {
   if (changes.whitelist) {
     whitelist = new Set(changes.whitelist.newValue || []);
+    hostnameCache.clear();
   }
   if (changes.additionalScripts) {
     additionalScripts = new Set(changes.additionalScripts.newValue || []);
@@ -75,22 +89,23 @@ browser.storage.onChanged.addListener((changes) => {
 // storage.onChanged event to propagate) means permittedScripts is updated
 // synchronously before we navigate the blocked tab — no race condition between
 // the settings taking effect and the webRequest check for the retried URL.
-browser.runtime.onMessage.addListener((message) => {
+browser.runtime.onMessage.addListener((message, sender) => {
   if (message.type === 'addToWhitelist') {
     // Sync in-memory whitelist when warning.js allows a domain permanently,
     // so the webRequest check passes before storage.onChanged can fire.
     whitelist.add(message.domain);
+    hostnameCache.clear();
   }
 
   if (message.type === 'allowOnce') {
     // Add to session-allowed Set then navigate the warning tab to the original
     // URL. The webRequest check will pass because sessionAllowed is checked
-    // before the mixed-script scan.
+    // before the mixed-script scan. sender.tab.id is the warning page tab —
+    // the same tab that needs to be navigated to the original URL.
     sessionAllowed.add(message.domain);
-    if (message.url && lastBlockedTabId !== null) {
-      browser.tabs.update(lastBlockedTabId, { url: message.url });
-      lastBlockedTabId = null;
-      lastBlockedUrl = null;
+    if (message.url && sender.tab) {
+      browser.tabs.update(sender.tab.id, { url: message.url });
+      blockedTabs.delete(sender.tab.id);
     }
   }
 
@@ -106,27 +121,34 @@ browser.runtime.onMessage.addListener((message) => {
     }
     if (message.whitelist !== undefined) {
       whitelist = new Set(message.whitelist);
+      hostnameCache.clear();
     }
 
-    // If the user opened options from a blocked page, navigate that tab back
-    // to the original URL. permittedScripts is already updated above, so the
-    // webRequest handler will allow or re-block based on the new settings.
-    if (message.blockedUrl && lastBlockedTabId !== null) {
-      browser.tabs.update(lastBlockedTabId, { url: message.blockedUrl });
-      lastBlockedTabId = null;
-      lastBlockedUrl = null;
+    // If the user opened options from a blocked page, find that tab by its
+    // original URL and navigate it back. permittedScripts is already updated
+    // above, so the webRequest handler will allow or re-block based on the
+    // new settings.
+    if (message.blockedUrl) {
+      for (const [tabId, url] of blockedTabs) {
+        if (url === message.blockedUrl) {
+          browser.tabs.update(tabId, { url: message.blockedUrl });
+          blockedTabs.delete(tabId);
+          break;
+        }
+      }
     }
   }
 });
 
-// WebRequest listener — intercepts all main-frame and sub-frame navigations
+// WebRequest listener — intercepts main-frame navigations only.
+// sub_frame is excluded to avoid breaking embedded content (CDNs, widgets).
 browser.webRequest.onBeforeRequest.addListener(
   (details) => {
     const url = details.url;
     const hostname = decodeHostname(url);
 
-    // Whitelisted domains are always allowed regardless of script settings
-    if (whitelist.has(hostname)) {
+    // Whitelisted domains (and their subdomains) are always allowed
+    if (isWhitelisted(hostname)) {
       return {};
     }
 
@@ -140,29 +162,50 @@ browser.webRequest.onBeforeRequest.addListener(
       permittedScripts = new Set(['Latin', 'Common', 'Inherited']);
     }
 
+    // Return cached result for this hostname if available. The cache is
+    // cleared whenever settings or the whitelist change.
+    const cached = hostnameCache.get(hostname);
+    if (cached !== undefined) {
+      if (cached) {
+        blockedTabs.set(details.tabId, url);
+        return { redirectUrl: cached };
+      }
+      return {};
+    }
+
     // Step 1: block if any character's script is not in the permitted set
     const result = isHostnameAllowed(hostname, permittedScripts);
     if (!result.allowed) {
-      // Remember which tab was blocked so the options page can retry it after
-      // the user applies new permissions.
-      lastBlockedTabId = details.tabId;
-      lastBlockedUrl = url;
-
       const blockedPageUrl = browser.runtime.getURL('blocked.html') +
         `?url=${encodeURIComponent(url)}&char=${encodeURIComponent(result.offendingChar)}&script=${encodeURIComponent(result.script)}&chars=${encodeURIComponent(JSON.stringify(result.offendingChars))}`;
+      hostnameCache.set(hostname, blockedPageUrl);
+      blockedTabs.set(details.tabId, url);
       return { redirectUrl: blockedPageUrl };
     }
 
-    // Step 2: warn if any character is a known confusable (looks like a
-    // different character). Catches attacks like а (Cyrillic) used in place of
-    // a (Latin) even when Cyrillic is in the user's permitted script set.
+    // Step 2: warn if a confusable character appears in a label that also
+    // mixes scripts. Requiring both conditions targets real homograph attacks
+    // (e.g. Cyrillic 'а' alongside Latin letters in 'аpple.com') without
+    // warning on legitimate international domains where confusable characters
+    // appear in a purely single-script label (e.g. a Russian domain where
+    // 'а' is surrounded only by other Cyrillic characters).
     const confusables = getConfusableChars(hostname);
     if (confusables.length > 0) {
-      lastBlockedTabId = details.tabId;
-      lastBlockedUrl = url;
-      const warningPageUrl = browser.runtime.getURL('warning.html') +
-        `?url=${encodeURIComponent(url)}`;
-      return { redirectUrl: warningPageUrl };
+      const confusableSet = new Set(confusables.map(c => c.char));
+      const hasConfusableInMixedLabel = hostname.split('.').some(label => {
+        if (![...label].some(c => confusableSet.has(c))) return false;
+        const scripts = new Set(
+          [...label].map(getCharScript).filter(s => s && s !== 'Common' && s !== 'Inherited')
+        );
+        return scripts.size >= 2;
+      });
+      if (hasConfusableInMixedLabel) {
+        const warningPageUrl = browser.runtime.getURL('warning.html') +
+          `?url=${encodeURIComponent(url)}`;
+        hostnameCache.set(hostname, warningPageUrl);
+        blockedTabs.set(details.tabId, url);
+        return { redirectUrl: warningPageUrl };
+      }
     }
 
     // Step 3: warn if any single label mixes scripts from 2+ locales.
@@ -180,18 +223,19 @@ browser.webRequest.onBeforeRequest.addListener(
       return labelScripts.size >= 2 && !isSingleLocaleScriptMix(labelScripts, enabledLangScriptSets);
     });
     if (hasSuspiciousMix) {
-      lastBlockedTabId = details.tabId;
-      lastBlockedUrl = url;
       const warningPageUrl = browser.runtime.getURL('warning.html') +
         `?url=${encodeURIComponent(url)}`;
+      hostnameCache.set(hostname, warningPageUrl);
+      blockedTabs.set(details.tabId, url);
       return { redirectUrl: warningPageUrl };
     }
 
+    hostnameCache.set(hostname, '');
     return {};
   },
   {
     urls: ["<all_urls>"],
-    types: ["main_frame", "sub_frame"]
+    types: ["main_frame"]
   },
   ["blocking"]
 );

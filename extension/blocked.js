@@ -132,13 +132,19 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('punycode-domain').textContent = punycodeDomain;
 
       // Highlight all offending characters in the Unicode domain
-      const highlighted = unicodeDomain.split('').map(char => {
+      const domainEl = document.getElementById('unicode-domain');
+      domainEl.textContent = '';
+      for (const char of unicodeDomain) {
         if (offendingSet.has(char)) {
-          return `<span style="color: red; font-weight: bold;">${char}</span>`;
+          const span = document.createElement('span');
+          span.style.color = 'red';
+          span.style.fontWeight = 'bold';
+          span.textContent = char;
+          domainEl.appendChild(span);
+        } else {
+          domainEl.appendChild(document.createTextNode(char));
         }
-        return char;
-      }).join('');
-      document.getElementById('unicode-domain').innerHTML = highlighted;
+      }
     } catch (e) {
       document.getElementById('punycode-domain').textContent = 'Error parsing URL';
       document.getElementById('unicode-domain').textContent = 'Error parsing URL';
@@ -158,7 +164,16 @@ document.addEventListener('DOMContentLoaded', () => {
   for (const { char, script: s } of offendingChars) {
     const codepoint = `U+${char.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')}`;
     const row = document.createElement('tr');
-    row.innerHTML = `<td class="offending-char-glyph">${char}</td><td>${codepoint}</td><td>${s}</td>`;
+    const tdChar = document.createElement('td');
+    tdChar.className = 'offending-char-glyph';
+    tdChar.textContent = char;
+    const tdCode = document.createElement('td');
+    tdCode.textContent = codepoint;
+    const tdScript = document.createElement('td');
+    tdScript.textContent = s;
+    row.appendChild(tdChar);
+    row.appendChild(tdCode);
+    row.appendChild(tdScript);
     tbody.appendChild(row);
   }
 

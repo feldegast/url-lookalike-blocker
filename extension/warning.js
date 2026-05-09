@@ -142,12 +142,18 @@ document.addEventListener('DOMContentLoaded', () => {
       const urlObj = new URL(blockedUrl);
       document.getElementById('punycode-domain').textContent = urlObj.hostname;
 
-      const highlighted = unicodeDomain.split('').map(char =>
-        highlightSet.has(char)
-          ? `<span class="offending-char-glyph">${char}</span>`
-          : char
-      ).join('');
-      document.getElementById('unicode-domain').innerHTML = highlighted;
+      const domainEl = document.getElementById('unicode-domain');
+      domainEl.textContent = '';
+      for (const char of unicodeDomain) {
+        if (highlightSet.has(char)) {
+          const span = document.createElement('span');
+          span.className = 'offending-char-glyph';
+          span.textContent = char;
+          domainEl.appendChild(span);
+        } else {
+          domainEl.appendChild(document.createTextNode(char));
+        }
+      }
     } catch (e) {
       document.getElementById('punycode-domain').textContent = 'Error parsing URL';
       document.getElementById('unicode-domain').textContent = 'Error parsing URL';
@@ -166,7 +172,26 @@ document.addEventListener('DOMContentLoaded', () => {
   for (const { char, looksLike, script: s } of tableChars) {
     const codepoint = `U+${char.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')}`;
     const row = document.createElement('tr');
-    row.innerHTML = `<td class="offending-char-glyph">${char}</td><td>${looksLike ? `<span class="offending-char-glyph">${looksLike}</span>` : '—'}</td><td>${codepoint}</td><td>${s}</td>`;
+    const tdChar = document.createElement('td');
+    tdChar.className = 'offending-char-glyph';
+    tdChar.textContent = char;
+    const tdLooks = document.createElement('td');
+    if (looksLike) {
+      const span = document.createElement('span');
+      span.className = 'offending-char-glyph';
+      span.textContent = looksLike;
+      tdLooks.appendChild(span);
+    } else {
+      tdLooks.textContent = '—';
+    }
+    const tdCode = document.createElement('td');
+    tdCode.textContent = codepoint;
+    const tdScript = document.createElement('td');
+    tdScript.textContent = s;
+    row.appendChild(tdChar);
+    row.appendChild(tdLooks);
+    row.appendChild(tdCode);
+    row.appendChild(tdScript);
     tbody.appendChild(row);
   }
 
