@@ -193,7 +193,7 @@ async function applyToStorage() {
   const langs = Array.from(additionalLanguages);
   const scripts = [...new Set(langs.flatMap(l => LANGUAGE_SCRIPTS[l] || []))];
   const langScripts = langs.map(l => LANGUAGE_SCRIPTS[l]).filter(Boolean);
-  await browser.storage.local.set({ additionalLanguages: langs, additionalScripts: scripts });
+  await browser.storage.local.set({ additionalLanguages: langs, additionalScripts: scripts, additionalLangScripts: langScripts });
   await browser.runtime.sendMessage({
     type: 'applySettings',
     additionalScripts: scripts,
@@ -403,6 +403,7 @@ function setupEventListeners() {
     await browser.storage.local.set({
       additionalLanguages: langs,
       additionalScripts: scripts,
+      additionalLangScripts: langScripts,
       whitelist: wl
     });
 
