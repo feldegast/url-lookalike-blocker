@@ -587,10 +587,11 @@ function decodeHostname(url) {
       const decoded = label.toLowerCase().startsWith('xn--')
         ? decodePunycode(label.slice(4))
         : label;
-      // Strip zero-width space (U+200B) and BOM/ZWNBSP (U+FEFF) — never valid in
-      // a hostname label. Then apply NFKC to collapse compatibility variants
+      // Strip invisible format characters — none are valid in a hostname label:
+      // U+200B ZWS, U+200C ZWNJ, U+200D ZWJ, U+FEFF BOM/ZWNBSP.
+      // Then apply NFKC to collapse compatibility variants
       // (e.g. fullwidth Latin ａ→a, ℓ→l) so they can't bypass script detection.
-      return decoded.replace(/[\u200B\uFEFF]/g, '').normalize('NFKC');
+      return decoded.replace(/[\u200B-\u200D\uFEFF]/g, '').normalize('NFKC');
     }).join('.');
   } catch (e) {
     return '';
