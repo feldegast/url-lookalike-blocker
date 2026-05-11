@@ -254,7 +254,9 @@ function renderWhitelist() {
   container.innerHTML = '';
 
   if (whitelist.length === 0) {
-    container.innerHTML = '<p>No whitelisted domains.</p>';
+    const p = document.createElement('p');
+    p.textContent = 'No whitelisted domains.';
+    container.appendChild(p);
     return;
   }
 
@@ -263,31 +265,74 @@ function renderWhitelist() {
     const offending = getOffendingChars(domain);
     const offendingSet = new Set(offending.map(o => o.char));
 
-    const highlightedDomain = [...domain].map(char =>
-      offendingSet.has(char)
-        ? `<span class="offending-char-glyph">${char}</span>`
-        : char
-    ).join('');
-
-    const rows = offending.map(({ char, script: s }) => {
-      const codepoint = `U+${char.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')}`;
-      return `<tr><td class="offending-char-glyph">${char}</td><td>${codepoint}</td><td>${s}</td></tr>`;
-    }).join('');
-
     const item = document.createElement('div');
     item.className = 'whitelist-item';
 
     const info = document.createElement('div');
     info.className = 'whitelist-info';
-    info.innerHTML = `
-      <div><strong>Unicode Domain:</strong> <span class="whitelist-unicode-domain">${highlightedDomain}</span></div>
-      <div><strong>Punycode:</strong> <span class="whitelist-punycode">${punycode}</span></div>
-      ${offending.length > 0 ? `
-      <table class="offending-chars-table">
-        <thead><tr><th>Character</th><th>Codepoint</th><th>Script</th></tr></thead>
-        <tbody>${rows}</tbody>
-      </table>` : ''}
-    `;
+
+    // Unicode domain row — offending chars wrapped in a highlight span
+    const unicodeRow = document.createElement('div');
+    const unicodeLabel = document.createElement('strong');
+    unicodeLabel.textContent = 'Unicode Domain: ';
+    const unicodeDomainSpan = document.createElement('span');
+    unicodeDomainSpan.className = 'whitelist-unicode-domain';
+    for (const char of domain) {
+      if (offendingSet.has(char)) {
+        const highlight = document.createElement('span');
+        highlight.className = 'offending-char-glyph';
+        highlight.textContent = char;
+        unicodeDomainSpan.appendChild(highlight);
+      } else {
+        unicodeDomainSpan.appendChild(document.createTextNode(char));
+      }
+    }
+    unicodeRow.appendChild(unicodeLabel);
+    unicodeRow.appendChild(unicodeDomainSpan);
+
+    // Punycode row
+    const punycodeRow = document.createElement('div');
+    const punycodeLabel = document.createElement('strong');
+    punycodeLabel.textContent = 'Punycode: ';
+    const punycodeSpan = document.createElement('span');
+    punycodeSpan.className = 'whitelist-punycode';
+    punycodeSpan.textContent = punycode;
+    punycodeRow.appendChild(punycodeLabel);
+    punycodeRow.appendChild(punycodeSpan);
+
+    info.appendChild(unicodeRow);
+    info.appendChild(punycodeRow);
+
+    // Offending characters table
+    if (offending.length > 0) {
+      const table = document.createElement('table');
+      table.className = 'offending-chars-table';
+
+      const thead = document.createElement('thead');
+      const headerRow = document.createElement('tr');
+      for (const heading of ['Character', 'Codepoint', 'Script']) {
+        const th = document.createElement('th');
+        th.textContent = heading;
+        headerRow.appendChild(th);
+      }
+      thead.appendChild(headerRow);
+      table.appendChild(thead);
+
+      const tbody = document.createElement('tbody');
+      for (const { char, script: s } of offending) {
+        const codepoint = `U+${char.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')}`;
+        const tr = document.createElement('tr');
+        for (const [text, cls] of [[char, 'offending-char-glyph'], [codepoint, ''], [s, '']]) {
+          const td = document.createElement('td');
+          if (cls) td.className = cls;
+          td.textContent = text;
+          tr.appendChild(td);
+        }
+        tbody.appendChild(tr);
+      }
+      table.appendChild(tbody);
+      info.appendChild(table);
+    }
 
     const removeBtn = document.createElement('button');
     removeBtn.className = 'remove-btn';
