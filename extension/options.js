@@ -72,7 +72,7 @@ const LANGUAGE_SCRIPTS = {
   'Bengali': ['Bengali'],
   'Punjabi (Gurmukhi)': ['Gurmukhi'],
   'Gujarati': ['Gujarati'],
-  'Odia': ['Odia'],
+  'Odia': ['Oriya'],
   'Tamil': ['Tamil'],
   'Telugu': ['Telugu'],
   'Kannada': ['Kannada'],

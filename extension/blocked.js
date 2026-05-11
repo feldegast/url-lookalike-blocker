@@ -1,94 +1,7 @@
 // blocked.js
 // Handles the blocked page UI and whitelist functionality
-
-// Copy necessary functions from unicode-scripts.js
-function decodePunycode(punycode) {
-  const BASE = 36;
-  const TMIN = 1;
-  const TMAX = 26;
-  const SKEW = 38;
-  const DAMP = 700;
-  const INITIAL_BIAS = 72;
-  const INITIAL_N = 128;
-
-  let n = INITIAL_N;
-  let i = 0;
-  let bias = INITIAL_BIAS;
-  let output = [];
-
-  const lastHyphen = punycode.lastIndexOf('-');
-  let encoded;
-  if (lastHyphen >= 0) {
-    for (let j = 0; j < lastHyphen; j++) {
-      output.push(punycode.charCodeAt(j));
-    }
-    encoded = punycode.slice(lastHyphen + 1);
-  } else {
-    encoded = punycode;
-  }
-
-  let pos = 0;
-  while (pos < encoded.length) {
-    let oldi = i;
-    let w = 1;
-    for (let k = BASE; ; k += BASE) {
-      const cp = encoded.charCodeAt(pos++);
-      let val;
-      if (cp >= 48 && cp <= 57) {
-        val = cp - 22;
-      } else if (cp >= 65 && cp <= 90) {
-        val = cp - 65;
-      } else if (cp >= 97 && cp <= 122) {
-        val = cp - 97;
-      } else {
-        return punycode;
-      }
-      if (pos > encoded.length) return punycode;
-      i += val * w;
-      const t = k <= bias ? TMIN : k >= bias + TMAX ? TMAX : k - bias;
-      if (val < t) break;
-      w *= BASE - t;
-    }
-    bias = adapt(i - oldi, output.length + 1, oldi === 0);
-    n += Math.floor(i / (output.length + 1));
-    i %= output.length + 1;
-    output.splice(i, 0, n);
-    i++;
-  }
-
-  return String.fromCodePoint(...output);
-}
-
-function adapt(delta, numpoints, first) {
-  const BASE = 36;
-  const TMIN = 1;
-  const TMAX = 26;
-  const SKEW = 38;
-  const DAMP = 700;
-  
-  delta = first ? Math.floor(delta / DAMP) : Math.floor(delta / 2);
-  delta += Math.floor(delta / numpoints);
-  let k = 0;
-  while (delta > ((BASE - TMIN) * TMAX) / 2) {
-    delta = Math.floor(delta / (BASE - TMIN));
-    k += BASE;
-  }
-  return k + Math.floor((BASE - TMIN + 1) * delta / (delta + SKEW));
-}
-
-function decodeHostname(url) {
-  try {
-    let hostname = new URL(url).hostname;
-    return hostname.split('.').map(label => {
-      if (label.toLowerCase().startsWith('xn--')) {
-        return decodePunycode(label.slice(4));
-      }
-      return label;
-    }).join('.');
-  } catch (e) {
-    return '';
-  }
-}
+// decodeHostname, getCharScript, getConfusableChars are provided by unicode-scripts.js
+// which is loaded before this script in blocked.html.
 
 document.addEventListener('DOMContentLoaded', () => {
   const urlParams = new URLSearchParams(window.location.search);
@@ -188,7 +101,10 @@ document.addEventListener('DOMContentLoaded', () => {
         whitelist.add(hostname);
         await browser.storage.local.set({ whitelist: Array.from(whitelist) });
 
-        // Redirect to original URL
+        // Sync background.js in-memory whitelist before navigating so the
+        // webRequest check sees the updated whitelist when the page loads.
+        await browser.runtime.sendMessage({ type: 'addToWhitelist', domain: hostname });
+
         window.location.href = blockedUrl;
       }
     }

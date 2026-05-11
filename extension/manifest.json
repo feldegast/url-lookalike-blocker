@@ -3,8 +3,8 @@
   "name": "URL Lookalike Blocker",
   "version": "1.0",
   "icons": {
-    "48": "icon.svg",
-    "96": "icon.svg"
+    "48": "icon.png",
+    "96": "icon.png"
   },
   "permissions": [
     "webRequest",
