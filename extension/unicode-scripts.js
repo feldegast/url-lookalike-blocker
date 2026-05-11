@@ -643,7 +643,7 @@ if (typeof module !== 'undefined' && module.exports) {
   };
 }
 
-// Run tests if this file is executed directly
-if (typeof window === 'undefined') {
+// Run tests only when executed directly (node unicode-scripts.js), not when imported
+if (typeof module !== 'undefined' && require.main === module) {
   runTests();
 }

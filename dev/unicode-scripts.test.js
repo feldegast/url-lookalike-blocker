@@ -43,6 +43,14 @@ describe('getCharScript', () => {
     expect(getCharScript('1')).toBe('Common');
     expect(getCharScript('-')).toBe('Common');
   });
+
+  test('RTL/LTR override characters return Unknown (not Common)', () => {
+    expect(getCharScript('‮')).toBe('Unknown'); // RIGHT-TO-LEFT OVERRIDE
+    expect(getCharScript('‪')).toBe('Unknown'); // LEFT-TO-RIGHT EMBEDDING
+    expect(getCharScript('‫')).toBe('Unknown'); // RIGHT-TO-LEFT EMBEDDING
+    expect(getCharScript('⁦')).toBe('Unknown'); // LEFT-TO-RIGHT ISOLATE
+    expect(getCharScript('⁩')).toBe('Unknown'); // POP DIRECTIONAL ISOLATE
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -126,6 +134,12 @@ describe('isHostnameAllowed', () => {
     expect(result.allowed).toBe(false);
     expect(result.offendingChars.length).toBeGreaterThan(1);
   });
+
+  test('domain containing RTL override (U+202E) is blocked', () => {
+    const result = isHostnameAllowed('example‮.com', englishScripts);
+    expect(result.allowed).toBe(false);
+    expect(result.offendingChars[0].script).toBe('Unknown');
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -153,6 +167,38 @@ describe('decodeHostname', () => {
 
   test('invalid URL returns empty string', () => {
     expect(decodeHostname('not-a-url')).toBe('');
+  });
+
+  test('zero-width space (U+200B) is stripped from labels', () => {
+    expect(decodeHostname('http://exam​ple.com/')).toBe('example.com');
+  });
+
+  test('zero-width non-joiner (U+200C) is stripped from labels', () => {
+    expect(decodeHostname('http://exam‌ple.com/')).toBe('example.com');
+  });
+
+  test('zero-width joiner (U+200D) is stripped from labels', () => {
+    expect(decodeHostname('http://exam‍ple.com/')).toBe('example.com');
+  });
+
+  test('BOM / ZWNBSP (U+FEFF) is stripped from labels', () => {
+    expect(decodeHostname('http://exam﻿ple.com/')).toBe('example.com');
+  });
+
+  test('NFKC collapses fullwidth Latin characters', () => {
+    expect(decodeHostname('http://ａpple.com/')).toBe('apple.com'); // ａ → a
+  });
+
+  test('IDEOGRAPHIC FULL STOP (U+3002) is treated as a label separator', () => {
+    // Splitting correctly means the Cyrillic label is detected separately
+    const hostname = decodeHostname('http://аpple。com/');
+    expect(hostname).toBe('аpple.com');
+    expect(hostname.split('.')).toHaveLength(2);
+  });
+
+  test('FULLWIDTH FULL STOP (U+FF0E) is treated as a label separator', () => {
+    const hostname = decodeHostname('http://example．com/');
+    expect(hostname.split('.')).toHaveLength(2);
   });
 });
 
@@ -188,6 +234,21 @@ describe('getConfusableChars', () => {
     expect(result[0]).toHaveProperty('char');
     expect(result[0]).toHaveProperty('looksLike');
     expect(result[0]).toHaveProperty('script');
+  });
+
+  test('Greek iota (ι) is flagged as confusable with i', () => {
+    const result = getConfusableChars('ιntel.com');
+    expect(result.some(c => c.char === 'ι' && c.looksLike === 'i')).toBe(true);
+  });
+
+  test('Cyrillic QA (ԛ) is flagged as confusable with q', () => {
+    const result = getConfusableChars('ԛoogle.com');
+    expect(result.some(c => c.char === 'ԛ' && c.looksLike === 'q')).toBe(true);
+  });
+
+  test('Cyrillic WE (ԝ) is flagged as confusable with w', () => {
+    const result = getConfusableChars('ԝhat.com');
+    expect(result.some(c => c.char === 'ԝ' && c.looksLike === 'w')).toBe(true);
   });
 });
 
