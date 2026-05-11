@@ -287,6 +287,8 @@ const CONFUSABLES = new Map([
   ['ӏ', 'l'],  // ӏ CYRILLIC SMALL LETTER PALOCHKA
   ['ѕ', 's'],  // ѕ CYRILLIC SMALL LETTER DZE
   ['ԁ', 'd'],  // ԁ CYRILLIC SMALL LETTER KOMI DE
+  ['ԛ', 'q'],  // ԛ CYRILLIC SMALL LETTER QA
+  ['ԝ', 'w'],  // ԝ CYRILLIC SMALL LETTER WE
   // --- Greek → Latin ---
   ['ο', 'o'],  // ο GREEK SMALL LETTER OMICRON
   ['ν', 'v'],  // ν GREEK SMALL LETTER NU
@@ -295,6 +297,7 @@ const CONFUSABLES = new Map([
   ['ρ', 'p'],  // ρ GREEK SMALL LETTER RHO
   ['ε', 'e'],  // ε GREEK SMALL LETTER EPSILON
   ['χ', 'x'],  // χ GREEK SMALL LETTER CHI
+  ['ι', 'i'],  // ι GREEK SMALL LETTER IOTA
   // --- Latin extended → Latin ASCII (same script, different codepoint) ---
   ['ı', 'i'],  // ı LATIN SMALL LETTER DOTLESS I
   ['ɡ', 'g'],  // ɡ LATIN SMALL LETTER SCRIPT G
@@ -381,19 +384,45 @@ const KNOWN_SCRIPTS = [
   'Mende_Kikakui', 'Old_Hungarian', 'Zanabazar_Square',
 ];
 
+// Compiled once at load time; getCharScript uses these instead of constructing
+// new RegExp objects on every cache miss.
+const SCRIPT_REGEXES = (() => {
+  const m = new Map();
+  for (const script of KNOWN_SCRIPTS) {
+    try { m.set(script, new RegExp(`\\p{Script=${script}}`, 'u')); }
+    catch (e) { /* skip any script names the current JS engine doesn't support */ }
+  }
+  return m;
+})();
+
 /**
  * Gets the Unicode script property of a single character.
  *
  * @param {string} char - Single character to analyze
  * @returns {string|null} Unicode script name, or null if unknown/not a letter
  */
+// Per-character script lookup cache. Avoids reconstructing 70+ RegExp objects
+// for every character on every uncached hostname.
+const scriptCache = new Map();
+
 function getCharScript(char) {
+  const hit = scriptCache.get(char);
+  if (hit !== undefined) return hit;
+
+  function cache(val) { scriptCache.set(char, val); return val; }
+
   // Supplementary-plane characters (code point > U+FFFF, e.g. Osmanya U+10480+)
   // occupy two UTF-16 code units and have .length === 2. Count code points via
   // spread so they are processed correctly instead of being silently dropped.
-  if ([...char].length !== 1) return null;
+  if ([...char].length !== 1) return cache(null);
 
   const code = char.codePointAt(0);
+  // Directional control characters (LTR/RTL overrides, embeds, isolates — U+202A–202E,
+  // U+2066–2069) are Unicode Script=Common, so they would otherwise be silently permitted.
+  // No legitimate hostname contains them; return 'Unknown' so they trigger a block.
+  if ((code >= 0x202A && code <= 0x202E) || (code >= 0x2066 && code <= 0x2069)) {
+    return cache('Unknown');
+  }
   // Fast-range detection for Cyrillic to avoid any engine-specific Unicode script edge cases
   if (
     (code >= 0x0400 && code <= 0x04FF) ||
@@ -401,18 +430,12 @@ function getCharScript(char) {
     (code >= 0x2DE0 && code <= 0x2DFF) ||
     (code >= 0xA640 && code <= 0xA69F)
   ) {
-    return 'Cyrillic';
+    return cache('Cyrillic');
   }
 
-  for (const script of KNOWN_SCRIPTS) {
-    try {
-      const regex = new RegExp(`\\p{Script=${script}}`, 'u');
-      if (regex.test(char)) {
-        return script;
-      }
-    } catch (e) {
-      // Invalid script name, skip
-      continue;
+  for (const [script, regex] of SCRIPT_REGEXES) {
+    if (regex.test(char)) {
+      return cache(script);
     }
   }
 
@@ -420,9 +443,9 @@ function getCharScript(char) {
   // by any known script — treat it as 'Unknown' so it is blocked rather than
   // silently permitted. ASCII characters (code <= 0x7F) are left as null so
   // that hyphens, dots, and digits are correctly ignored.
-  if (code > 0x7F) return 'Unknown';
+  if (code > 0x7F) return cache('Unknown');
 
-  return null;
+  return cache(null);
 }
 
 /**
@@ -439,13 +462,9 @@ function isHostnameAllowed(hostname, permittedScripts) {
     if (script && !permittedScripts.has(script) && !seen.has(char)) {
       seen.set(char, script);
     }
-    if (char !== '.' && char !== '-' && char !== '_' && !/^[\x00-\x7F]$/.test(char)) {
-      console.log('URL Lookalike Blocker: char with no script mapping', char, 'hostname', hostname);
-    }
   }
   if (seen.size > 0) {
     const offendingChars = Array.from(seen.entries()).map(([char, script]) => ({ char, script }));
-    console.log('URL Lookalike Blocker: offending chars', offendingChars, 'hostname', hostname);
     return { allowed: false, offendingChar: offendingChars[0].char, script: offendingChars[0].script, offendingChars };
   }
   return { allowed: true };
@@ -559,11 +578,19 @@ function decodeHostname(url) {
     hostname = match[1].replace(/:\d+$/, '');
   }
   try {
+    // Normalise Unicode dot variants to ASCII '.' before splitting into labels.
+    // The WHATWG URL parser handles these in the main path, but the regex fallback
+    // above does not. U+3002 IDEOGRAPHIC FULL STOP, U+FF0E FULLWIDTH FULL STOP,
+    // U+FF61 HALFWIDTH IDEOGRAPHIC FULL STOP.
+    hostname = hostname.replace(/[。．｡]/g, '.');
     return hostname.split('.').map(label => {
-      if (label.toLowerCase().startsWith('xn--')) {
-        return decodePunycode(label.slice(4));
-      }
-      return label;
+      const decoded = label.toLowerCase().startsWith('xn--')
+        ? decodePunycode(label.slice(4))
+        : label;
+      // Strip zero-width space (U+200B) and BOM/ZWNBSP (U+FEFF) — never valid in
+      // a hostname label. Then apply NFKC to collapse compatibility variants
+      // (e.g. fullwidth Latin ａ→a, ℓ→l) so they can't bypass script detection.
+      return decoded.replace(/[\u200B\uFEFF]/g, '').normalize('NFKC');
     }).join('.');
   } catch (e) {
     return '';
