@@ -1,20 +1,17 @@
 // options.js
-// Handles the options page UI for managing whitelist and permitted languages.
-// Changes are held in memory until the user clicks Apply — nothing is saved
+// Holds changes in memory until the user clicks Apply — nothing is saved
 // to storage automatically on checkbox change or whitelist removal.
 
+let additionalScripts = new Set(); // Set of enabled script names, e.g. 'Cyrillic', 'Han'
+let enabledLanguages = new Set(); // Explicitly enabled language names — source of truth for langScriptSets
 let whitelist = [];
-let additionalLanguages = new Set();
 
-// Snapshots of the state as loaded from storage, used to detect whether the
-// current state truly differs from what was saved.
+// Snapshots of the state as loaded from storage, used to detect unsaved changes.
+let initialScripts = new Set();
 let initialLanguages = new Set();
 let initialWhitelist = [];
-
 let isDirty = false;
 
-// If the options page was opened from a blocked page, this holds the URL that
-// was blocked so Apply can navigate the blocked tab back to it after saving.
 const urlParams = new URLSearchParams(window.location.search);
 const blockedUrl = urlParams.get('blockedUrl');
 
@@ -91,64 +88,28 @@ const LANGUAGE_SCRIPTS = {
 // Scripts that are always permitted regardless of settings (hardcoded in unicode-scripts.js)
 const ALWAYS_PERMITTED = new Set(['Latin', 'Common', 'Inherited']);
 
-// Maps browser locale codes to language display names in LANGUAGE_SCRIPTS.
-// Used to pre-populate permissions on first run and on reset.
 const LOCALE_TO_LANGUAGE = {
-  'ru': 'Russian',
-  'uk': 'Ukrainian',
-  'bg': 'Bulgarian',
-  'sr': 'Serbian',
-  'mk': 'Macedonian',
-  'be': 'Belarusian',
-  'kk': 'Kazakh',
-  'ky': 'Kyrgyz',
-  'tg': 'Tajik',
-  'uz': 'Uzbek',
-  'mn': 'Mongolian (Cyrillic)',
-  'el': 'Greek',
-  'ar': 'Arabic',
-  'ur': 'Urdu',
-  'fa': 'Persian',
-  'ps': 'Pashto',
-  'he': 'Hebrew',
-  'ja': 'Japanese',
-  'ko': 'Korean',
-  'hi': 'Hindi',
-  'mr': 'Marathi',
-  'sa': 'Sanskrit',
-  'bn': 'Bengali',
-  'pa': 'Punjabi (Gurmukhi)',
-  'gu': 'Gujarati',
-  'or': 'Odia',
-  'ta': 'Tamil',
-  'te': 'Telugu',
-  'kn': 'Kannada',
-  'ml': 'Malayalam',
-  'th': 'Thai',
-  'lo': 'Lao',
-  'km': 'Khmer',
-  'my': 'Burmese',
-  'si': 'Sinhala',
-  'hy': 'Armenian',
-  'ka': 'Georgian',
-  'iu': 'Canadian Aboriginal',
-  'chr': 'Cherokee'
+  'ru': 'Russian', 'uk': 'Ukrainian', 'bg': 'Bulgarian', 'sr': 'Serbian',
+  'mk': 'Macedonian', 'be': 'Belarusian', 'kk': 'Kazakh', 'ky': 'Kyrgyz',
+  'tg': 'Tajik', 'uz': 'Uzbek', 'mn': 'Mongolian (Cyrillic)', 'el': 'Greek',
+  'ar': 'Arabic', 'ur': 'Urdu', 'fa': 'Persian', 'ps': 'Pashto', 'he': 'Hebrew',
+  'ja': 'Japanese', 'ko': 'Korean', 'hi': 'Hindi', 'mr': 'Marathi', 'sa': 'Sanskrit',
+  'bn': 'Bengali', 'pa': 'Punjabi (Gurmukhi)', 'gu': 'Gujarati', 'or': 'Odia',
+  'ta': 'Tamil', 'te': 'Telugu', 'kn': 'Kannada', 'ml': 'Malayalam', 'th': 'Thai',
+  'lo': 'Lao', 'km': 'Khmer', 'my': 'Burmese', 'si': 'Sinhala', 'hy': 'Armenian',
+  'ka': 'Georgian', 'iu': 'Canadian Aboriginal', 'chr': 'Cherokee'
 };
 
-// Returns language display names matching the browser's current locale list.
-// Latin-script languages are excluded — they are always permitted anyway.
 function getLocaleLanguages() {
   const languages = new Set();
   for (const locale of (navigator.languages || [navigator.language || 'en'])) {
     const lower = locale.toLowerCase();
     const prefix = lower.split('-')[0];
-    // Chinese: distinguish Simplified vs Traditional by script subtag or region
     if (prefix === 'zh') {
-      if (lower.includes('hant') || lower.includes('tw') || lower.includes('hk') || lower.includes('mo')) {
-        languages.add('Chinese (Traditional)');
-      } else {
-        languages.add('Chinese (Simplified)');
-      }
+      languages.add(
+        (lower.includes('hant') || lower.includes('tw') || lower.includes('hk') || lower.includes('mo'))
+          ? 'Chinese (Traditional)' : 'Chinese (Simplified)'
+      );
       continue;
     }
     const lang = LOCALE_TO_LANGUAGE[prefix];
@@ -157,43 +118,82 @@ function getLocaleLanguages() {
   return [...languages];
 }
 
+// Returns the set of non-always-permitted scripts from the browser's locale languages.
+function getLocaleScripts() {
+  const scripts = new Set();
+  for (const lang of getLocaleLanguages()) {
+    for (const s of (LANGUAGE_SCRIPTS[lang] || [])) {
+      if (!ALWAYS_PERMITTED.has(s)) scripts.add(s);
+    }
+  }
+  return scripts;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   loadSettings();
   buildLanguageTable();
   setupEventListeners();
-
   if (blockedUrl) {
     document.getElementById('apply-btn').textContent = 'Apply & Retry';
   }
 });
 
 async function loadSettings() {
-  const result = await browser.storage.local.get(['whitelist', 'additionalLanguages']);
+  const result = await browser.storage.local.get(['whitelist', 'additionalScripts', 'enabledLanguages']);
   whitelist = result.whitelist || [];
 
-  if (result.additionalLanguages === undefined) {
-    // First run: no saved preferences yet — seed from the browser locale so the
-    // user can immediately see what has been permitted and adjust if needed.
-    additionalLanguages = new Set(getLocaleLanguages());
+  if (result.additionalScripts === undefined) {
+    // First run: seed from the browser locale so the user immediately sees
+    // what has been permitted and can adjust if needed.
+    additionalScripts = getLocaleScripts();
+    enabledLanguages = new Set(getLocaleLanguages());
     await applyToStorage();
   } else {
-    additionalLanguages = new Set(result.additionalLanguages);
+    additionalScripts = new Set(result.additionalScripts);
+    if (result.enabledLanguages !== undefined) {
+      enabledLanguages = new Set(result.enabledLanguages);
+    } else {
+      // Backward compat: infer from additionalScripts using old logic.
+      // Runs once — after the user applies, enabledLanguages is stored permanently.
+      for (const [lang, scripts] of Object.entries(LANGUAGE_SCRIPTS)) {
+        const required = scripts.filter(s => !ALWAYS_PERMITTED.has(s));
+        if (required.length > 0 && required.every(s => additionalScripts.has(s))) {
+          enabledLanguages.add(lang);
+        }
+      }
+    }
   }
 
-  initialLanguages = new Set(additionalLanguages);
+  initialScripts = new Set(additionalScripts);
+  initialLanguages = new Set(enabledLanguages);
   initialWhitelist = [...whitelist];
   renderWhitelist();
   updateTableState();
 }
 
-// Saves the current additionalLanguages to storage and notifies background.js.
-// Used on first run and on reset so permissions are active immediately without
-// requiring the user to click Apply.
+// Builds additionalLangScripts for background.js mixed-script detection.
+// Uses enabledLanguages (explicitly checked by the user) rather than inferring
+// from which scripts happen to be present — prevents a language that shares
+// scripts with an enabled language (e.g. Serbian sharing Cyrillic with Russian)
+// from being silently added to the blessed-mix list.
+function computeLangScripts() {
+  const out = [];
+  for (const lang of enabledLanguages) {
+    if (LANGUAGE_SCRIPTS[lang]) out.push(LANGUAGE_SCRIPTS[lang]);
+  }
+  return out;
+}
+
+// Saves the current additionalScripts to storage and notifies background.js.
+// Used on first run and on reset so permissions take effect without requiring Apply.
 async function applyToStorage() {
-  const langs = Array.from(additionalLanguages);
-  const scripts = [...new Set(langs.flatMap(l => LANGUAGE_SCRIPTS[l] || []))];
-  const langScripts = langs.map(l => LANGUAGE_SCRIPTS[l]).filter(Boolean);
-  await browser.storage.local.set({ additionalLanguages: langs, additionalScripts: scripts, additionalLangScripts: langScripts });
+  const scripts = Array.from(additionalScripts);
+  const langScripts = computeLangScripts();
+  await browser.storage.local.set({
+    additionalScripts: scripts,
+    additionalLangScripts: langScripts,
+    enabledLanguages: [...enabledLanguages]
+  });
   await browser.runtime.sendMessage({
     type: 'applySettings',
     additionalScripts: scripts,
@@ -202,48 +202,36 @@ async function applyToStorage() {
 }
 
 function checkDirty() {
-  const languagesDiffer = !setsEqual(additionalLanguages, initialLanguages);
-  const whitelistDiffer = !arraysEqualSorted(whitelist, initialWhitelist);
-  isDirty = languagesDiffer || whitelistDiffer;
+  isDirty = !setsEqual(additionalScripts, initialScripts) ||
+            !setsEqual(enabledLanguages, initialLanguages) ||
+            !arraysEqualSorted(whitelist, initialWhitelist);
   document.getElementById('unsaved-indicator').style.display = isDirty ? '' : 'none';
 }
 
 function setsEqual(a, b) {
   if (a.size !== b.size) return false;
-  for (const item of a) {
-    if (!b.has(item)) return false;
-  }
+  for (const item of a) if (!b.has(item)) return false;
   return true;
 }
 
 function arraysEqualSorted(a, b) {
   if (a.length !== b.length) return false;
-  const sa = [...a].sort();
-  const sb = [...b].sort();
+  const sa = [...a].sort(), sb = [...b].sort();
   return sa.every((v, i) => v === sb[i]);
 }
 
-// Convert a Unicode domain back to its punycode (ACE) form.
 function encodeToPunycode(unicodeDomain) {
-  try {
-    return new URL('http://' + unicodeDomain).hostname;
-  } catch (e) {
-    return unicodeDomain;
-  }
+  try { return new URL('http://' + unicodeDomain).hostname; }
+  catch (e) { return unicodeDomain; }
 }
 
-// Return the non-Latin/Common/Inherited characters in a domain.
 function getOffendingChars(unicodeDomain) {
   const alwaysPermitted = new Set(['Common', 'Inherited', 'Latin']);
-  const chars = [];
-  const seen = new Set();
+  const chars = [], seen = new Set();
   for (const char of unicodeDomain) {
     if (!seen.has(char)) {
       const s = getCharScript(char);
-      if (s && !alwaysPermitted.has(s)) {
-        chars.push({ char, script: s });
-        seen.add(char);
-      }
+      if (s && !alwaysPermitted.has(s)) { chars.push({ char, script: s }); seen.add(char); }
     }
   }
   return chars;
@@ -267,11 +255,9 @@ function renderWhitelist() {
 
     const item = document.createElement('div');
     item.className = 'whitelist-item';
-
     const info = document.createElement('div');
     info.className = 'whitelist-info';
 
-    // Unicode domain row — offending chars wrapped in a highlight span
     const unicodeRow = document.createElement('div');
     const unicodeLabel = document.createElement('strong');
     unicodeLabel.textContent = 'Unicode Domain: ';
@@ -290,7 +276,6 @@ function renderWhitelist() {
     unicodeRow.appendChild(unicodeLabel);
     unicodeRow.appendChild(unicodeDomainSpan);
 
-    // Punycode row
     const punycodeRow = document.createElement('div');
     const punycodeLabel = document.createElement('strong');
     punycodeLabel.textContent = 'Punycode: ';
@@ -303,11 +288,9 @@ function renderWhitelist() {
     info.appendChild(unicodeRow);
     info.appendChild(punycodeRow);
 
-    // Offending characters table
     if (offending.length > 0) {
       const table = document.createElement('table');
       table.className = 'offending-chars-table';
-
       const thead = document.createElement('thead');
       const headerRow = document.createElement('tr');
       for (const heading of ['Character', 'Codepoint', 'Script']) {
@@ -317,7 +300,6 @@ function renderWhitelist() {
       }
       thead.appendChild(headerRow);
       table.appendChild(thead);
-
       const tbody = document.createElement('tbody');
       for (const { char, script: s } of offending) {
         const codepoint = `U+${char.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')}`;
@@ -338,7 +320,6 @@ function renderWhitelist() {
     removeBtn.className = 'remove-btn';
     removeBtn.textContent = 'Remove';
     removeBtn.addEventListener('click', () => removeFromWhitelist(domain));
-
     item.appendChild(info);
     item.appendChild(removeBtn);
     container.appendChild(item);
@@ -358,49 +339,65 @@ function buildLanguageTable() {
 
   const table = document.createElement('table');
   table.className = 'script-table';
-
   const thead = document.createElement('thead');
   thead.innerHTML = '<tr><th>Language</th><th>Scripts</th></tr>';
   table.appendChild(thead);
-
   const tbody = document.createElement('tbody');
 
   toggleable.forEach(language => {
-    const scripts = LANGUAGE_SCRIPTS[language];
+    const allScripts = LANGUAGE_SCRIPTS[language];
+    const nonPermitted = allScripts.filter(s => !ALWAYS_PERMITTED.has(s));
+
+    // Language parent row
     const tr = document.createElement('tr');
     tr.dataset.language = language;
+    tr.className = 'lang-row';
 
-    // Language cell — checkbox toggles the entire language
     const langTd = document.createElement('td');
     const langLabel = document.createElement('label');
     langLabel.className = 'lang-label';
-    const langCheckbox = document.createElement('input');
-    langCheckbox.type = 'checkbox';
-    langCheckbox.dataset.language = language;
-    langCheckbox.addEventListener('change', () => {
-      if (langCheckbox.checked) {
-        additionalLanguages.add(language);
-      } else {
-        additionalLanguages.delete(language);
-      }
-      checkDirty();
-    });
-    langLabel.appendChild(langCheckbox);
+    const langCb = document.createElement('input');
+    langCb.type = 'checkbox';
+    langCb.dataset.language = language;
+    langCb.addEventListener('change', () => onLanguageToggle(language, langCb.checked));
+    langLabel.appendChild(langCb);
     langLabel.appendChild(document.createTextNode(' ' + language));
     langTd.appendChild(langLabel);
     tr.appendChild(langTd);
 
-    // Scripts cell — read-only tags showing which scripts this language uses
     const scriptsTd = document.createElement('td');
-    scripts.forEach(script => {
+    allScripts.forEach(script => {
       const tag = document.createElement('span');
       tag.className = ALWAYS_PERMITTED.has(script) ? 'script-tag always-permitted' : 'script-tag';
       tag.textContent = script.replace(/_/g, ' ');
       scriptsTd.appendChild(tag);
     });
     tr.appendChild(scriptsTd);
-
     tbody.appendChild(tr);
+
+    // Per-script sub-rows — only for languages with 2+ non-always-permitted scripts
+    // (currently Japanese: Han/Hiragana/Katakana, Korean: Han/Hangul).
+    // These let users enable individual scripts and expose the indeterminate parent state.
+    if (nonPermitted.length > 1) {
+      nonPermitted.forEach(script => {
+        const subTr = document.createElement('tr');
+        subTr.className = 'script-sub-row';
+
+        const subTd = document.createElement('td');
+        const subLabel = document.createElement('label');
+        subLabel.className = 'lang-label script-sub-label';
+        const subCb = document.createElement('input');
+        subCb.type = 'checkbox';
+        subCb.dataset.script = script;
+        subCb.addEventListener('change', () => onScriptToggle(script, subCb.checked));
+        subLabel.appendChild(subCb);
+        subLabel.appendChild(document.createTextNode(' ' + script.replace(/_/g, ' ')));
+        subTd.appendChild(subLabel);
+        subTr.appendChild(subTd);
+        subTr.appendChild(document.createElement('td'));
+        tbody.appendChild(subTr);
+      });
+    }
   });
 
   table.appendChild(tbody);
@@ -410,16 +407,89 @@ function buildLanguageTable() {
   separator.className = 'latin-only-separator';
   separator.textContent = 'The following languages use the Latin script exclusively, which is always permitted and so these languages cannot be disabled.';
   latinContainer.appendChild(separator);
-
   const latinList = document.createElement('div');
   latinList.className = 'latin-only-list';
   latinList.textContent = alwaysOn.join(', ');
   latinContainer.appendChild(latinList);
 }
 
+// Toggling a language parent checks or unchecks all languages with the same full
+// script set together. This keeps identical-script languages (e.g. Russian and
+// Belarusian, both ['Cyrillic']) in sync so the checkbox state honestly reflects
+// which scripts are permitted. Languages with a different set (e.g. Serbian
+// ['Cyrillic','Latin']) are unaffected and stay in their own group.
+function onLanguageToggle(language, checked) {
+  const scripts = LANGUAGE_SCRIPTS[language] || [];
+
+  // Find all languages whose full script set is identical to this one.
+  const group = Object.keys(LANGUAGE_SCRIPTS).filter(lang => {
+    const ls = LANGUAGE_SCRIPTS[lang];
+    return ls.length === scripts.length && scripts.every(s => ls.includes(s));
+  });
+
+  for (const lang of group) {
+    if (checked) enabledLanguages.add(lang);
+    else enabledLanguages.delete(lang);
+  }
+
+  const nonPermitted = scripts.filter(s => !ALWAYS_PERMITTED.has(s));
+  for (const s of nonPermitted) {
+    if (checked) {
+      additionalScripts.add(s);
+    } else {
+      // Only remove this script if no other enabled language still needs it.
+      const stillNeeded = [...enabledLanguages].some(lang => (LANGUAGE_SCRIPTS[lang] || []).includes(s));
+      if (!stillNeeded) additionalScripts.delete(s);
+    }
+  }
+  updateTableState();
+  checkDirty();
+}
+
+// Toggling an individual script sub-checkbox. Because additionalScripts is a flat
+// Set shared across all languages, changing Han here also updates the Han-bearing
+// parent checkboxes for Korean and Chinese (Simplified/Traditional) automatically.
+// When all scripts of a multi-script language are enabled via sub-rows, that
+// language is added to enabledLanguages so its script mix is blessed correctly.
+function onScriptToggle(script, checked) {
+  if (checked) additionalScripts.add(script);
+  else additionalScripts.delete(script);
+  // Sync enabledLanguages for languages that have sub-rows (2+ non-always-permitted scripts).
+  for (const [lang, scripts] of Object.entries(LANGUAGE_SCRIPTS)) {
+    const nonPermitted = scripts.filter(s => !ALWAYS_PERMITTED.has(s));
+    if (nonPermitted.length <= 1) continue;
+    if (nonPermitted.every(s => additionalScripts.has(s))) enabledLanguages.add(lang);
+    else enabledLanguages.delete(lang);
+  }
+  updateTableState();
+  checkDirty();
+}
+
+// Reflects the current state in all checkboxes.
+// Language parent: checked if in enabledLanguages (explicit or auto-grouped).
+// Because same-script languages are toggled as a group, this accurately reflects
+// which languages' scripts are permitted. Serbian stays unchecked when Russian is
+// enabled — its full set ['Cyrillic','Latin'] is a different group from ['Cyrillic'].
+// Indeterminate = multi-script language with only some sub-scripts enabled.
+// Per-script sub-checkboxes: checked iff that script is in additionalScripts.
 function updateTableState() {
-  document.querySelectorAll('input[data-language]').forEach(checkbox => {
-    checkbox.checked = additionalLanguages.has(checkbox.dataset.language);
+  document.querySelectorAll('input[data-language]').forEach(cb => {
+    const lang = cb.dataset.language;
+    if (enabledLanguages.has(lang)) {
+      cb.checked = true; cb.indeterminate = false;
+    } else {
+      const nonPermitted = (LANGUAGE_SCRIPTS[lang] || []).filter(s => !ALWAYS_PERMITTED.has(s));
+      if (nonPermitted.length > 1) {
+        const n = nonPermitted.filter(s => additionalScripts.has(s)).length;
+        cb.checked = false; cb.indeterminate = n > 0 && n < nonPermitted.length;
+      } else {
+        cb.checked = false; cb.indeterminate = false;
+      }
+    }
+  });
+  document.querySelectorAll('input[data-script]').forEach(cb => {
+    cb.checked = additionalScripts.has(cb.dataset.script);
+    cb.indeterminate = false;
   });
 }
 
@@ -431,24 +501,24 @@ function removeFromWhitelist(domain) {
 
 function setupEventListeners() {
   document.getElementById('reset-scripts').addEventListener('click', async () => {
-    additionalLanguages = new Set(getLocaleLanguages());
+    additionalScripts = getLocaleScripts();
+    enabledLanguages = new Set(getLocaleLanguages());
     await applyToStorage();
-    initialLanguages = new Set(additionalLanguages);
+    initialScripts = new Set(additionalScripts);
+    initialLanguages = new Set(enabledLanguages);
     updateTableState();
     checkDirty();
   });
 
   document.getElementById('apply-btn').addEventListener('click', async () => {
-    const langs = Array.from(additionalLanguages);
-    // Derive script permissions from enabled languages
-    const scripts = [...new Set(langs.flatMap(l => LANGUAGE_SCRIPTS[l] || []))];
-    const langScripts = langs.map(l => LANGUAGE_SCRIPTS[l]).filter(Boolean);
+    const scripts = Array.from(additionalScripts);
+    const langScripts = computeLangScripts();
     const wl = [...whitelist];
 
     await browser.storage.local.set({
-      additionalLanguages: langs,
       additionalScripts: scripts,
       additionalLangScripts: langScripts,
+      enabledLanguages: [...enabledLanguages],
       whitelist: wl
     });
 
@@ -471,10 +541,7 @@ function setupEventListeners() {
     window.location.reload();
   });
 
-  window.addEventListener('beforeunload', (e) => {
-    if (isDirty) {
-      e.preventDefault();
-      e.returnValue = '';
-    }
+  window.addEventListener('beforeunload', e => {
+    if (isDirty) { e.preventDefault(); e.returnValue = ''; }
   });
 }

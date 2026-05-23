@@ -44,10 +44,19 @@
     .offending-chars-table td {
       padding: 2px 8px 2px 0;
     }
-    .offending-char-glyph {
+    .confusable-char-glyph {
       font-size: 20px;
       font-weight: bold;
       color: #e65100;
+    }
+    .foreign-char-glyph {
+      font-size: 20px;
+      font-weight: bold;
+      color: #c6890a;
+    }
+    .script-hint {
+      color: #555;
+      font-style: italic;
     }
     .unicode-domain {
       font-family: monospace;
@@ -107,14 +116,15 @@
       <strong>URL:</strong> <span id="blocked-url"></span><br>
       <strong>Punycode Domain:</strong> <span id="punycode-domain"></span><br>
       <strong>Unicode Domain:</strong> <span id="unicode-domain" class="unicode-domain"></span><br>
-      <strong>Scripts Present:</strong>
+      <strong id="char-table-label"></strong>
       <table class="offending-chars-table">
-        <thead><tr><th>Character</th><th>Looks like</th><th>Codepoint</th><th>Script</th></tr></thead>
+        <thead id="offending-chars-head"></thead>
         <tbody id="offending-chars-body"></tbody>
       </table>
     </div>
 
     <p id="script-description"></p>
+    <p id="script-hint" class="script-hint"></p>
 
     <div class="buttons">
       <button id="allow-btn" class="allow-btn">Allow This Domain</button>

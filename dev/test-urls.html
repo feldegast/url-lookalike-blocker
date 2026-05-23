@@ -10,9 +10,9 @@
     ul { list-style: none; padding: 0; }
     li { margin: 0.3rem 0; }
     a { font-family: monospace; font-size: 0.9rem; }
-    .tag { font-size: 0.75rem; color: #888; margin-left: 0.5rem; }
-    .allowed { color: green; }
-    .allowed .tag { color: #5a5; }
+    .tag { font-size: 0.75rem; color: #444; margin-left: 0.5rem; }
+    .allowed { color: #1a7a1a; }
+    .allowed .tag { color: #2a6b2a; }
   </style>
 </head>
 <body>
@@ -32,8 +32,9 @@
 
   <h2>Greek</h2>
   <ul>
+    <li><a href="https://xn--qxa2abc.com/" target="_blank">xn--qxa2abc.com</a><span class="tag">τεστ.com — pure Greek, use for toggle test [DETECTION ONLY]</span></li>
     <li><a href="https://xn--ggle-0nda.com/" target="_blank">xn--ggle-0nda.com</a><span class="tag">gοοgle.com — Greek 'ο' replacing both o's [DETECTION ONLY]</span></li>
-    <li><a href="https://xn--ggle-0nd42c.com/" target="_blank">xn--ggle-0nd42c.com</a><span class="tag">Greek variant — passes when Greek script is enabled [DETECTION ONLY]</span></li>
+    <li><a href="https://xn--ggle-0nd42c.com/" target="_blank">xn--ggle-0nd42c.com</a><span class="tag">gοДgle.com — Greek 'ο' + Cyrillic 'Д' + Latin mix (three scripts) [DETECTION ONLY]</span></li>
     <li><a href="https://xn--yah-czca.com/" target="_blank">xn--yah-czca.com</a><span class="tag">yahοο.com — Greek 'ο' [DETECTION ONLY]</span></li>
     <li><a href="https://xn--vidia-ece.com/" target="_blank">xn--vidia-ece.com</a><span class="tag">νvidia.com — Greek 'ν' [DETECTION ONLY]</span></li>
     <li><a href="https://παράδειγμα.δοκιμή/διαδρομή" target="_blank">παράδειγμα.δοκιμή</a><span class="tag">Greek example domain [DETECTION ONLY]</span></li>
@@ -41,13 +42,14 @@
 
   <h2>Japanese (Han + Hiragana + Katakana)</h2>
   <ul>
-    <li><a href="https://xn--r8jz45g.xn--zckzah/" target="_blank">xn--r8jz45g.xn--zckzah</a><span class="tag">例え.テスト [DETECTION ONLY]</span></li>
+    <li><a href="https://xn--zckzah.com/" target="_blank">xn--zckzah.com</a><span class="tag">テスト.com — Katakana under .com TLD [DETECTION ONLY]</span></li>
+    <li><a href="https://xn--r8jz45g.xn--zckzah/" target="_blank">xn--r8jz45g.xn--zckzah</a><span class="tag">例え.テスト — IDN TLD, use via link click only [DETECTION ONLY]</span></li>
     <li><a href="https://例え.テスト/パス" target="_blank">例え.テスト/パス</a><span class="tag">Japanese Unicode URL [DETECTION ONLY]</span></li>
   </ul>
 
   <h2>Arabic</h2>
   <ul>
-    <li><span style="color:#aaa">xn--4cabco7dq6a.com</span><span class="tag">Decodes to Latin Extended (æùåöäéý) — correctly NOT blocked; needs a real Arabic test URL</span></li>
+    <li><span style="color:#666">xn--4cabco7dq6a.com</span><span class="tag">Decodes to Latin Extended (æùåöäéý) — correctly NOT blocked; needs a real Arabic test URL</span></li>
     <li><a href="https://مثال.اختبار/مسار" target="_blank">مثال.اختبار</a><span class="tag">Arabic example domain [DETECTION ONLY]</span></li>
   </ul>
 
@@ -100,7 +102,7 @@
 
   <h2>Gujarati</h2>
   <ul>
-    <li><span style="color:#aaa">(no verified test URL yet — needs a native Gujarati speaker to confirm correct Unicode)</span></li>
+    <li><span style="color:#666">(no verified test URL yet — needs a native Gujarati speaker to confirm correct Unicode)</span></li>
   </ul>
 
   <h2>Gurmukhi (Punjabi)</h2>
@@ -209,7 +211,8 @@
 
   <h2>Mixed Scripts</h2>
   <ul>
-    <li><span style="color:#aaa">xn--e1afmapc.xn--e1afmapc.com</span><span class="tag">Decodes to pure Cyrillic (риммпе) — blocked, but not actually a mixed-script domain</span></li>
+    <li><a href="https://xn--test-34d.com/" target="_blank">xn--test-34d.com</a><span class="tag">testж.com — Latin+Cyrillic mix; warns when Russian enabled, blocks when disabled [DETECTION ONLY]</span></li>
+    <li><span style="color:#666">xn--e1afmapc.xn--e1afmapc.com</span><span class="tag">Decodes to pure Cyrillic (риммпе) — blocked, but not actually a mixed-script domain</span></li>
   </ul>
 
   <h2 class="allowed">Should be ALLOWED (Latin only)</h2>
