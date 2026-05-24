@@ -91,7 +91,7 @@ Open settings, enable all 10 languages below, click Apply, then click each link.
 
 **Part B — Disable all, verify all block**
 
-Open settings, disable all languages (use "Disable All Languages" button), click Apply, then click each link.
+Open settings, manually uncheck all languages enabled in Part A, click Apply, then click each link.
 
 - [x] Russian disabled → `www.xn--80ak6aa92e.com` blocks
 - [x] Greek disabled → `xn--qxa2abc.com` blocks
@@ -132,12 +132,36 @@ Enabling a **language** both permits its scripts and blesses that script combina
 - [ ] Open settings, remove the domain from the whitelist, apply
 - [ ] Revisit the URL — it blocks again
 
-### Apply and retry — multi-tab edge cases
+### Multi-tab navigation — coloured square system
 
-- [ ] Open two different blocked URLs in separate tabs → open settings from one → apply → confirm only that tab navigates back to its URL (the other blocked tab stays on its block page)
-- [ ] Open the same blocked URL in two tabs → open settings → apply → confirm the correct tab is retried
-- [ ] Open settings from a blocked page → open a second settings tab manually → apply in the second tab → confirm the retry still works and the first settings tab does not cause a double-navigation
-- [ ] Open two settings tabs → apply in each in succession → no errors or unexpected navigations
+Open two or more different blocked URLs in separate tabs before starting these tests.
+
+**Coloured square basics:**
+- [ ] Each blocked/warning page shows a coloured rounded square in its heading
+- [ ] Clicking the square opens the options tab (or switches to it if already open) with that tab's square selected
+- [ ] The square colour in the blocked/warning heading matches the square shown in the options tab
+
+**Options tab as hub:**
+- [ ] With two blocked tabs open, open options via toolbar — options shows two coloured squares, one per blocked tab
+- [ ] Clicking an unselected square in options selects it and shows "Apply & Retry" without touching language checkboxes or the whitelist
+- [ ] Clicking the already-selected square in options switches browser focus to that blocked tab
+
+**New blocked tab while options is already open:**
+- [ ] Navigate to a new blocked URL while options is open → new square appears in options bar without changing the current selection, language settings, or unsaved changes
+
+**Apply & Retry with multiple tabs:**
+- [ ] Select square A → Apply & Retry → only tab A navigates back to its URL; tab B stays blocked; square A disappears; square B remains and becomes selected
+- [ ] Select square B → Apply & Retry → tab B navigates back; no squares remain; Apply button reverts to "Apply Changes"
+
+**Tab closed:**
+- [ ] Close a blocked tab (without retrying) → its square disappears from options automatically
+- [ ] If the closed tab was selected, the next available square is auto-selected; if none remain, button reverts to "Apply Changes"
+
+**Continue Anyway (warning pages):**
+- [ ] On a warning page click "Continue Anyway" → that tab's square disappears from options (session-allowed, no longer blocked)
+
+**Options tab reopened:**
+- [ ] Close the options tab → navigate to its original blocked URL (still blocked) → click square on blocked page → options reopens with that tab's square selected and all other currently-blocked tabs' squares restored
 
 ---
 
