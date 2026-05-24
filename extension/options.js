@@ -375,24 +375,23 @@ function buildLanguageTable() {
     tr.appendChild(scriptsTd);
     tbody.appendChild(tr);
 
-    // Per-script sub-rows — only for languages with 2+ non-always-permitted scripts
-    // (currently Japanese: Han/Hiragana/Katakana, Korean: Han/Hangul).
-    // These let users enable individual scripts and expose the indeterminate parent state.
-    if (nonPermitted.length > 1) {
-      nonPermitted.forEach(script => {
+    // Per-script sub-rows — read-only labels showing each script for any language
+    // with 2+ total scripts. Language checkboxes are the only control; individual
+    // scripts are not toggled separately.
+    if (allScripts.length > 1) {
+      allScripts.forEach(script => {
         const subTr = document.createElement('tr');
         subTr.className = 'script-sub-row';
-
         const subTd = document.createElement('td');
-        const subLabel = document.createElement('label');
-        subLabel.className = 'lang-label script-sub-label';
-        const subCb = document.createElement('input');
-        subCb.type = 'checkbox';
-        subCb.dataset.script = script;
-        subCb.addEventListener('change', () => onScriptToggle(script, subCb.checked));
-        subLabel.appendChild(subCb);
-        subLabel.appendChild(document.createTextNode(' ' + script.replace(/_/g, ' ')));
-        subTd.appendChild(subLabel);
+        const note = document.createElement('span');
+        note.className = 'lang-label script-sub-label';
+        if (ALWAYS_PERMITTED.has(script)) {
+          note.textContent = script.replace(/_/g, ' ') + ' (always permitted)';
+          note.style.color = '#999';
+        } else {
+          note.textContent = script.replace(/_/g, ' ');
+        }
+        subTd.appendChild(note);
         subTr.appendChild(subTd);
         subTr.appendChild(document.createElement('td'));
         tbody.appendChild(subTr);
@@ -446,49 +445,12 @@ function onLanguageToggle(language, checked) {
   checkDirty();
 }
 
-// Toggling an individual script sub-checkbox. Because additionalScripts is a flat
-// Set shared across all languages, changing Han here also updates the Han-bearing
-// parent checkboxes for Korean and Chinese (Simplified/Traditional) automatically.
-// When all scripts of a multi-script language are enabled via sub-rows, that
-// language is added to enabledLanguages so its script mix is blessed correctly.
-function onScriptToggle(script, checked) {
-  if (checked) additionalScripts.add(script);
-  else additionalScripts.delete(script);
-  // Sync enabledLanguages for languages that have sub-rows (2+ non-always-permitted scripts).
-  for (const [lang, scripts] of Object.entries(LANGUAGE_SCRIPTS)) {
-    const nonPermitted = scripts.filter(s => !ALWAYS_PERMITTED.has(s));
-    if (nonPermitted.length <= 1) continue;
-    if (nonPermitted.every(s => additionalScripts.has(s))) enabledLanguages.add(lang);
-    else enabledLanguages.delete(lang);
-  }
-  updateTableState();
-  checkDirty();
-}
-
-// Reflects the current state in all checkboxes.
-// Language parent: checked if in enabledLanguages (explicit or auto-grouped).
-// Because same-script languages are toggled as a group, this accurately reflects
-// which languages' scripts are permitted. Serbian stays unchecked when Russian is
-// enabled — its full set ['Cyrillic','Latin'] is a different group from ['Cyrillic'].
-// Indeterminate = multi-script language with only some sub-scripts enabled.
-// Per-script sub-checkboxes: checked iff that script is in additionalScripts.
+// Reflects the current state in all language checkboxes.
+// Checked if in enabledLanguages; same-script languages are toggled as a group
+// so Serbian stays unchecked when Russian is enabled (different script set).
 function updateTableState() {
   document.querySelectorAll('input[data-language]').forEach(cb => {
-    const lang = cb.dataset.language;
-    if (enabledLanguages.has(lang)) {
-      cb.checked = true; cb.indeterminate = false;
-    } else {
-      const nonPermitted = (LANGUAGE_SCRIPTS[lang] || []).filter(s => !ALWAYS_PERMITTED.has(s));
-      if (nonPermitted.length > 1) {
-        const n = nonPermitted.filter(s => additionalScripts.has(s)).length;
-        cb.checked = false; cb.indeterminate = n > 0 && n < nonPermitted.length;
-      } else {
-        cb.checked = false; cb.indeterminate = false;
-      }
-    }
-  });
-  document.querySelectorAll('input[data-script]').forEach(cb => {
-    cb.checked = additionalScripts.has(cb.dataset.script);
+    cb.checked = enabledLanguages.has(cb.dataset.language);
     cb.indeterminate = false;
   });
 }
