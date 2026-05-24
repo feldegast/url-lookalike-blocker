@@ -11,8 +11,12 @@ let initialLanguages = new Set();
 let initialWhitelist = [];
 let isDirty = false;
 
+// Tab selector state — which blocked tab is the current retry target.
+let selectedTabId = null;
+
 const urlParams = new URLSearchParams(window.location.search);
-const blockedUrl = urlParams.get('blockedUrl');
+const initialBlockedTabId = urlParams.get('blockedTabId')
+  ? parseInt(urlParams.get('blockedTabId'), 10) : null;
 
 const LANGUAGE_SCRIPTS = {
   'English': ['Latin'],
@@ -128,13 +132,21 @@ function getLocaleScripts() {
   return scripts;
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  loadSettings();
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadSettings();
   buildLanguageTable();
   setupEventListeners();
-  if (blockedUrl) {
-    document.getElementById('apply-btn').textContent = 'Apply & Retry';
-  }
+  await initTabSelector();
+
+  // Listen for tab events from background.js
+  browser.runtime.onMessage.addListener((message) => {
+    if (message.type === 'addBlockedTab') {
+      addTabDot(message.tabId, message.url, message.color, message.select);
+    }
+    if (message.type === 'blockedTabClosed') {
+      removeTabDot(message.tabId);
+    }
+  });
 });
 
 async function loadSettings() {
@@ -452,6 +464,83 @@ function updateTableState() {
   });
 }
 
+// --- Tab selector ---
+
+function tabColor(tabId) {
+  const hue = Math.round((tabId * 137.508) % 360);
+  return `hsl(${hue}, 65%, 42%)`;
+}
+
+async function initTabSelector() {
+  const tabs = await browser.runtime.sendMessage({ type: 'getBlockedTabs' });
+  for (const { tabId, url, color } of tabs) {
+    addTabDot(tabId, url, color, tabId === initialBlockedTabId);
+  }
+  // If we were opened for a specific tab but it wasn't in the list yet, select
+  // whatever is first.
+  if (selectedTabId === null && tabs.length > 0) {
+    selectTabDot(tabs[0].tabId);
+  }
+}
+
+function addTabDot(tabId, url, color, select = false) {
+  // Don't add a duplicate dot for a tab already in the selector.
+  if (document.querySelector(`.tab-dot-btn[data-tab-id="${tabId}"]`)) {
+    if (select) selectTabDot(tabId);
+    return;
+  }
+  const container = document.getElementById('tab-selector');
+  container.style.display = 'flex';
+
+  const btn = document.createElement('button');
+  btn.className = 'tab-dot-btn';
+  btn.dataset.tabId = tabId;
+  btn.style.background = color || tabColor(tabId);
+  btn.title = url;
+  btn.addEventListener('click', () => {
+    if (selectedTabId === tabId) {
+      // Already selected — switch browser focus to the blocked tab.
+      browser.runtime.sendMessage({ type: 'switchToTab', tabId });
+    } else {
+      selectTabDot(tabId);
+    }
+  });
+  container.appendChild(btn);
+
+  if (select) selectTabDot(tabId);
+  updateApplyButton();
+}
+
+function selectTabDot(tabId) {
+  selectedTabId = tabId;
+  document.querySelectorAll('.tab-dot-btn').forEach(btn => {
+    btn.classList.toggle('selected', parseInt(btn.dataset.tabId, 10) === tabId);
+  });
+  updateApplyButton();
+}
+
+function removeTabDot(tabId) {
+  const btn = document.querySelector(`.tab-dot-btn[data-tab-id="${tabId}"]`);
+  if (btn) btn.remove();
+
+  if (selectedTabId === tabId) {
+    selectedTabId = null;
+    // Select the next available dot if any.
+    const next = document.querySelector('.tab-dot-btn');
+    if (next) {
+      selectTabDot(parseInt(next.dataset.tabId, 10));
+    } else {
+      document.getElementById('tab-selector').style.display = 'none';
+      updateApplyButton();
+    }
+  }
+}
+
+function updateApplyButton() {
+  document.getElementById('apply-btn').textContent =
+    selectedTabId !== null ? 'Apply & Retry' : 'Apply Changes';
+}
+
 function removeFromWhitelist(domain) {
   whitelist = whitelist.filter(d => d !== domain);
   renderWhitelist();
@@ -485,13 +574,21 @@ function setupEventListeners() {
       additionalScripts: scripts,
       additionalLangScripts: langScripts,
       whitelist: wl,
-      blockedUrl: blockedUrl || null
+      retryTabId: selectedTabId !== null ? selectedTabId : undefined
     });
 
-    isDirty = false;
+    // Update snapshots so the dirty dots clear without a reload.
+    initialLanguages = new Set(enabledLanguages);
+    initialWhitelist = [...whitelist];
+    const retried = selectedTabId;
+    if (retried !== null) removeTabDot(retried);
+    checkDirty();
 
-    const tab = await browser.tabs.getCurrent();
-    browser.tabs.remove(tab.id);
+    // Close options only when there are no more blocked tabs to handle.
+    if (document.querySelectorAll('.tab-dot-btn').length === 0) {
+      const tab = await browser.tabs.getCurrent();
+      browser.tabs.remove(tab.id);
+    }
   });
 
   document.getElementById('discard-btn').addEventListener('click', () => {

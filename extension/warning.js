@@ -5,10 +5,29 @@
 // decodeHostname, getCharScript, getConfusableChars, LOCALE_SCRIPTS_MAP are
 // provided by unicode-scripts.js which is loaded before this script.
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const urlParams = new URLSearchParams(window.location.search);
   const blockedUrl = urlParams.get('url');
   const unicodeDomain = decodeHostname(blockedUrl || '');
+
+  // Self-identify this tab for the colour dot and openOptions message.
+  const myTab = await browser.tabs.getCurrent();
+  const myTabId = myTab ? myTab.id : null;
+
+  function tabColor(tabId) {
+    const hue = Math.round((tabId * 137.508) % 360);
+    return `hsl(${hue}, 65%, 42%)`;
+  }
+
+  if (myTabId !== null) {
+    const dot = document.getElementById('tab-dot');
+    dot.style.background = tabColor(myTabId);
+    dot.style.display = 'inline-block';
+    dot.style.cursor = 'pointer';
+    dot.addEventListener('click', () => {
+      browser.runtime.sendMessage({ type: 'openOptions', tabId: myTabId, color: tabColor(myTabId) });
+    });
+  }
 
   const ALWAYS_PERMITTED = new Set(['Latin', 'Common', 'Inherited']);
 
@@ -217,10 +236,13 @@ document.addEventListener('DOMContentLoaded', () => {
     window.history.back();
   });
 
-  // Open options in a new tab, passing the blocked URL so Apply can retry it
+  // Open settings — switches to the existing options tab (or creates one),
+  // passing this tab's ID and colour so options can add the matching dot.
   document.getElementById('settings-btn').addEventListener('click', () => {
-    const optionsUrl = browser.runtime.getURL('options.html') +
-      (blockedUrl ? '?blockedUrl=' + encodeURIComponent(blockedUrl) : '');
-    browser.tabs.create({ url: optionsUrl });
+    browser.runtime.sendMessage({
+      type: 'openOptions',
+      tabId: myTabId,
+      color: myTabId !== null ? tabColor(myTabId) : null
+    });
   });
 });

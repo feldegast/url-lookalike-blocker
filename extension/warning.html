@@ -58,6 +58,16 @@
       color: #555;
       font-style: italic;
     }
+    .tab-dot {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      border: 3px solid #333;
+      vertical-align: middle;
+      margin-left: 10px;
+      flex-shrink: 0;
+    }
     .unicode-domain {
       font-family: monospace;
       background: #f8f8f8;
@@ -109,7 +119,7 @@
 </head>
 <body>
   <div class="container">
-    <div class="warning"><img src="icon.svg" alt="" style="height: 1em; vertical-align: middle; margin-right: 0.4em;">URL Lookalike Blocker — Mixed Script Domain</div>
+    <div class="warning"><img src="icon.svg" alt="" style="height: 1em; vertical-align: middle; margin-right: 0.4em;">URL Lookalike Blocker — Mixed Script Domain<span id="tab-dot" class="tab-dot" style="display:none"></span></div>
     <p>This domain contains characters from multiple different scripts. Mixed-script domains are sometimes used in homograph attacks to make a URL look like a trusted site.</p>
 
     <div class="details">

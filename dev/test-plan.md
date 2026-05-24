@@ -145,8 +145,8 @@ Enabling a **language** both permits its scripts and blesses that script combina
 
 Repeat step 1 after all the above to confirm nothing broke pass-through for normal domains.
 
-- [ ] `www.example.com` — still passes
-- [ ] `www.google.com` — still passes
+- [x] `www.example.com` — still passes
+- [x] `www.google.com` — still passes
 
 ---
 

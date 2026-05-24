@@ -1,15 +1,34 @@
 // blocked.js
-// Handles the blocked page UI and whitelist functionality
-// decodeHostname, getCharScript, getConfusableChars are provided by unicode-scripts.js
+// Handles the blocked page UI and whitelist functionality.
+// decodeHostname, getCharScript are provided by unicode-scripts.js
 // which is loaded before this script in blocked.html.
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const urlParams = new URLSearchParams(window.location.search);
   const blockedUrl = urlParams.get('url');
 
+  // Self-identify this tab so the colour dot and openOptions message use the
+  // correct tab ID without needing it passed through the redirect URL.
+  const myTab = await browser.tabs.getCurrent();
+  const myTabId = myTab ? myTab.id : null;
+
+  // Derive colour from tab ID using the same formula as background.js.
+  function tabColor(tabId) {
+    const hue = Math.round((tabId * 137.508) % 360);
+    return `hsl(${hue}, 65%, 42%)`;
+  }
+
+  if (myTabId !== null) {
+    const dot = document.getElementById('tab-dot');
+    dot.style.background = tabColor(myTabId);
+    dot.style.display = 'inline-block';
+    dot.style.cursor = 'pointer';
+    dot.addEventListener('click', () => {
+      browser.runtime.sendMessage({ type: 'openOptions', tabId: myTabId, color: tabColor(myTabId) });
+    });
+  }
+
   // Re-derive all non-compliant characters from the decoded hostname.
-  // This is more reliable than passing them through URL params.
-  // getCharScript is available via the unicode-scripts.js script tag.
   const alwaysPermitted = new Set(['Common', 'Inherited', 'Latin']);
   const unicodeDomainForScan = decodeHostname(blockedUrl || '');
   const offendingChars = [];
@@ -25,7 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   const offendingSet = new Set(offendingChars.map(o => o.char));
 
-  // Display blocked URL
   document.getElementById('blocked-url').textContent = blockedUrl || 'Unknown';
 
   // Include the Unicode domain in the tab title so multiple blocked tabs are
@@ -35,7 +53,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.title = `URL Lookalike Blocker — Navigation Blocked — ${titleDomain}`;
   }
 
-  // Extract and display domain versions
   if (blockedUrl) {
     try {
       const urlObj = new URL(blockedUrl);
@@ -44,7 +61,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       document.getElementById('punycode-domain').textContent = punycodeDomain;
 
-      // Highlight all offending characters in the Unicode domain
       const domainEl = document.getElementById('unicode-domain');
       domainEl.textContent = '';
       for (const char of unicodeDomain) {
@@ -64,15 +80,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Set description text based on number of non-compliant characters
   const descEl = document.getElementById('script-description');
-  if (offendingChars.length === 1) {
-    descEl.textContent = "This character belongs to a script not permitted by this plugin's settings.";
-  } else {
-    descEl.textContent = "These characters belong to scripts not permitted by this plugin's settings.";
-  }
+  descEl.textContent = offendingChars.length === 1
+    ? "This character belongs to a script not permitted by your settings."
+    : "These characters belong to scripts not permitted by your settings.";
 
-  // Populate all non-compliant characters table
   const tbody = document.getElementById('offending-chars-body');
   for (const { char, script: s } of offendingChars) {
     const codepoint = `U+${char.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')}`;
@@ -84,42 +96,35 @@ document.addEventListener('DOMContentLoaded', () => {
     tdCode.textContent = codepoint;
     const tdScript = document.createElement('td');
     tdScript.textContent = s;
-    row.appendChild(tdChar);
-    row.appendChild(tdCode);
-    row.appendChild(tdScript);
+    row.append(tdChar, tdCode, tdScript);
     tbody.appendChild(row);
   }
 
-  // Allow button
   document.getElementById('allow-btn').addEventListener('click', async () => {
     if (blockedUrl) {
       const hostname = decodeHostname(blockedUrl);
       if (hostname) {
-        // Add to whitelist
         const result = await browser.storage.local.get('whitelist');
-        const whitelist = new Set(result.whitelist || []);
-        whitelist.add(hostname);
-        await browser.storage.local.set({ whitelist: Array.from(whitelist) });
-
-        // Sync background.js in-memory whitelist before navigating so the
-        // webRequest check sees the updated whitelist when the page loads.
+        const wl = new Set(result.whitelist || []);
+        wl.add(hostname);
+        await browser.storage.local.set({ whitelist: Array.from(wl) });
         await browser.runtime.sendMessage({ type: 'addToWhitelist', domain: hostname });
-
         window.location.href = blockedUrl;
       }
     }
   });
 
-  // Back button
   document.getElementById('back-btn').addEventListener('click', () => {
     window.history.back();
   });
 
-  // Settings button — open options in a new tab, passing the blocked URL so the
-  // options page can navigate this tab back to it after the user applies changes.
+  // Open settings — switches to the existing options tab (or creates one),
+  // passing this tab's ID and colour so options can add the matching dot.
   document.getElementById('settings-btn').addEventListener('click', () => {
-    const optionsUrl = browser.runtime.getURL('options.html') +
-      (blockedUrl ? '?blockedUrl=' + encodeURIComponent(blockedUrl) : '');
-    browser.tabs.create({ url: optionsUrl });
+    browser.runtime.sendMessage({
+      type: 'openOptions',
+      tabId: myTabId,
+      color: myTabId !== null ? tabColor(myTabId) : null
+    });
   });
 });

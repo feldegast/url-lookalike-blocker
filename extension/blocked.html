@@ -94,11 +94,21 @@
     .settings-btn:hover {
       background: #616161;
     }
-  </style>
+    .tab-dot {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      border: 3px solid #333;
+      vertical-align: middle;
+      margin-left: 10px;
+      flex-shrink: 0;
+    }
+</style>
 </head>
 <body>
   <div class="container">
-    <div class="warning"><img src="icon.svg" alt="" style="height: 1em; vertical-align: middle; margin-right: 0.4em;">URL Lookalike Blocker — Navigation Blocked</div>
+    <div class="warning"><img src="icon.svg" alt="" style="height: 1em; vertical-align: middle; margin-right: 0.4em;">URL Lookalike Blocker — Navigation Blocked<span id="tab-dot" class="tab-dot" style="display:none"></span></div>
     <p>The URL you tried to visit contains characters that may be part of a homograph attack.</p>
 
     <div class="details">

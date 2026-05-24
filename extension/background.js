@@ -14,15 +14,34 @@ let enabledLangScriptSets = []; // derived from user-enabled languages only; use
 // this browser session. Stored in memory only — cleared on browser restart.
 const sessionAllowed = new Set();
 
-// Per-tab record of blocked navigations: tabId -> original url.
-// Lets the options page navigate the correct tab back to the original URL
-// after the user applies new permissions, even when multiple tabs are blocked.
+// Per-tab record of blocked navigations: tabId -> {url, color}.
+// color is a CSS string derived from the tabId so the blocked tab and its
+// matching options context share a visual identifier.
 const blockedTabs = new Map();
+
+// The single options tab. When it exists, toolbar clicks switch to it rather
+// than opening a second one.
+let optionsTabId = null;
 
 // Cache of hostname detection results. Keyed by hostname; value is the
 // redirect URL string to return, or '' for allow. Cleared whenever settings
 // or the whitelist change so stale results are never served.
 const hostnameCache = new Map();
+
+// Generates a stable HSL colour from a tab ID using the golden angle so
+// successive tab IDs produce visually distinct hues.
+function tabColor(tabId) {
+  const hue = Math.round((tabId * 137.508) % 360);
+  return `hsl(${hue}, 65%, 42%)`;
+}
+
+// Notify the options tab of a new or closed blocked tab. Silently ignored if
+// options is not open or the message channel is not yet ready.
+function notifyOptions(message) {
+  if (optionsTabId !== null) {
+    browser.tabs.sendMessage(optionsTabId, message).catch(() => {});
+  }
+}
 
 // Initialize on startup
 async function initialize() {
@@ -56,12 +75,31 @@ function isWhitelisted(hostname) {
   return false;
 }
 
-// Toolbar icon click — open options in a new tab rather than a popup.
-// A full tab is needed because the options page has an explicit Apply/Discard
-// workflow; popups are destroyed the moment they lose focus, which would
-// silently discard any unsaved changes the user had made.
-browser.action.onClicked.addListener(() => {
-  browser.tabs.create({ url: browser.runtime.getURL('options.html') });
+// Toolbar icon click — switch to the existing options tab if one is open,
+// otherwise create a new one. A full tab is needed because the options page
+// has an explicit Apply/Discard workflow; popups are destroyed the moment
+// they lose focus, which would silently discard unsaved changes.
+browser.action.onClicked.addListener(async () => {
+  if (optionsTabId !== null) {
+    browser.tabs.update(optionsTabId, { active: true });
+  } else {
+    const [currentTab] = await browser.tabs.query({ active: true, currentWindow: true });
+    browser.tabs.create({
+      url: browser.runtime.getURL('options.html'),
+      index: currentTab ? currentTab.index + 1 : undefined
+    }).then(tab => { optionsTabId = tab.id; });
+  }
+});
+
+// Clean up when any tab closes.
+browser.tabs.onRemoved.addListener((tabId) => {
+  if (blockedTabs.has(tabId)) {
+    blockedTabs.delete(tabId);
+    notifyOptions({ type: 'blockedTabClosed', tabId });
+  }
+  if (tabId === optionsTabId) {
+    optionsTabId = null;
+  }
 });
 
 // Storage change listener keeps background state in sync after a browser
@@ -84,17 +122,15 @@ browser.storage.onChanged.addListener((changes) => {
   }
 });
 
-// Message from the options page when the user clicks Apply Changes.
-// Accepting the new settings in the message (rather than waiting for the
-// storage.onChanged event to propagate) means permittedScripts is updated
-// synchronously before we navigate the blocked tab — no race condition between
-// the settings taking effect and the webRequest check for the retried URL.
+// Message handler for all extension pages.
 browser.runtime.onMessage.addListener((message, sender) => {
+
   if (message.type === 'addToWhitelist') {
-    // Sync in-memory whitelist when warning.js allows a domain permanently,
+    // Sync in-memory whitelist when a page allows a domain permanently,
     // so the webRequest check passes before storage.onChanged can fire.
     whitelist.add(message.domain);
     hostnameCache.clear();
+    return;
   }
 
   if (message.type === 'allowOnce') {
@@ -106,10 +142,60 @@ browser.runtime.onMessage.addListener((message, sender) => {
     if (message.url && sender.tab) {
       browser.tabs.update(sender.tab.id, { url: message.url });
       blockedTabs.delete(sender.tab.id);
+      notifyOptions({ type: 'blockedTabClosed', tabId: sender.tab.id });
     }
+    return;
+  }
+
+  if (message.type === 'openOptions') {
+    // Called by blocked/warning pages when the user clicks "Open Settings".
+    // Switches to the existing options tab (adding this tab's dot) or creates one.
+    const { tabId: blockedTabId, color } = message;
+    const entry = blockedTabs.get(blockedTabId);
+    if (optionsTabId !== null) {
+      browser.tabs.update(optionsTabId, { active: true });
+      notifyOptions({
+        type: 'addBlockedTab',
+        tabId: blockedTabId,
+        url: entry ? entry.url : '',
+        color,
+        select: true
+      });
+    } else {
+      browser.tabs.query({ active: true, currentWindow: true }).then(([currentTab]) => {
+        browser.tabs.create({
+          url: browser.runtime.getURL('options.html') + `?blockedTabId=${blockedTabId}`,
+          index: currentTab ? currentTab.index + 1 : undefined
+        }).then(tab => { optionsTabId = tab.id; });
+      });
+    }
+    return;
+  }
+
+  if (message.type === 'getBlockedTabs') {
+    // Options page queries this on load to populate the tab colour selector.
+    return Promise.resolve(
+      [...blockedTabs.entries()].map(([tabId, { url, color }]) => ({ tabId, url, color }))
+    );
+  }
+
+  if (message.type === 'switchToTab') {
+    // Options page wants to focus a specific blocked tab.
+    browser.tabs.update(message.tabId, { active: true }).catch(() => {});
+    return;
+  }
+
+  if (message.type === 'focusOptions') {
+    // Blocked/warning page wants to switch browser focus to the options tab.
+    if (optionsTabId !== null) {
+      browser.tabs.update(optionsTabId, { active: true }).catch(() => {});
+    }
+    return;
   }
 
   if (message.type === 'applySettings') {
+    // Accept new settings from the options page synchronously so permittedScripts
+    // is updated before we navigate the blocked tab — no race condition.
     if (message.additionalScripts !== undefined) {
       additionalScripts = new Set(message.additionalScripts);
     }
@@ -124,21 +210,26 @@ browser.runtime.onMessage.addListener((message, sender) => {
       hostnameCache.clear();
     }
 
-    // If the user opened options from a blocked page, find that tab by its
-    // original URL and navigate it back. permittedScripts is already updated
-    // above, so the webRequest handler will allow or re-block based on the
-    // new settings.
-    if (message.blockedUrl) {
-      for (const [tabId, url] of blockedTabs) {
-        if (url === message.blockedUrl) {
-          browser.tabs.update(tabId, { url: message.blockedUrl });
-          blockedTabs.delete(tabId);
-          break;
-        }
-      }
+    // Navigate the selected blocked tab back to its original URL.
+    // permittedScripts is already updated so the webRequest check will
+    // allow or re-block based on the new settings.
+    if (message.retryTabId !== undefined && blockedTabs.has(message.retryTabId)) {
+      const { url } = blockedTabs.get(message.retryTabId);
+      browser.tabs.update(message.retryTabId, { url });
+      blockedTabs.delete(message.retryTabId);
+      notifyOptions({ type: 'blockedTabClosed', tabId: message.retryTabId });
     }
+    return;
   }
 });
+
+// Records a tab as blocked and notifies options if it is already open.
+function recordBlockedTab(tabId, url) {
+  const color = tabColor(tabId);
+  blockedTabs.set(tabId, { url, color });
+  notifyOptions({ type: 'addBlockedTab', tabId, url, color, select: false });
+  return color;
+}
 
 // WebRequest listener — intercepts main-frame navigations only.
 // sub_frame is excluded to avoid breaking embedded content (CDNs, widgets).
@@ -167,7 +258,7 @@ browser.webRequest.onBeforeRequest.addListener(
     const cached = hostnameCache.get(hostname);
     if (cached !== undefined) {
       if (cached) {
-        blockedTabs.set(details.tabId, url);
+        recordBlockedTab(details.tabId, url);
         return { redirectUrl: cached };
       }
       return {};
@@ -177,9 +268,9 @@ browser.webRequest.onBeforeRequest.addListener(
     const result = isHostnameAllowed(hostname, permittedScripts);
     if (!result.allowed) {
       const blockedPageUrl = browser.runtime.getURL('blocked.html') +
-        `?url=${encodeURIComponent(url)}&char=${encodeURIComponent(result.offendingChar)}&script=${encodeURIComponent(result.script)}&chars=${encodeURIComponent(JSON.stringify(result.offendingChars))}`;
+        `?url=${encodeURIComponent(url)}`;
       hostnameCache.set(hostname, blockedPageUrl);
-      blockedTabs.set(details.tabId, url);
+      recordBlockedTab(details.tabId, url);
       return { redirectUrl: blockedPageUrl };
     }
 
@@ -203,7 +294,7 @@ browser.webRequest.onBeforeRequest.addListener(
         const warningPageUrl = browser.runtime.getURL('warning.html') +
           `?url=${encodeURIComponent(url)}`;
         hostnameCache.set(hostname, warningPageUrl);
-        blockedTabs.set(details.tabId, url);
+        recordBlockedTab(details.tabId, url);
         return { redirectUrl: warningPageUrl };
       }
     }
@@ -226,7 +317,7 @@ browser.webRequest.onBeforeRequest.addListener(
       const warningPageUrl = browser.runtime.getURL('warning.html') +
         `?url=${encodeURIComponent(url)}`;
       hostnameCache.set(hostname, warningPageUrl);
-      blockedTabs.set(details.tabId, url);
+      recordBlockedTab(details.tabId, url);
       return { redirectUrl: warningPageUrl };
     }
 
