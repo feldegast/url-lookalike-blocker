@@ -6,8 +6,7 @@ let additionalScripts = new Set(); // Set of enabled script names, e.g. 'Cyrilli
 let enabledLanguages = new Set(); // Explicitly enabled language names — source of truth for langScriptSets
 let whitelist = [];
 
-// Snapshots of the state as loaded from storage, used to detect unsaved changes.
-let initialScripts = new Set();
+// Snapshot of language state as loaded from storage, used to detect unsaved changes.
 let initialLanguages = new Set();
 let initialWhitelist = [];
 let isDirty = false;
@@ -164,7 +163,6 @@ async function loadSettings() {
     }
   }
 
-  initialScripts = new Set(additionalScripts);
   initialLanguages = new Set(enabledLanguages);
   initialWhitelist = [...whitelist];
   renderWhitelist();
@@ -202,16 +200,15 @@ async function applyToStorage() {
 }
 
 function checkDirty() {
-  isDirty = !setsEqual(additionalScripts, initialScripts) ||
-            !setsEqual(enabledLanguages, initialLanguages) ||
-            !arraysEqualSorted(whitelist, initialWhitelist);
+  let anyLanguageDirty = false;
+  document.querySelectorAll('.dirty-dot[data-language]').forEach(dot => {
+    const lang = dot.dataset.language;
+    const changed = initialLanguages.has(lang) !== enabledLanguages.has(lang);
+    dot.style.display = changed ? 'inline-block' : 'none';
+    if (changed) anyLanguageDirty = true;
+  });
+  isDirty = anyLanguageDirty || !arraysEqualSorted(whitelist, initialWhitelist);
   document.getElementById('unsaved-indicator').style.display = isDirty ? '' : 'none';
-}
-
-function setsEqual(a, b) {
-  if (a.size !== b.size) return false;
-  for (const item of a) if (!b.has(item)) return false;
-  return true;
 }
 
 function arraysEqualSorted(a, b) {
@@ -362,13 +359,18 @@ function buildLanguageTable() {
     langCb.addEventListener('change', () => onLanguageToggle(language, langCb.checked));
     langLabel.appendChild(langCb);
     langLabel.appendChild(document.createTextNode(' ' + language));
+    const dot = document.createElement('span');
+    dot.className = 'dirty-dot';
+    dot.dataset.language = language;
+    dot.style.display = 'none';
+    langLabel.appendChild(dot);
     langTd.appendChild(langLabel);
     tr.appendChild(langTd);
 
     const scriptsTd = document.createElement('td');
     allScripts.forEach(script => {
       const tag = document.createElement('span');
-      tag.className = ALWAYS_PERMITTED.has(script) ? 'script-tag always-permitted' : 'script-tag';
+      tag.className = 'script-tag';
       tag.textContent = script.replace(/_/g, ' ');
       scriptsTd.appendChild(tag);
     });
@@ -385,12 +387,7 @@ function buildLanguageTable() {
         const subTd = document.createElement('td');
         const note = document.createElement('span');
         note.className = 'lang-label script-sub-label';
-        if (ALWAYS_PERMITTED.has(script)) {
-          note.textContent = script.replace(/_/g, ' ') + ' (always permitted)';
-          note.style.color = '#999';
-        } else {
-          note.textContent = script.replace(/_/g, ' ');
-        }
+        note.textContent = script.replace(/_/g, ' ');
         subTd.appendChild(note);
         subTr.appendChild(subTd);
         subTr.appendChild(document.createElement('td'));
@@ -466,7 +463,6 @@ function setupEventListeners() {
     additionalScripts = getLocaleScripts();
     enabledLanguages = new Set(getLocaleLanguages());
     await applyToStorage();
-    initialScripts = new Set(additionalScripts);
     initialLanguages = new Set(enabledLanguages);
     updateTableState();
     checkDirty();

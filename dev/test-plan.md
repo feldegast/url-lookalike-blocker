@@ -117,10 +117,10 @@ Open settings, disable all languages (use "Disable All Languages" button), click
 
 Enabling a **language** both permits its scripts and blesses that script combination within a single domain label.
 
-- [ ] Enable Russian → `www.xn--80ak6aa92e.com` (pure Cyrillic domain) passes through
-- [ ] Enable Russian → click `xn--test-34d.com` (testж.com) — warning page appears; the ж is highlighted amber (not red); text says "There are no enabled languages that permit combining Latin and Cyrillic characters in a URL"; hint says "To allow this combination, enable Serbian in Extension Settings"
-- [ ] Enable Serbian → click `xn--test-34d.com` — passes through (Serbian blesses Latin+Cyrillic together)
-- [ ] Disable Serbian → click `xn--test-34d.com` — warning page appears again
+- [x] Enable Russian → `www.xn--80ak6aa92e.com` (pure Cyrillic domain) passes through
+- [x] Enable Russian → click `xn--test-34d.com` (testж.com) — warning page appears; the ж is highlighted amber (not red); text says "There are no enabled languages that permit combining Latin and Cyrillic characters in a URL"; hint says "To allow this combination, enable Serbian in Extension Settings"
+- [x] Enable Serbian → click `xn--test-34d.com` — passes through (Serbian blesses Latin+Cyrillic together)
+- [x] Disable Serbian → click `xn--test-34d.com` — warning page appears again
 
 ---
 
