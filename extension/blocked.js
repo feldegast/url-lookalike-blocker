@@ -44,8 +44,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   const offendingSet = new Set(offendingChars.map(o => o.char));
 
-  document.getElementById('blocked-url').textContent = blockedUrl || 'Unknown';
-
   // Include the Unicode domain in the tab title so multiple blocked tabs are
   // distinguishable without switching to each one.
   const titleDomain = decodeHostname(blockedUrl || '');
@@ -59,25 +57,39 @@ document.addEventListener('DOMContentLoaded', async () => {
       const punycodeDomain = urlObj.hostname;
       const unicodeDomain = decodeHostname(blockedUrl);
 
-      document.getElementById('punycode-domain').textContent = punycodeDomain;
-
-      const domainEl = document.getElementById('unicode-domain');
-      domainEl.textContent = '';
+      // Show the blocked URL with the hostname decoded to Unicode so the
+      // offending characters are immediately visible with red highlights.
+      // The raw punycode form is preserved in the Punycode domain row below.
+      const blockedUrlEl = document.getElementById('blocked-url');
+      const domainStart = blockedUrl.indexOf(punycodeDomain);
+      blockedUrlEl.appendChild(document.createTextNode(blockedUrl.slice(0, domainStart)));
       for (const char of unicodeDomain) {
         if (offendingSet.has(char)) {
           const span = document.createElement('span');
           span.style.color = 'red';
           span.style.fontWeight = 'bold';
           span.textContent = char;
-          domainEl.appendChild(span);
+          blockedUrlEl.appendChild(span);
         } else {
-          domainEl.appendChild(document.createTextNode(char));
+          blockedUrlEl.appendChild(document.createTextNode(char));
         }
       }
+      blockedUrlEl.appendChild(document.createTextNode(blockedUrl.slice(domainStart + punycodeDomain.length)));
+
+      document.getElementById('punycode-domain').textContent = punycodeDomain;
+
+      // Unicode domain row: redundant now that the decoded form is inline
+      // in the Blocked URL line above — hide it.
+      if (unicodeDomain !== punycodeDomain) {
+        document.getElementById('unicode-row').style.display = 'none';
+      }
     } catch (e) {
+      document.getElementById('blocked-url').textContent = blockedUrl;
       document.getElementById('punycode-domain').textContent = 'Error parsing URL';
       document.getElementById('unicode-domain').textContent = 'Error parsing URL';
     }
+  } else {
+    document.getElementById('blocked-url').textContent = 'Unknown';
   }
 
   const descEl = document.getElementById('script-description');

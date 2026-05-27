@@ -54,6 +54,9 @@
       font-weight: bold;
       color: #d32f2f;
     }
+    .details > div {
+      margin-bottom: 4px;
+    }
     .unicode-domain {
       font-family: monospace;
       background: #f8f8f8;
@@ -141,9 +144,9 @@
     <p>The URL you tried to visit contains characters that may be part of a homograph attack.</p>
 
     <div class="details">
-      <strong>Blocked URL:</strong> <span id="blocked-url"></span><br>
-      <strong>Punycode domain:</strong> <span id="punycode-domain"></span><br>
-      <strong>Unicode domain:</strong> <span id="unicode-domain" class="unicode-domain"></span><br>
+      <div><strong>Blocked URL:</strong> <span id="blocked-url"></span></div>
+      <div id="punycode-row"><strong>Punycode domain:</strong> <span id="punycode-domain"></span></div>
+      <div id="unicode-row"><strong>Unicode domain:</strong> <span id="unicode-domain" class="unicode-domain"></span></div>
       <strong>Non-compliant characters:</strong>
       <table class="offending-chars-table">
         <thead><tr><th>Character</th><th>Codepoint</th><th>Script</th></tr></thead>

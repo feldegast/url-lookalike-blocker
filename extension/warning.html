@@ -81,6 +81,9 @@
     .tab-dot-wrapper:hover {
       color: #222;
     }
+    .details > div {
+      margin-bottom: 4px;
+    }
     .unicode-domain {
       font-family: monospace;
       background: #f8f8f8;
@@ -153,9 +156,9 @@
     <p>This domain contains characters from multiple different scripts. Mixed-script domains are sometimes used in homograph attacks to make a URL look like a trusted site.</p>
 
     <div class="details">
-      <strong>URL:</strong> <span id="blocked-url"></span><br>
-      <strong>Punycode domain:</strong> <span id="punycode-domain"></span><br>
-      <strong>Unicode domain:</strong> <span id="unicode-domain" class="unicode-domain"></span><br>
+      <div><strong>URL:</strong> <span id="blocked-url"></span></div>
+      <div id="punycode-row"><strong>Punycode domain:</strong> <span id="punycode-domain"></span></div>
+      <div id="unicode-row"><strong>Unicode domain:</strong> <span id="unicode-domain" class="unicode-domain"></span></div>
       <strong id="char-table-label"></strong>
       <table class="offending-chars-table">
         <thead id="offending-chars-head"></thead>

@@ -78,8 +78,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // --- Page title and URL display ---
-  document.getElementById('blocked-url').textContent = blockedUrl || 'Unknown';
-
   if (unicodeDomain) {
     document.title = `URL Lookalike Blocker — Mixed Script Domain — ${unicodeDomain}`;
   }
@@ -87,7 +85,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (blockedUrl) {
     try {
       const urlObj = new URL(blockedUrl);
-      document.getElementById('punycode-domain').textContent = urlObj.hostname;
+      const punycodeDomain = urlObj.hostname;
 
       // Build highlight map: confusable chars → red, foreign (non-Latin) chars → amber
       const highlightMap = new Map();
@@ -97,23 +95,44 @@ document.addEventListener('DOMContentLoaded', async () => {
         for (const { char } of foreignChars) highlightMap.set(char, 'foreign');
       }
 
-      const domainEl = document.getElementById('unicode-domain');
-      domainEl.textContent = '';
+      // Show the URL with the hostname decoded to Unicode so highlighted chars
+      // are immediately visible. Punycode form is preserved in the row below.
+      const urlEl = document.getElementById('blocked-url');
+      const domainStart = blockedUrl.indexOf(punycodeDomain);
+      urlEl.appendChild(document.createTextNode(blockedUrl.slice(0, domainStart)));
       for (const char of unicodeDomain) {
         const style = highlightMap.get(char);
         if (style) {
           const span = document.createElement('span');
           span.className = style === 'confusable' ? 'confusable-char-glyph' : 'foreign-char-glyph';
           span.textContent = char;
-          domainEl.appendChild(span);
+          urlEl.appendChild(span);
         } else {
-          domainEl.appendChild(document.createTextNode(char));
+          urlEl.appendChild(document.createTextNode(char));
         }
       }
+      urlEl.appendChild(document.createTextNode(blockedUrl.slice(domainStart + punycodeDomain.length)));
+
+      document.getElementById('punycode-domain').textContent = punycodeDomain;
+
+      // Unicode domain row: redundant now that decoded chars are inline in
+      // the URL line — hide it when there is actual decoding to show.
+      if (unicodeDomain !== punycodeDomain) {
+        document.getElementById('unicode-row').style.display = 'none';
+      }
+
+      // Also populate the unicode-domain element in case it is visible
+      // (pure-ASCII domain edge case where unicode === punycode).
+      const domainEl = document.getElementById('unicode-domain');
+      domainEl.textContent = unicodeDomain;
+
     } catch (e) {
+      document.getElementById('blocked-url').textContent = blockedUrl;
       document.getElementById('punycode-domain').textContent = 'Error parsing URL';
       document.getElementById('unicode-domain').textContent = 'Error parsing URL';
     }
+  } else {
+    document.getElementById('blocked-url').textContent = 'Unknown';
   }
 
   // --- Character table ---
