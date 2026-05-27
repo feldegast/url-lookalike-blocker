@@ -232,6 +232,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  // Try again — navigate back to the original URL after applying new settings.
+  document.getElementById('try-again-btn').addEventListener('click', () => {
+    if (blockedUrl) window.location.href = blockedUrl;
+  });
+
   document.getElementById('back-btn').addEventListener('click', () => {
     window.history.back();
   });

@@ -11,8 +11,6 @@ let initialLanguages = new Set();
 let initialWhitelist = [];
 let isDirty = false;
 
-// Tab selector state — which blocked tab is the current retry target.
-let selectedTabId = null;
 
 const urlParams = new URLSearchParams(window.location.search);
 const initialBlockedTabId = urlParams.get('blockedTabId')
@@ -142,7 +140,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Listen for tab events from background.js
   browser.runtime.onMessage.addListener((message) => {
     if (message.type === 'addBlockedTab') {
-      addTabDot(message.tabId, message.url, message.color, message.select);
+      addTabDot(message.tabId, message.url, message.color);
     }
     if (message.type === 'blockedTabClosed') {
       removeTabDot(message.tabId);
@@ -486,29 +484,20 @@ async function initTabSelector() {
 
   // Fallback: if background state was wiped and we were opened for a specific
   // blocked tab, synthesise an entry from the URL params so the dot still shows.
-  // background.js now always encodes the blocked URL into the query string, so
-  // the tooltip URL will be correct even on a background page restart.
   if (tabs.length === 0 && initialBlockedTabId !== null) {
     const urlFromParams = urlParams.get('blockedUrl') || '';
     tabs = [{ tabId: initialBlockedTabId, url: urlFromParams, color: tabColor(initialBlockedTabId) }];
   }
 
   for (const { tabId, url, color } of tabs) {
-    addTabDot(tabId, url, color, tabId === initialBlockedTabId);
-  }
-  // If we were opened for a specific tab but it wasn't in the list yet, select
-  // whatever is first.
-  if (selectedTabId === null && tabs.length > 0) {
-    selectTabDot(tabs[0].tabId);
+    addTabDot(tabId, url, color);
   }
 }
 
-function addTabDot(tabId, url, color, select = false) {
+function addTabDot(tabId, url, color) {
   // Don't add a duplicate dot for a tab already in the selector.
-  if (document.querySelector(`.tab-dot-btn[data-tab-id="${tabId}"]`)) {
-    if (select) selectTabDot(tabId);
-    return;
-  }
+  if (document.querySelector(`.tab-dot-btn[data-tab-id="${tabId}"]`)) return;
+
   const container = document.getElementById('tab-selector');
   container.style.display = 'flex';
 
@@ -517,48 +506,20 @@ function addTabDot(tabId, url, color, select = false) {
   btn.dataset.tabId = tabId;
   btn.style.background = color || tabColor(tabId);
   btn.title = url;
+  // Clicking a dot switches focus to that blocked tab.
   btn.addEventListener('click', () => {
-    if (selectedTabId === tabId) {
-      // Already selected — switch browser focus to the blocked tab.
-      browser.runtime.sendMessage({ type: 'switchToTab', tabId });
-    } else {
-      selectTabDot(tabId);
-    }
+    browser.runtime.sendMessage({ type: 'switchToTab', tabId });
   });
   container.appendChild(btn);
-
-  if (select) selectTabDot(tabId);
-  updateApplyButton();
-}
-
-function selectTabDot(tabId) {
-  selectedTabId = tabId;
-  document.querySelectorAll('.tab-dot-btn').forEach(btn => {
-    btn.classList.toggle('selected', parseInt(btn.dataset.tabId, 10) === tabId);
-  });
-  updateApplyButton();
 }
 
 function removeTabDot(tabId) {
   const btn = document.querySelector(`.tab-dot-btn[data-tab-id="${tabId}"]`);
   if (btn) btn.remove();
-
-  if (selectedTabId === tabId) {
-    selectedTabId = null;
-    // Select the next available dot if any.
-    const next = document.querySelector('.tab-dot-btn');
-    if (next) {
-      selectTabDot(parseInt(next.dataset.tabId, 10));
-    } else {
-      document.getElementById('tab-selector').style.display = 'none';
-      updateApplyButton();
-    }
+  // Hide the bar when no dots remain.
+  if (document.querySelectorAll('.tab-dot-btn').length === 0) {
+    document.getElementById('tab-selector').style.display = 'none';
   }
-}
-
-function updateApplyButton() {
-  document.getElementById('apply-btn').textContent =
-    selectedTabId !== null ? 'Apply & retry' : 'Apply changes';
 }
 
 function removeFromWhitelist(domain) {
@@ -600,6 +561,13 @@ function setupEventListeners() {
     const langScripts = computeLangScripts();
     const wl = [...whitelist];
 
+    // Clear dirty state before the awaits so the beforeunload guard does not
+    // block the tab close that background.js will trigger.
+    initialLanguages = new Set(enabledLanguages);
+    initialWhitelist = [...whitelist];
+    isDirty = false;
+    checkDirty();
+
     await browser.storage.local.set({
       additionalScripts: scripts,
       additionalLangScripts: langScripts,
@@ -607,26 +575,14 @@ function setupEventListeners() {
       whitelist: wl
     });
 
+    // background.js applies the settings, returns focus to the appropriate
+    // blocked tab, and closes this options tab.
     await browser.runtime.sendMessage({
       type: 'applySettings',
       additionalScripts: scripts,
       additionalLangScripts: langScripts,
-      whitelist: wl,
-      retryTabId: selectedTabId !== null ? selectedTabId : undefined
+      whitelist: wl
     });
-
-    // Update snapshots so the dirty dots clear without a reload.
-    initialLanguages = new Set(enabledLanguages);
-    initialWhitelist = [...whitelist];
-    const retried = selectedTabId;
-    if (retried !== null) removeTabDot(retried);
-    checkDirty();
-
-    // Close options only when there are no more blocked tabs to handle.
-    if (document.querySelectorAll('.tab-dot-btn').length === 0) {
-      const tab = await browser.tabs.getCurrent();
-      browser.tabs.remove(tab.id);
-    }
   });
 
   document.getElementById('discard-btn').addEventListener('click', () => {

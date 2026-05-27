@@ -23,6 +23,11 @@ const blockedTabs = new Map();
 // than opening a second one.
 let optionsTabId = null;
 
+// The blocked/warning tab that most recently caused the options page to open
+// (either by clicking its dot, or by the toolbar being clicked while on a
+// blocked tab). Used by applySettings to return focus here after applying.
+let sourceTabId = null;
+
 // Cache of hostname detection results. Keyed by hostname; value is the
 // redirect URL string to return, or '' for allow. Cleared whenever settings
 // or the whitelist change so stale results are never served.
@@ -108,6 +113,11 @@ browser.action.onClicked.addListener(async () => {
     browser.tabs.update(optionsTabId, { active: true });
   } else {
     const [currentTab] = await browser.tabs.query({ active: true, currentWindow: true });
+    // If the toolbar is clicked while viewing a blocked/warning page, treat
+    // that tab as the source so Apply returns focus there.
+    if (currentTab && blockedTabs.has(currentTab.id)) {
+      sourceTabId = currentTab.id;
+    }
     browser.tabs.create({
       url: browser.runtime.getURL('options.html'),
       index: currentTab ? currentTab.index + 1 : undefined
@@ -123,6 +133,24 @@ browser.tabs.onRemoved.addListener((tabId) => {
   }
   if (tabId === optionsTabId) {
     optionsTabId = null;
+    sourceTabId = null; // Options closed without applying — reset source
+  }
+  if (tabId === sourceTabId) {
+    sourceTabId = null; // Source tab was closed before options was applied
+  }
+});
+
+// Remove stale blockedTabs entries when a blocked/warning tab navigates away
+// (e.g. user clicks Go Back, or Try Again succeeds). We check whether the new
+// URL is still one of our own pages — if not, the dot should disappear.
+browser.tabs.onUpdated.addListener((tabId, changeInfo) => {
+  if (changeInfo.url === undefined) return; // Not a URL change
+  if (!blockedTabs.has(tabId)) return;
+  const blockedBase = browser.runtime.getURL('blocked.html');
+  const warningBase = browser.runtime.getURL('warning.html');
+  if (!changeInfo.url.startsWith(blockedBase) && !changeInfo.url.startsWith(warningBase)) {
+    blockedTabs.delete(tabId);
+    notifyOptions({ type: 'blockedTabClosed', tabId });
   }
 });
 
@@ -172,11 +200,15 @@ browser.runtime.onMessage.addListener((message, sender) => {
   }
 
   if (message.type === 'openOptions') {
-    // Called by blocked/warning pages when the user clicks "Open Settings".
-    // Switches to the existing options tab (adding this tab's dot) or creates one.
+    // Called by blocked/warning pages when the user clicks "Open settings" or
+    // their coloured dot. Switches to the existing options tab (adding this
+    // tab's dot) or creates one.
     // blockedUrl is passed by the sender so we can reconstruct state if the
     // background event page was suspended and restarted (clearing blockedTabs).
     const { tabId: blockedTabId, color, blockedUrl: msgUrl } = message;
+
+    // Remember who opened options so Apply can return focus here.
+    sourceTabId = blockedTabId;
 
     // Restore a lost entry: Firefox can suspend the background event page,
     // wiping blockedTabs. The sender always includes the original URL now.
@@ -191,8 +223,7 @@ browser.runtime.onMessage.addListener((message, sender) => {
         type: 'addBlockedTab',
         tabId: blockedTabId,
         url: entry ? entry.url : '',
-        color,
-        select: true
+        color
       });
     } else {
       browser.tabs.query({ active: true, currentWindow: true }).then(([currentTab]) => {
@@ -232,7 +263,7 @@ browser.runtime.onMessage.addListener((message, sender) => {
 
   if (message.type === 'applySettings') {
     // Accept new settings from the options page synchronously so permittedScripts
-    // is updated before we navigate the blocked tab — no race condition.
+    // is updated before the user retries a blocked tab — no race condition.
     if (message.additionalScripts !== undefined) {
       additionalScripts = new Set(message.additionalScripts);
     }
@@ -247,15 +278,18 @@ browser.runtime.onMessage.addListener((message, sender) => {
       hostnameCache.clear();
     }
 
-    // Navigate the selected blocked tab back to its original URL.
-    // permittedScripts is already updated so the webRequest check will
-    // allow or re-block based on the new settings.
-    if (message.retryTabId !== undefined && blockedTabs.has(message.retryTabId)) {
-      const { url } = blockedTabs.get(message.retryTabId);
-      browser.tabs.update(message.retryTabId, { url });
-      blockedTabs.delete(message.retryTabId);
-      notifyOptions({ type: 'blockedTabClosed', tabId: message.retryTabId });
+    // Return focus to the blocked tab that opened options, falling back to the
+    // most-recently-recorded blocked tab. Then close options.
+    const returnTabId = blockedTabs.has(sourceTabId)
+      ? sourceTabId
+      : ([...blockedTabs.keys()].at(-1) ?? null);
+    if (returnTabId !== null) {
+      browser.tabs.update(returnTabId, { active: true }).catch(() => {});
     }
+    if (optionsTabId !== null) {
+      browser.tabs.remove(optionsTabId).catch(() => {});
+    }
+    sourceTabId = null;
     return;
   }
 });
@@ -264,7 +298,7 @@ browser.runtime.onMessage.addListener((message, sender) => {
 function recordBlockedTab(tabId, url) {
   const color = tabColor(tabId);
   blockedTabs.set(tabId, { url, color });
-  notifyOptions({ type: 'addBlockedTab', tabId, url, color, select: false });
+  notifyOptions({ type: 'addBlockedTab', tabId, url, color });
   return color;
 }
 

@@ -110,7 +110,7 @@ Open settings, manually uncheck all languages enabled in Part A, click Apply, th
 - [x] "Unsaved changes" disappears after clicking Apply Changes
 - [x] "Discard Changes" button reverts checkboxes and clears the unsaved indicator
 - [x] "Reset to Locale Defaults" re-seeds locale scripts, applies immediately, and clears the unsaved indicator
-- [x] "Apply Changes" becomes "Apply & Retry" when opened from a blocked page
+- [x] ~~"Apply Changes" becomes "Apply & Retry" when opened from a blocked page~~ *(removed: Apply now always closes options and returns focus to the appropriate blocked tab; use "Try again" on the blocked page to retry the URL)*
 - [x] Each language row shows its scripts as read-only tags (no script checkboxes)
 
 ### Language permission distinction (mixed-script labels)
@@ -143,26 +143,25 @@ Open two or more different blocked URLs in separate tabs before starting these t
 
 **Options tab as hub:**
 - [x] With two blocked tabs open, open options via toolbar — options shows two coloured squares, one per blocked tab
-- [ ] Clicking an unselected square in options selects it and shows "Apply & Retry" without touching language checkboxes or the whitelist
-- [ ] Clicking the already-selected square in options switches browser focus to that blocked tab
+- [ ] Clicking a square in options switches browser focus to that blocked tab (no selection state, no border highlight)
 
 **New blocked tab while options is already open:**
-- [ ] Navigate to a new blocked URL while options is open → new square appears in options bar without changing the current selection, language settings, or unsaved changes
+- [ ] Navigate to a new blocked URL while options is open → new square appears in options bar without changing language settings or unsaved changes
 
-**Apply & Retry with multiple tabs:**
-- [ ] Select square A → Apply & Retry → only tab A navigates back to its URL; tab B stays blocked; square A disappears; square B remains and becomes selected
-- [ ] Select square B → Apply & Retry → tab B navigates back; no squares remain; Apply button reverts to "Apply Changes"
+**Apply changes:**
+- [ ] Apply changes → options closes and browser focus returns to the tab that opened options (or the most-recently-blocked tab if opened via toolbar with no clear source tab)
+- [ ] "Try again" button on blocked/warning page → navigates to the original URL; if settings now cover it the page loads; if not the block page reappears
 
 **Tab closed:**
-- [ ] Close a blocked tab (without retrying) → its square disappears from options automatically
-- [ ] If the closed tab was selected, the next available square is auto-selected; if none remain, button reverts to "Apply Changes"
+- [ ] Close a blocked tab → its square disappears from options automatically
+- [ ] If no squares remain after a tab is closed, the tab-selector bar hides
 
 **Continue Anyway (warning pages):**
 - [ ] On a warning page click "Continue Anyway" → that tab's square disappears from options (session-allowed, no longer blocked)
 
 **Options tab reopened:**
 - [x] Open options from a blocked/warning page → close options WITHOUT clicking Apply → the blocked page is still showing → click the coloured square on the blocked page → options reopens showing that tab's coloured square (Tabs bar must be visible) *(regression: background state loss caused an empty Tabs bar — fixed by passing `blockedUrl` through `openOptions` and adding a fallback in `initTabSelector`)*
-- [ ] Close the options tab → navigate to its original blocked URL (still blocked) → click square on blocked page → options reopens with that tab's square selected and all other currently-blocked tabs' squares restored
+- [ ] Close the options tab → navigate to its original blocked URL (still blocked) → click square on blocked page → options reopens showing that tab's coloured square and all other currently-blocked tabs' squares
 
 ---
 
@@ -176,6 +175,8 @@ Repeat step 1 after all the above to confirm nothing broke pass-through for norm
 ---
 
 ## Polish notes (post-testing)
+
+- **v2 idea — cross-blocked-page navigation dots:** Show other blocked tabs' coloured squares directly on blocked/warning pages (labelled "Other blocked pages:") so the user can hop between blocked pages without going via options. Deferred: options hub covers the workflow in two clicks, and adding `getBlockedTabs` + live message listeners to blocked/warning pages adds meaningful complexity for a one-click saving.
 
 - **Dark/light mode theming:** Review all extension pages (blocked.html, options.html) to ensure they respect the system colour scheme via `prefers-color-scheme` media query. Check both modes explicitly.
 
