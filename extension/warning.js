@@ -21,11 +21,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   if (myTabId !== null) {
     const dot = document.getElementById('tab-dot');
+    const wrapper = document.getElementById('tab-dot-wrapper');
     dot.style.background = tabColor(myTabId);
-    dot.style.display = 'inline-block';
-    dot.style.cursor = 'pointer';
-    dot.addEventListener('click', () => {
-      browser.runtime.sendMessage({ type: 'openOptions', tabId: myTabId, color: tabColor(myTabId) });
+    wrapper.style.display = 'inline-block';
+    wrapper.addEventListener('click', () => {
+      browser.runtime.sendMessage({ type: 'openOptions', tabId: myTabId, color: tabColor(myTabId), blockedUrl });
     });
   }
 
@@ -237,12 +237,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   // Open settings — switches to the existing options tab (or creates one),
-  // passing this tab's ID and colour so options can add the matching dot.
+  // passing this tab's ID, colour, and URL so options can add the matching dot
+  // and background.js can reconstruct state if the event page was restarted.
   document.getElementById('settings-btn').addEventListener('click', () => {
     browser.runtime.sendMessage({
       type: 'openOptions',
       tabId: myTabId,
-      color: myTabId !== null ? tabColor(myTabId) : null
+      color: myTabId !== null ? tabColor(myTabId) : null,
+      blockedUrl
     });
   });
 });

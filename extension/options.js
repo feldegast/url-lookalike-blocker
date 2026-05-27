@@ -137,6 +137,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   buildLanguageTable();
   setupEventListeners();
   await initTabSelector();
+  await checkPrivateBrowsingAccess();
 
   // Listen for tab events from background.js
   browser.runtime.onMessage.addListener((message) => {
@@ -472,7 +473,26 @@ function tabColor(tabId) {
 }
 
 async function initTabSelector() {
-  const tabs = await browser.runtime.sendMessage({ type: 'getBlockedTabs' });
+  // Wrap the background query in a try-catch: if the background event page was
+  // restarted (Firefox can suspend idle extensions), the message channel may be
+  // briefly unavailable or blockedTabs may be empty.
+  let tabs = [];
+  try {
+    const result = await browser.runtime.sendMessage({ type: 'getBlockedTabs' });
+    if (Array.isArray(result)) tabs = result;
+  } catch (e) {
+    // Background page unavailable; fall through to the URL-param fallback below.
+  }
+
+  // Fallback: if background state was wiped and we were opened for a specific
+  // blocked tab, synthesise an entry from the URL params so the dot still shows.
+  // background.js now always encodes the blocked URL into the query string, so
+  // the tooltip URL will be correct even on a background page restart.
+  if (tabs.length === 0 && initialBlockedTabId !== null) {
+    const urlFromParams = urlParams.get('blockedUrl') || '';
+    tabs = [{ tabId: initialBlockedTabId, url: urlFromParams, color: tabColor(initialBlockedTabId) }];
+  }
+
   for (const { tabId, url, color } of tabs) {
     addTabDot(tabId, url, color, tabId === initialBlockedTabId);
   }
@@ -538,7 +558,7 @@ function removeTabDot(tabId) {
 
 function updateApplyButton() {
   document.getElementById('apply-btn').textContent =
-    selectedTabId !== null ? 'Apply & Retry' : 'Apply Changes';
+    selectedTabId !== null ? 'Apply & retry' : 'Apply changes';
 }
 
 function removeFromWhitelist(domain) {
@@ -547,7 +567,25 @@ function removeFromWhitelist(domain) {
   checkDirty();
 }
 
+// Show a warning banner if the extension has not been granted access to
+// private windows. The banner includes a button that opens about:addons so
+// the user can find the extension and set "Run in Private Windows" to Allow.
+async function checkPrivateBrowsingAccess() {
+  try {
+    const allowed = await browser.extension.isAllowedIncognitoAccess();
+    if (!allowed) {
+      document.getElementById('private-warning').style.display = 'flex';
+    }
+  } catch (e) {
+    // API unavailable — skip the check silently.
+  }
+}
+
 function setupEventListeners() {
+  document.getElementById('private-warning-btn').addEventListener('click', () => {
+    browser.tabs.create({ url: 'about:addons' });
+  });
+
   document.getElementById('reset-scripts').addEventListener('click', async () => {
     additionalScripts = getLocaleScripts();
     enabledLanguages = new Set(getLocaleLanguages());

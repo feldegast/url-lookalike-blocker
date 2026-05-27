@@ -237,23 +237,64 @@
     .discard-btn:hover {
       background: #616161;
     }
+    .private-warning {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      background: #fff8e1;
+      border: 1px solid #f57c00;
+      border-left: 4px solid #f57c00;
+      border-radius: 6px;
+      padding: 14px 16px;
+      margin-bottom: 20px;
+    }
+    .private-warning-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+      line-height: 1.4;
+    }
+    .private-warning-text {
+      flex: 1;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .private-warning-btn {
+      background: #f57c00;
+      color: white;
+      white-space: nowrap;
+      align-self: center;
+      flex-shrink: 0;
+    }
+    .private-warning-btn:hover {
+      background: #e65100;
+    }
   </style>
 </head>
 <body>
   <h1><img src="icon.svg" alt="" style="height: 1.25em; vertical-align: middle; margin-right: 0.5em;"> URL Lookalike Blocker Options</h1>
 
+  <div id="private-warning" class="private-warning" style="display:none">
+    <div class="private-warning-icon">⚠</div>
+    <div class="private-warning-text">
+      <strong>Private browsing is not protected.</strong>
+      This extension is not allowed to run in private windows, so homograph attacks will not be blocked there.
+      To enable protection, open Firefox's add-on settings and set <em>Run in Private Windows</em> to <em>Allow</em>.
+    </div>
+    <button id="private-warning-btn" class="private-warning-btn">Open add-on settings</button>
+  </div>
+
   <div id="tab-selector" class="tab-selector" style="display:none">
-    <span class="tab-selector-label">Blocked tabs:</span>
+    <span class="tab-selector-label">Tabs:</span>
   </div>
 
   <div class="section">
-    <h2>Whitelisted Domains</h2>
+    <h2>Whitelisted domains</h2>
     <p>Domains you have explicitly allowed. These will not be blocked even if they contain disallowed scripts.</p>
     <div id="whitelist"></div>
   </div>
 
   <div class="section">
-    <h2>Permitted Languages</h2>
+    <h2>Permitted languages</h2>
     <p>Select which languages are permitted beyond your locale defaults. Enabling a language allows its scripts in domain names and permits mixing those scripts within a single domain label.</p>
 
     <div id="script-tree" class="script-tree">
@@ -263,11 +304,11 @@
     <p class="scope-note">This extension intercepts domain names that use characters from scripts not associated with your enabled languages, or that mix scripts in ways typical of lookalike spoofing attacks.</p>
 
     <div class="script-controls">
-      <button id="reset-scripts">Reset to Locale Defaults</button>
+      <button id="reset-scripts">Reset to locale defaults</button>
       <div class="apply-controls">
         <span id="unsaved-indicator" class="unsaved-indicator" style="display:none">Unsaved changes</span>
-        <button id="discard-btn" class="discard-btn">Discard Changes</button>
-        <button id="apply-btn" class="apply-btn">Apply Changes</button>
+        <button id="discard-btn" class="discard-btn">Discard changes</button>
+        <button id="apply-btn" class="apply-btn">Apply changes</button>
       </div>
     </div>
 

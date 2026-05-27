@@ -43,10 +43,34 @@ function notifyOptions(message) {
   }
 }
 
+// On startup (or after a background-page restart), scan all open tabs for any
+// that are showing our blocked/warning pages and restore them to blockedTabs.
+// Firefox can suspend the background event page, wiping the in-memory map, so
+// this recovery step ensures every already-blocked tab gets its dot back.
+async function recoverBlockedTabs() {
+  const blockedBase = browser.runtime.getURL('blocked.html');
+  const warningBase = browser.runtime.getURL('warning.html');
+  try {
+    const tabs = await browser.tabs.query({});
+    for (const tab of tabs) {
+      if (!tab.url) continue;
+      if (tab.url.startsWith(blockedBase) || tab.url.startsWith(warningBase)) {
+        const originalUrl = new URL(tab.url).searchParams.get('url');
+        if (originalUrl && !blockedTabs.has(tab.id)) {
+          blockedTabs.set(tab.id, { url: originalUrl, color: tabColor(tab.id) });
+        }
+      }
+    }
+  } catch (e) {
+    // Non-fatal: start with an empty blockedTabs map if the query fails.
+  }
+}
+
 // Initialize on startup
 async function initialize() {
   await loadSettings();
   updatePermittedScripts();
+  await recoverBlockedTabs();
 }
 
 async function loadSettings() {
@@ -150,7 +174,16 @@ browser.runtime.onMessage.addListener((message, sender) => {
   if (message.type === 'openOptions') {
     // Called by blocked/warning pages when the user clicks "Open Settings".
     // Switches to the existing options tab (adding this tab's dot) or creates one.
-    const { tabId: blockedTabId, color } = message;
+    // blockedUrl is passed by the sender so we can reconstruct state if the
+    // background event page was suspended and restarted (clearing blockedTabs).
+    const { tabId: blockedTabId, color, blockedUrl: msgUrl } = message;
+
+    // Restore a lost entry: Firefox can suspend the background event page,
+    // wiping blockedTabs. The sender always includes the original URL now.
+    if (!blockedTabs.has(blockedTabId) && msgUrl) {
+      blockedTabs.set(blockedTabId, { url: msgUrl, color: color || tabColor(blockedTabId) });
+    }
+
     const entry = blockedTabs.get(blockedTabId);
     if (optionsTabId !== null) {
       browser.tabs.update(optionsTabId, { active: true });
@@ -163,8 +196,12 @@ browser.runtime.onMessage.addListener((message, sender) => {
       });
     } else {
       browser.tabs.query({ active: true, currentWindow: true }).then(([currentTab]) => {
+        // Include the blocked URL in the query string so options.js can show
+        // the dot even if getBlockedTabs returns empty on the first call.
+        const entryUrl = entry ? entry.url : (msgUrl || '');
+        const urlSuffix = entryUrl ? `&blockedUrl=${encodeURIComponent(entryUrl)}` : '';
         browser.tabs.create({
-          url: browser.runtime.getURL('options.html') + `?blockedTabId=${blockedTabId}`,
+          url: browser.runtime.getURL('options.html') + `?blockedTabId=${blockedTabId}${urlSuffix}`,
           index: currentTab ? currentTab.index + 1 : undefined
         }).then(tab => { optionsTabId = tab.id; });
       });

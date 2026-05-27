@@ -67,7 +67,7 @@ These mix one non-Latin character into an otherwise Latin domain. They must be b
 - [x] `xn--yah-czca.com` — Greek 'ο' in yahoo.com — shows block/warning page
 - [x] `xn--vidia-ece.com` — Greek 'ν' in nvidia.com — shows block/warning page
 - [x] Enable Cyrillic in settings → `xn--pple-43d.com` still shows warning page (does NOT pass through)
-- [ ] With Cyrillic enabled, warning page for `xn--pple-43d.com` shows the confusable character (а) highlighted red with "Looks like: a" — not amber
+- [x] With Cyrillic enabled, warning page for `xn--pple-43d.com` shows the confusable character (а) highlighted red with "Looks like: a" — not amber
 - [x] Disable Cyrillic again after the above check
 
 ---
@@ -126,23 +126,23 @@ Enabling a **language** both permits its scripts and blesses that script combina
 
 ## 6. Whitelist cycle
 
-- [ ] Click any blocked URL — block page appears
-- [ ] Click "Allow This Domain" — domain is added to the whitelist in settings
-- [ ] Revisit the same URL — it passes through
-- [ ] Open settings, remove the domain from the whitelist, apply
-- [ ] Revisit the URL — it blocks again
+- [x] Click any blocked URL — block page appears
+- [x] Click "Allow This Domain" — domain is added to the whitelist in settings
+- [x] Revisit the same URL — it passes through
+- [x] Open settings, remove the domain from the whitelist, apply
+- [x] Revisit the URL — it blocks again
 
 ### Multi-tab navigation — coloured square system
 
 Open two or more different blocked URLs in separate tabs before starting these tests.
 
 **Coloured square basics:**
-- [ ] Each blocked/warning page shows a coloured rounded square in its heading
-- [ ] Clicking the square opens the options tab (or switches to it if already open) with that tab's square selected
-- [ ] The square colour in the blocked/warning heading matches the square shown in the options tab
+- [x] Each blocked/warning page shows a coloured rounded square in its heading
+- [x] Clicking the square opens the options tab (or switches to it if already open) with that tab's square selected
+- [x] The square colour in the blocked/warning heading matches the square shown in the options tab
 
 **Options tab as hub:**
-- [ ] With two blocked tabs open, open options via toolbar — options shows two coloured squares, one per blocked tab
+- [x] With two blocked tabs open, open options via toolbar — options shows two coloured squares, one per blocked tab
 - [ ] Clicking an unselected square in options selects it and shows "Apply & Retry" without touching language checkboxes or the whitelist
 - [ ] Clicking the already-selected square in options switches browser focus to that blocked tab
 
@@ -161,6 +161,7 @@ Open two or more different blocked URLs in separate tabs before starting these t
 - [ ] On a warning page click "Continue Anyway" → that tab's square disappears from options (session-allowed, no longer blocked)
 
 **Options tab reopened:**
+- [x] Open options from a blocked/warning page → close options WITHOUT clicking Apply → the blocked page is still showing → click the coloured square on the blocked page → options reopens showing that tab's coloured square (Tabs bar must be visible) *(regression: background state loss caused an empty Tabs bar — fixed by passing `blockedUrl` through `openOptions` and adding a fallback in `initTabSelector`)*
 - [ ] Close the options tab → navigate to its original blocked URL (still blocked) → click square on blocked page → options reopens with that tab's square selected and all other currently-blocked tabs' squares restored
 
 ---
