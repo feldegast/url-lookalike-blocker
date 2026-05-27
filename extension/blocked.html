@@ -124,6 +124,15 @@
     .tab-dot-wrapper:hover {
       color: #222;
     }
+    @media (prefers-color-scheme: dark) {
+      :root { color-scheme: light dark; }
+      body { background-color: #1a1a1a; color: #e0e0e0; }
+      .container { background: #2a2a2a; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+      .details { background: #2d1500; }
+      .unicode-domain { background: #333; }
+      .tab-dot-wrapper { color: #aaa; }
+      .tab-dot-wrapper:hover { color: #ddd; }
+    }
 </style>
 </head>
 <body>
