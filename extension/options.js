@@ -553,8 +553,16 @@ async function checkPrivateBrowsingAccess() {
 }
 
 function setupEventListeners() {
-  document.getElementById('private-warning-btn').addEventListener('click', () => {
-    browser.tabs.create({ url: 'about:addons' });
+  document.getElementById('private-warning-btn').addEventListener('click', async () => {
+    // tabs.create cannot navigate to privileged about: URLs in Firefox;
+    // tabs.update on the current tab can.
+    try {
+      const tab = await browser.tabs.getCurrent();
+      browser.tabs.update(tab.id, { url: 'about:addons' });
+    } catch (e) {
+      // Fallback: open the Firefox support page with manual instructions
+      browser.tabs.create({ url: 'https://support.mozilla.org/kb/extensions-private-browsing' });
+    }
   });
 
   document.getElementById('reset-scripts').addEventListener('click', async () => {
