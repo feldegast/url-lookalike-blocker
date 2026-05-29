@@ -182,6 +182,8 @@ browser.runtime.onMessage.addListener((message, sender) => {
     // so the webRequest check passes before storage.onChanged can fire.
     whitelist.add(message.domain);
     hostnameCache.clear();
+    // Tell the options page to refresh its whitelist display immediately.
+    notifyOptions({ type: 'whitelistUpdated', whitelist: [...whitelist] });
     return;
   }
 

@@ -137,13 +137,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   await initTabSelector();
   await checkPrivateBrowsingAccess();
 
-  // Listen for tab events from background.js
+  // Listen for events from background.js
   browser.runtime.onMessage.addListener((message) => {
     if (message.type === 'addBlockedTab') {
       addTabDot(message.tabId, message.url, message.color);
     }
     if (message.type === 'blockedTabClosed') {
       removeTabDot(message.tabId);
+    }
+    if (message.type === 'whitelistUpdated') {
+      // A blocked/warning page just permanently allowed a domain — update the
+      // whitelist display without requiring a manual reload. Treat the new
+      // entry as already saved (update initialWhitelist too) so it doesn't
+      // appear as an unsaved change.
+      whitelist = message.whitelist;
+      initialWhitelist = [...whitelist];
+      renderWhitelist();
+      checkDirty();
     }
   });
 });
