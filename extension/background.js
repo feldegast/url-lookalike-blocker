@@ -45,6 +45,16 @@ function tabColor(tabId) {
   return `hsl(${hue}, 65%, 42%)`;
 }
 
+// Updates the toolbar icon badge to show the number of currently blocked/warning
+// tabs. Clears the badge when there are none.
+function updateBadge() {
+  const count = blockedTabs.size;
+  browser.action.setBadgeText({ text: count > 0 ? String(count) : '' });
+  if (count > 0) {
+    browser.action.setBadgeBackgroundColor({ color: '#d32f2f' });
+  }
+}
+
 // Notify the options tab of a new or closed blocked tab. Silently ignored if
 // options is not open or the message channel is not yet ready.
 function notifyOptions(message) {
@@ -74,6 +84,7 @@ async function recoverBlockedTabs() {
   } catch (e) {
     // Non-fatal: start with an empty blockedTabs map if the query fails.
   }
+  updateBadge();
 }
 
 // Initialize on startup
@@ -109,11 +120,9 @@ function isWhitelisted(hostname) {
   return false;
 }
 
-// Toolbar icon click — switch to the existing options tab if one is open,
-// otherwise create a new one. A full tab is needed because the options page
-// has an explicit Apply/Discard workflow; popups are destroyed the moment
-// they lose focus, which would silently discard unsaved changes.
-browser.action.onClicked.addListener(async () => {
+// Opens the options tab, or switches to it if already open. Extracted so it
+// can be called from both the toolbar click and the context menu.
+async function openOptions() {
   if (optionsTabId !== null) {
     browser.tabs.update(optionsTabId, { active: true });
   } else {
@@ -128,6 +137,24 @@ browser.action.onClicked.addListener(async () => {
       index: currentTab ? currentTab.index + 1 : undefined
     }).then(tab => { optionsTabId = tab.id; });
   }
+}
+
+// Toolbar icon left-click — open/focus the options page.
+// A full tab is needed because the options page has an explicit Apply/Discard
+// workflow; popups are destroyed the moment they lose focus, which would
+// silently discard unsaved changes.
+browser.action.onClicked.addListener(openOptions);
+
+// Right-click context menu on the toolbar icon.
+browser.menus.create({ id: 'open-options', title: 'Open Options', contexts: ['action'] });
+browser.menus.create({ id: 'open-help',    title: 'Help',         contexts: ['action'] });
+
+browser.menus.onClicked.addListener((info) => {
+  if (info.menuItemId === 'open-options') {
+    openOptions();
+  } else if (info.menuItemId === 'open-help') {
+    browser.tabs.create({ url: browser.runtime.getURL('help.html') });
+  }
 });
 
 // Clean up when any tab closes.
@@ -135,6 +162,7 @@ browser.tabs.onRemoved.addListener((tabId) => {
   if (blockedTabs.has(tabId)) {
     blockedTabs.delete(tabId);
     notifyOptions({ type: 'blockedTabClosed', tabId });
+    updateBadge();
   }
   if (tabId === optionsTabId) {
     optionsTabId = null;
@@ -156,6 +184,7 @@ browser.tabs.onUpdated.addListener((tabId, changeInfo) => {
   if (!changeInfo.url.startsWith(blockedBase) && !changeInfo.url.startsWith(warningBase)) {
     blockedTabs.delete(tabId);
     notifyOptions({ type: 'blockedTabClosed', tabId });
+    updateBadge();
   }
 });
 
@@ -182,6 +211,11 @@ browser.storage.onChanged.addListener((changes) => {
 // Message handler for all extension pages.
 browser.runtime.onMessage.addListener((message, sender) => {
 
+  if (message.type === 'openOptionsPage') {
+    openOptions();
+    return;
+  }
+
   if (message.type === 'addToWhitelist') {
     // Sync in-memory whitelist when a page allows a domain permanently,
     // so the webRequest check passes before storage.onChanged can fire.
@@ -202,6 +236,7 @@ browser.runtime.onMessage.addListener((message, sender) => {
       browser.tabs.update(sender.tab.id, { url: message.url });
       blockedTabs.delete(sender.tab.id);
       notifyOptions({ type: 'blockedTabClosed', tabId: sender.tab.id });
+      updateBadge();
     }
     return;
   }
@@ -221,6 +256,7 @@ browser.runtime.onMessage.addListener((message, sender) => {
     // wiping blockedTabs. The sender always includes the original URL now.
     if (!blockedTabs.has(blockedTabId) && msgUrl) {
       blockedTabs.set(blockedTabId, { url: msgUrl, color: color || tabColor(blockedTabId) });
+      updateBadge();
     }
 
     const entry = blockedTabs.get(blockedTabId);
@@ -306,6 +342,7 @@ function recordBlockedTab(tabId, url) {
   const color = tabColor(tabId);
   blockedTabs.set(tabId, { url, color });
   notifyOptions({ type: 'addBlockedTab', tabId, url, color });
+  updateBadge();
   return color;
 }
 

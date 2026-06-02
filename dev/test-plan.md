@@ -175,6 +175,46 @@ Repeat step 1 after all the above to confirm nothing broke pass-through for norm
 
 ---
 
+## 8. `tabs` permission removal check
+
+Remove `"tabs"` from `permissions` in `manifest.json`, then reload the extension at `about:debugging` → This Firefox → Reload. Test that all tab-related features still work without it. Restore `tabs` if anything fails.
+
+- [ ] Toolbar button opens options page
+- [ ] Clicking a coloured square in options switches browser focus to that blocked tab
+- [ ] New blocked tab appears in the options bar while options is already open
+- [ ] Closing a blocked tab removes its square from options
+- [ ] "Try again" on a blocked/warning page navigates to the original URL
+- [ ] Apply in options closes options and returns focus to the correct tab
+
+If all pass: remove `"tabs"` permanently and commit. If any fail: restore `"tabs"` and note which test failed.
+
+---
+
+## 9. Toolbar badge
+
+- [ ] Navigate to a blocked URL — a red badge with "1" appears on the toolbar icon
+- [ ] Navigate to a second blocked URL in a new tab — badge updates to "2"
+- [ ] Close one blocked tab — badge updates to "1"
+- [ ] Allow the remaining blocked domain ("Allow this domain") — badge clears
+- [ ] Navigate to a warning page — badge shows "1"
+- [ ] Click "Go back" on the warning page — badge clears
+- [ ] Navigate to a blocked URL, reload the extension (`about:debugging` → Reload) — badge is restored from recovered blocked tabs (not blank)
+
+---
+
+## 10. Help page
+
+> **Screenshots needed for help page:** Capture each screenshot in both light and dark mode — `img/block-page-light.png` / `img/block-page-dark.png` etc. Screenshots needed: block page, warning page, options page, coloured squares (options with 2+ blocked tabs), toolbar badge.
+
+- [ ] Right-click the toolbar icon — context menu shows "Open Options" and "Help"
+- [ ] Click "Help" in the context menu — help page opens in a new tab
+- [ ] Click the "Help" button on the options page — help page opens in a new tab
+- [ ] Click "Open Options" on the help page — options page opens (or switches to it if already open)
+- [ ] Help page respects dark/light mode and the theme toggle works
+- [ ] All sections are present: What does this extension do, Block page, Warning page, Options page, Coloured squares, Extension icon
+
+---
+
 ## Polish notes (post-testing)
 
 - **v2 idea — cross-blocked-page navigation dots:** Show other blocked tabs' coloured squares directly on blocked/warning pages (labelled "Other blocked pages:") so the user can hop between blocked pages without going via options. Deferred: options hub covers the workflow in two clicks, and adding `getBlockedTabs` + live message listeners to blocked/warning pages adds meaningful complexity for a one-click saving.

@@ -621,6 +621,10 @@ async function checkPrivateBrowsingAccess() {
 }
 
 function setupEventListeners() {
+  document.getElementById('help-btn').addEventListener('click', () => {
+    browser.tabs.create({ url: browser.runtime.getURL('help.html') });
+  });
+
   document.getElementById('theme-toggle').addEventListener('click', async () => {
     const current = themePref;
     const next = { auto: 'opposite', opposite: 'dark', dark: 'light', light: 'auto' }[current] || 'auto';

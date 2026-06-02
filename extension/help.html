@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>URL Lookalike Blocker — Help</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .section {
+      background: white;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      color: #333;
+      border-bottom: 2px solid #4caf50;
+      padding-bottom: 10px;
+    }
+    h3 {
+      color: #444;
+      margin: 16px 0 6px;
+    }
+    p { margin: 8px 0; line-height: 1.6; }
+    ul { margin: 8px 0; padding-left: 20px; line-height: 1.7; }
+    code {
+      font-family: monospace;
+      background: #f0f0f0;
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+    .example-domain {
+      font-family: monospace;
+      background: #fff3e0;
+      border: 1px solid #ffe0b2;
+      border-radius: 3px;
+      padding: 1px 6px;
+    }
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .page-header h1 { margin: 0; font-size: 1.4em; }
+    .header-buttons {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    button {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .options-btn {
+      background: #4caf50;
+      color: white;
+    }
+    .options-btn:hover { background: #388e3c; }
+    .theme-toggle {
+      background: none;
+      border: 1px solid #bbb;
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 15px;
+      cursor: pointer;
+      color: #555;
+      white-space: nowrap;
+    }
+    .theme-toggle:hover { background: rgba(0,0,0,0.06); }
+    .pill {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: bold;
+      border-radius: 12px;
+      padding: 2px 10px;
+      margin-right: 4px;
+      vertical-align: middle;
+    }
+    .pill-block { background: #ffebee; color: #c62828; border: 1px solid #ef9a9a; }
+    .pill-warn  { background: #fff8e1; color: #e65100; border: 1px solid #ffcc02; }
+    figure {
+      margin: 16px 0 8px;
+      text-align: center;
+    }
+    figure img {
+      max-width: 100%;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    figcaption {
+      font-size: 13px;
+      color: #777;
+      margin-top: 6px;
+    }
+    .img-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px dashed #ccc;
+      border-radius: 6px;
+      padding: 30px;
+      color: #aaa;
+      font-size: 13px;
+      font-style: italic;
+      background: #fafafa;
+    }
+
+    @media (prefers-color-scheme: dark) { html:not([data-theme="light"]) { color-scheme: dark; } }
+    html[data-theme="dark"] { color-scheme: dark; }
+
+    @media (prefers-color-scheme: dark) {
+      html:not([data-theme="light"]) body { background-color: #1a1a1a; color: #e0e0e0; }
+      html:not([data-theme="light"]) h2 { color: #e0e0e0; border-bottom-color: #388e3c; }
+      html:not([data-theme="light"]) h3 { color: #ccc; }
+      html:not([data-theme="light"]) .section { background: #2a2a2a; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+      html:not([data-theme="light"]) code { background: #333; }
+      html:not([data-theme="light"]) .example-domain { background: #2d1500; border-color: #5a3000; }
+      html:not([data-theme="light"]) .theme-toggle { border-color: #555; color: #bbb; }
+      html:not([data-theme="light"]) .theme-toggle:hover { background: rgba(255,255,255,0.07); }
+      html:not([data-theme="light"]) figure img { border-color: #444; }
+      html:not([data-theme="light"]) figcaption { color: #888; }
+      html:not([data-theme="light"]) .img-placeholder { border-color: #444; background: #222; color: #666; }
+    }
+    html[data-theme="dark"] body { background-color: #1a1a1a; color: #e0e0e0; }
+    html[data-theme="dark"] h2 { color: #e0e0e0; border-bottom-color: #388e3c; }
+    html[data-theme="dark"] h3 { color: #ccc; }
+    html[data-theme="dark"] .section { background: #2a2a2a; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+    html[data-theme="dark"] code { background: #333; }
+    html[data-theme="dark"] .example-domain { background: #2d1500; border-color: #5a3000; }
+    html[data-theme="dark"] .theme-toggle { border-color: #555; color: #bbb; }
+    html[data-theme="dark"] .theme-toggle:hover { background: rgba(255,255,255,0.07); }
+    html[data-theme="dark"] figure img { border-color: #444; }
+    html[data-theme="dark"] figcaption { color: #888; }
+    html[data-theme="dark"] .img-placeholder { border-color: #444; background: #222; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="page-header">
+    <h1><img src="icon.svg" alt="" style="height: 1.25em; vertical-align: middle; margin-right: 0.5em;"> URL Lookalike Blocker — Help</h1>
+    <div class="header-buttons">
+      <button id="options-btn" class="options-btn">Open Options</button>
+      <button id="theme-toggle" class="theme-toggle" title="Toggle dark/light mode">Auto</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>What does this extension do?</h2>
+    <p>When you visit a website, your browser shows the domain name (like <code>google.com</code>). Attackers can register domains that look identical to real ones by substituting characters from other languages — for example, using a Cyrillic <code>а</code> instead of the Latin <code>a</code> in <code>apple.com</code>. These are called <strong>IDN homograph attacks</strong>.</p>
+    <p>This extension inspects every domain name your browser visits and blocks or warns you when it detects characters that are likely part of a spoofing attempt.</p>
+  </div>
+
+  <div class="section">
+    <h2><span class="pill pill-block">Blocked</span> Block page</h2>
+    <p>A block page appears when the domain contains characters from scripts (writing systems) that you have not enabled in settings. For example, if a domain contains Cyrillic characters and you have not enabled Russian, it is blocked.</p>
+    <figure>
+      <!-- Replace placeholder with: <img src="img/block-page.png" alt="Block page screenshot"> -->
+      <div class="img-placeholder">Screenshot: block page — img/block-page.png</div>
+      <figcaption>The block page showing the offending characters and available actions.</figcaption>
+    </figure>
+    <h3>What you can do</h3>
+    <ul>
+      <li><strong>Allow this domain</strong> — adds the domain to your whitelist so it is never blocked again.</li>
+      <li><strong>Open extension options</strong> — opens the Options page so you can enable the relevant language.</li>
+      <li><strong>Try again</strong> — re-attempts the URL (useful after applying new settings).</li>
+      <li><strong>Go back</strong> — returns to the previous page.</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2><span class="pill pill-warn">Warning</span> Warning page</h2>
+    <p>A warning page appears when the domain mixes scripts in a way that suggests a homograph attack — for example, a domain that looks Latin but contains one hidden Cyrillic character. Warning pages can appear even if you have that script enabled, because legitimate sites do not mix scripts within a single domain label.</p>
+    <p>The offending character is highlighted in red. If it only <em>looks like</em> a Latin character, that is shown too (e.g. "Looks like: a").</p>
+    <figure>
+      <!-- Replace placeholder with: <img src="img/warning-page.png" alt="Warning page screenshot"> -->
+      <div class="img-placeholder">Screenshot: warning page — img/warning-page.png</div>
+      <figcaption>The warning page highlighting a confusable character in the domain.</figcaption>
+    </figure>
+    <h3>What you can do</h3>
+    <ul>
+      <li><strong>Allow this domain</strong> — permanently whitelists the domain if you know it is safe.</li>
+      <li><strong>Open extension options</strong> — opens the Options page.</li>
+      <li><strong>Try again</strong> — re-attempts the URL after applying new settings.</li>
+      <li><strong>Go back</strong> — returns to the previous page.</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>Options page</h2>
+    <h3>Permitted languages</h3>
+    <p>Tick the languages whose scripts you want to allow in domain names. Your browser's locale is used as the starting point — so if your Firefox language is set to English, Latin is already permitted.</p>
+    <p>Enabling a language does two things: it allows that language's scripts in domain names, and it permits mixing those scripts within a single label (useful for languages like Serbian that legitimately combine Latin and Cyrillic).</p>
+
+    <h3>Apply changes / Discard changes</h3>
+    <p>Changes to language settings are held in memory until you click <strong>Apply changes</strong>. The orange "Unsaved changes" dot appears while there are pending edits. <strong>Discard changes</strong> reverts to the last saved state without closing the page.</p>
+
+    <h3>Reset to locale defaults</h3>
+    <p>Re-checks the languages that match your current Firefox locale setting, discarding any manual selections. Applied immediately.</p>
+
+    <h3>Whitelisted domains</h3>
+    <p>Domains you have explicitly allowed (via "Allow this domain" on a block or warning page) are listed here. You can remove them at any time — the domain will be blocked or warned again on the next visit.</p>
+    <figure>
+      <!-- Replace placeholder with: <img src="img/options-page.png" alt="Options page screenshot"> -->
+      <div class="img-placeholder">Screenshot: options page — img/options-page.png</div>
+      <figcaption>The options page showing language settings and the whitelist.</figcaption>
+    </figure>
+  </div>
+
+  <div class="section">
+    <h2>Coloured squares</h2>
+    <p>When multiple blocked or warning pages are open at once, each tab gets a unique coloured rounded square so you can tell them apart.</p>
+    <ul>
+      <li>Clicking the square on a <strong>blocked or warning page</strong> opens the Options page.</li>
+      <li>From the <strong>Options page</strong>, clicking a square switches browser focus to that blocked tab.</li>
+      <li>When a blocked tab is closed or successfully loads its URL, its square disappears automatically.</li>
+    </ul>
+    <p>When you click <strong>Apply changes</strong> in Options, the page closes and focus returns to the blocked tab that opened it.</p>
+    <figure>
+      <!-- Replace placeholder with: <img src="img/coloured-squares.png" alt="Coloured squares screenshot"> -->
+      <div class="img-placeholder">Screenshot: coloured squares in options — img/coloured-squares.png</div>
+      <figcaption>The options page with two blocked tabs, each identified by a unique coloured square.</figcaption>
+    </figure>
+  </div>
+
+  <div class="section">
+    <h2>Extension icon (toolbar)</h2>
+    <p>Left-clicking the extension icon in the toolbar opens the Options page. Right-clicking gives a small menu with <strong>Open Options</strong> and <strong>Help</strong>.</p>
+    <p>If the Options page is already open, clicking the icon switches to it rather than opening a second one.</p>
+    <p>When one or more blocked or warning pages are open, the icon shows a <strong>red number badge</strong> indicating how many there are. The badge clears automatically once all blocked tabs have been resolved or closed.</p>
+    <figure>
+      <!-- Replace placeholder with: <img src="img/badge.png" alt="Toolbar badge screenshot"> -->
+      <div class="img-placeholder">Screenshot: toolbar icon with badge — img/badge.png</div>
+      <figcaption>The extension icon showing a badge count of blocked or warning tabs.</figcaption>
+    </figure>
+  </div>
+
+  <script src="theme.js"></script>
+  <script>
+    (function () {
+      const cycle = { auto: 'opposite', opposite: 'dark', dark: 'light', light: 'auto' };
+      const labels = { auto: 'Auto', opposite: 'Opposite', dark: 'Dark', light: 'Light' };
+      const btn = document.getElementById('theme-toggle');
+      let pref = 'auto';
+
+      browser.storage.local.get('theme').then(r => {
+        pref = r.theme || 'auto';
+        btn.textContent = labels[pref] ?? 'Auto';
+      });
+
+      btn.addEventListener('click', async () => {
+        pref = cycle[pref] || 'auto';
+        btn.textContent = labels[pref] ?? 'Auto';
+        await browser.storage.local.set({ theme: pref });
+      });
+
+      document.getElementById('options-btn').addEventListener('click', () => {
+        browser.runtime.sendMessage({ type: 'openOptionsPage' });
+      });
+    })();
+  </script>
+</body>
+</html>
