@@ -142,7 +142,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   if (isConfusableWarning) {
     document.getElementById('char-table-label').textContent = 'Suspicious characters:';
-    thead.innerHTML = '<tr><th>Character</th><th>Looks like</th><th>Codepoint</th><th>Script</th></tr>';
+    thead.replaceChildren();
+    const theadRow4 = document.createElement('tr');
+    for (const text of ['Character', 'Looks like', 'Codepoint', 'Script']) {
+      const th = document.createElement('th');
+      th.textContent = text;
+      theadRow4.appendChild(th);
+    }
+    thead.appendChild(theadRow4);
 
     for (const { char, looksLike, script: s } of confusables) {
       const codepoint = `U+${char.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')}`;
@@ -165,7 +172,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   } else {
     // Mixed-script case: show non-Latin chars without red — they're individually permitted.
     document.getElementById('char-table-label').textContent = 'Non-Latin characters in this domain:';
-    thead.innerHTML = '<tr><th>Character</th><th>Codepoint</th><th>Script</th></tr>';
+    thead.replaceChildren();
+    const theadRow3 = document.createElement('tr');
+    for (const text of ['Character', 'Codepoint', 'Script']) {
+      const th = document.createElement('th');
+      th.textContent = text;
+      theadRow3.appendChild(th);
+    }
+    thead.appendChild(theadRow3);
 
     for (const { char, script: s } of foreignChars) {
       const codepoint = `U+${char.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')}`;
@@ -224,23 +238,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // --- Button handlers ---
 
   // Allow This Domain — permanently whitelist and navigate
-  document.getElementById('allow-btn').addEventListener('click', async () => {
-    if (blockedUrl) {
-      const hostname = decodeHostname(blockedUrl);
-      if (hostname) {
-        const result = await browser.storage.local.get('whitelist');
-        const wl = new Set(result.whitelist || []);
-        wl.add(hostname);
-        await browser.storage.local.set({ whitelist: Array.from(wl) });
-
-        // Sync background.js in-memory whitelist before navigating so the
-        // webRequest check sees the updated whitelist when the page loads.
-        await browser.runtime.sendMessage({ type: 'addToWhitelist', domain: hostname });
-
-        window.location.href = blockedUrl;
-      }
-    }
-  });
+  document.getElementById('allow-btn').addEventListener('click', () => allowDomain(blockedUrl));
 
   // Continue Anyway — allow this domain for the current browser session only.
   // background.js adds it to an in-memory Set that is cleared on restart.

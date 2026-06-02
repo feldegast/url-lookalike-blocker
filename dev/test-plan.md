@@ -112,6 +112,7 @@ Open settings, manually uncheck all languages enabled in Part A, click Apply, th
 - [x] "Reset to Locale Defaults" re-seeds locale scripts, applies immediately, and clears the unsaved indicator
 - [x] ~~"Apply Changes" becomes "Apply & Retry" when opened from a blocked page~~ *(removed: Apply now always closes options and returns focus to the appropriate blocked tab; use "Try again" on the blocked page to retry the URL)*
 - [x] Each language row shows its scripts as read-only tags (no script checkboxes)
+- [x] Private-browsing warning banner shows instruction to type `about:addons` in the address bar (button removed — Firefox privilege restrictions made it unreliable)
 
 ### Language permission distinction (mixed-script labels)
 
@@ -143,25 +144,25 @@ Open two or more different blocked URLs in separate tabs before starting these t
 
 **Options tab as hub:**
 - [x] With two blocked tabs open, open options via toolbar — options shows two coloured squares, one per blocked tab
-- [ ] Clicking a square in options switches browser focus to that blocked tab (no selection state, no border highlight)
+- [x] Clicking a square in options switches browser focus to that blocked tab (no selection state, no border highlight)
 
 **New blocked tab while options is already open:**
-- [ ] Navigate to a new blocked URL while options is open → new square appears in options bar without changing language settings or unsaved changes
+- [x] Navigate to a new blocked URL while options is open → new square appears in options bar without changing language settings or unsaved changes
 
 **Apply changes:**
-- [ ] Apply changes → options closes and browser focus returns to the tab that opened options (or the most-recently-blocked tab if opened via toolbar with no clear source tab)
-- [ ] "Try again" button on blocked/warning page → navigates to the original URL; if settings now cover it the page loads; if not the block page reappears
+- [x] Apply changes → options closes and browser focus returns to the tab that opened options (or the most-recently-blocked tab if opened via toolbar with no clear source tab)
+- [x] "Try again" button on blocked/warning page → navigates to the original URL; if settings now cover it the page loads; if not the block page reappears
 
 **Tab closed:**
-- [ ] Close a blocked tab → its square disappears from options automatically
-- [ ] If no squares remain after a tab is closed, the tab-selector bar hides
+- [x] Close a blocked tab → its square disappears from options automatically
+- [x] If no squares remain after a tab is closed, the tab-selector bar hides
 
 **Continue Anyway (warning pages):**
-- [ ] On a warning page click "Continue Anyway" → that tab's square disappears from options (session-allowed, no longer blocked)
+- [x] On a warning page click "Allow This Domain" → domain is added to the whitelist, the URL retries and loads, and that tab's square disappears from options
 
 **Options tab reopened:**
 - [x] Open options from a blocked/warning page → close options WITHOUT clicking Apply → the blocked page is still showing → click the coloured square on the blocked page → options reopens showing that tab's coloured square (Tabs bar must be visible) *(regression: background state loss caused an empty Tabs bar — fixed by passing `blockedUrl` through `openOptions` and adding a fallback in `initTabSelector`)*
-- [ ] Close the options tab → navigate to its original blocked URL (still blocked) → click square on blocked page → options reopens showing that tab's coloured square and all other currently-blocked tabs' squares
+- [x] Close the options tab → navigate to its original blocked URL (still blocked) → click square on blocked page → options reopens showing that tab's coloured square and all other currently-blocked tabs' squares
 
 ---
 

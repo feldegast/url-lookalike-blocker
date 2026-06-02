@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       // offending characters are immediately visible with red highlights.
       // The raw punycode form is preserved in the Punycode domain row below.
       const blockedUrlEl = document.getElementById('blocked-url');
-      const domainStart = blockedUrl.indexOf(punycodeDomain);
+      const domainStart = blockedUrl.toLowerCase().indexOf(punycodeDomain);
       blockedUrlEl.appendChild(document.createTextNode(blockedUrl.slice(0, domainStart)));
       for (const char of unicodeDomain) {
         if (offendingSet.has(char)) {
@@ -112,19 +112,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     tbody.appendChild(row);
   }
 
-  document.getElementById('allow-btn').addEventListener('click', async () => {
-    if (blockedUrl) {
-      const hostname = decodeHostname(blockedUrl);
-      if (hostname) {
-        const result = await browser.storage.local.get('whitelist');
-        const wl = new Set(result.whitelist || []);
-        wl.add(hostname);
-        await browser.storage.local.set({ whitelist: Array.from(wl) });
-        await browser.runtime.sendMessage({ type: 'addToWhitelist', domain: hostname });
-        window.location.href = blockedUrl;
-      }
-    }
-  });
+  document.getElementById('allow-btn').addEventListener('click', () => allowDomain(blockedUrl));
 
   // Try again — navigate back to the original URL after applying new settings.
   // If settings now permit it the page will load; otherwise it will be re-blocked.

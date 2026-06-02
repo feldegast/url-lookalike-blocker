@@ -130,12 +130,56 @@ function getLocaleScripts() {
   return scripts;
 }
 
+const systemDark = window.matchMedia('(prefers-color-scheme: dark)');
+let themePref = 'auto'; // tracks stored preference so the change listener can use it
+
+function applyTheme(pref) {
+  themePref = pref;
+  let effective;
+  if (pref === 'opposite') {
+    effective = systemDark.matches ? 'light' : 'dark';
+  } else {
+    effective = pref; // 'auto', 'dark', 'light'
+  }
+  if (effective === 'auto') {
+    delete document.documentElement.dataset.theme;
+  } else {
+    document.documentElement.dataset.theme = effective;
+  }
+  const btn = document.getElementById('theme-toggle');
+  if (btn) {
+    const labels = { auto: 'Auto', opposite: 'Opposite', dark: 'Dark', light: 'Light' };
+    const tips   = {
+      auto:     'Following system theme — click for opposite',
+      opposite: 'Opposite to system theme — click for always dark',
+      dark:     'Always dark — click for always light',
+      light:    'Always light — click to follow system',
+    };
+    btn.textContent = labels[pref] ?? 'Auto';
+    btn.title       = tips[pref]   ?? '';
+  }
+}
+
+// Re-apply when system theme changes so Opposite mode stays correct.
+systemDark.addEventListener('change', () => {
+  if (themePref === 'opposite') applyTheme('opposite');
+});
+
+async function initTheme() {
+  const result = await browser.storage.local.get('theme');
+  applyTheme(result.theme || 'auto');
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
+  await initTheme();
   await loadSettings();
   buildLanguageTable();
   setupEventListeners();
   await initTabSelector();
   await checkPrivateBrowsingAccess();
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) syncTabDots();
+  });
 
   // Listen for events from background.js
   browser.runtime.onMessage.addListener((message) => {
@@ -257,7 +301,7 @@ function getOffendingChars(unicodeDomain) {
 
 function renderWhitelist() {
   const container = document.getElementById('whitelist');
-  container.innerHTML = '';
+  container.replaceChildren();
 
   if (whitelist.length === 0) {
     const p = document.createElement('p');
@@ -346,9 +390,9 @@ function renderWhitelist() {
 
 function buildLanguageTable() {
   const container = document.getElementById('script-tree');
-  container.innerHTML = '';
+  container.replaceChildren();
   const latinContainer = document.getElementById('latin-section');
-  latinContainer.innerHTML = '';
+  latinContainer.replaceChildren();
 
   const sortedLanguages = Object.keys(LANGUAGE_SCRIPTS).sort();
   const latinOnly = lang => LANGUAGE_SCRIPTS[lang].every(s => ALWAYS_PERMITTED.has(s));
@@ -358,7 +402,13 @@ function buildLanguageTable() {
   const table = document.createElement('table');
   table.className = 'script-table';
   const thead = document.createElement('thead');
-  thead.innerHTML = '<tr><th>Language</th><th>Scripts</th></tr>';
+  const theadRow = document.createElement('tr');
+  for (const text of ['Language', 'Scripts']) {
+    const th = document.createElement('th');
+    th.textContent = text;
+    theadRow.appendChild(th);
+  }
+  thead.appendChild(theadRow);
   table.appendChild(thead);
   const tbody = document.createElement('tbody');
 
@@ -532,6 +582,24 @@ function removeTabDot(tabId) {
   }
 }
 
+async function syncTabDots() {
+  let current = [];
+  try {
+    const result = await browser.runtime.sendMessage({ type: 'getBlockedTabs' });
+    if (Array.isArray(result)) current = result;
+  } catch (e) {
+    return;
+  }
+  const currentIds = new Set(current.map(t => t.tabId));
+  document.querySelectorAll('.tab-dot-btn').forEach(btn => {
+    const id = parseInt(btn.dataset.tabId, 10);
+    if (!currentIds.has(id)) removeTabDot(id);
+  });
+  for (const { tabId, url, color } of current) {
+    addTabDot(tabId, url, color);
+  }
+}
+
 function removeFromWhitelist(domain) {
   whitelist = whitelist.filter(d => d !== domain);
   renderWhitelist();
@@ -553,16 +621,11 @@ async function checkPrivateBrowsingAccess() {
 }
 
 function setupEventListeners() {
-  document.getElementById('private-warning-btn').addEventListener('click', async () => {
-    // tabs.create cannot navigate to privileged about: URLs in Firefox;
-    // tabs.update on the current tab can.
-    try {
-      const tab = await browser.tabs.getCurrent();
-      browser.tabs.update(tab.id, { url: 'about:addons' });
-    } catch (e) {
-      // Fallback: open the Firefox support page with manual instructions
-      browser.tabs.create({ url: 'https://support.mozilla.org/kb/extensions-private-browsing' });
-    }
+  document.getElementById('theme-toggle').addEventListener('click', async () => {
+    const current = themePref;
+    const next = { auto: 'opposite', opposite: 'dark', dark: 'light', light: 'auto' }[current] || 'auto';
+    applyTheme(next);
+    await browser.storage.local.set({ theme: next });
   });
 
   document.getElementById('reset-scripts').addEventListener('click', async () => {

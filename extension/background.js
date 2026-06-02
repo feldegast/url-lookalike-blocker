@@ -10,6 +10,11 @@ let additionalScripts = new Set();
 let additionalLangScripts = []; // array of script arrays for explicitly-enabled languages
 let enabledLangScriptSets = []; // derived from user-enabled languages only; used by step 3
 
+// Tracks whether initialize() has resolved so the blocking listener can gate
+// on the init promise only during the brief startup window.
+let settingsLoaded = false;
+let initPromise;
+
 // Domains the user has chosen to continue past the mixed-script warning for
 // this browser session. Stored in memory only — cleared on browser restart.
 const sessionAllowed = new Set();
@@ -304,98 +309,103 @@ function recordBlockedTab(tabId, url) {
   return color;
 }
 
-// WebRequest listener — intercepts main-frame navigations only.
-// sub_frame is excluded to avoid breaking embedded content (CDNs, widgets).
-browser.webRequest.onBeforeRequest.addListener(
-  (details) => {
-    const url = details.url;
-    const hostname = decodeHostname(url);
+// Core request evaluation logic, extracted so the blocking listener can defer
+// it until after initialize() resolves during the startup window.
+function evaluateRequest(details) {
+  const url = details.url;
+  const hostname = decodeHostname(url);
 
-    // Whitelisted domains (and their subdomains) are always allowed
-    if (isWhitelisted(hostname)) {
-      return {};
+  // Whitelisted domains (and their subdomains) are always allowed
+  if (isWhitelisted(hostname)) {
+    return {};
+  }
+
+  // Domains the user has chosen to continue past a mixed-script warning this
+  // session are allowed through without re-showing the warning.
+  if (sessionAllowed.has(hostname)) {
+    return {};
+  }
+
+  // Return cached result for this hostname if available. The cache is
+  // cleared whenever settings or the whitelist change.
+  const cached = hostnameCache.get(hostname);
+  if (cached !== undefined) {
+    if (cached) {
+      if (details.tabId >= 0) recordBlockedTab(details.tabId, url);
+      return { redirectUrl: cached };
     }
+    return {};
+  }
 
-    // Domains the user has chosen to continue past a mixed-script warning this
-    // session are allowed through without re-showing the warning.
-    if (sessionAllowed.has(hostname)) {
-      return {};
-    }
+  // Step 1: block if any character's script is not in the permitted set
+  const result = isHostnameAllowed(hostname, permittedScripts);
+  if (!result.allowed) {
+    const blockedPageUrl = browser.runtime.getURL('blocked.html') +
+      `?url=${encodeURIComponent(url)}`;
+    hostnameCache.set(hostname, blockedPageUrl);
+    if (details.tabId >= 0) recordBlockedTab(details.tabId, url);
+    return { redirectUrl: blockedPageUrl };
+  }
 
-    if (!permittedScripts) {
-      permittedScripts = new Set(['Latin', 'Common', 'Inherited']);
-    }
-
-    // Return cached result for this hostname if available. The cache is
-    // cleared whenever settings or the whitelist change.
-    const cached = hostnameCache.get(hostname);
-    if (cached !== undefined) {
-      if (cached) {
-        recordBlockedTab(details.tabId, url);
-        return { redirectUrl: cached };
-      }
-      return {};
-    }
-
-    // Step 1: block if any character's script is not in the permitted set
-    const result = isHostnameAllowed(hostname, permittedScripts);
-    if (!result.allowed) {
-      const blockedPageUrl = browser.runtime.getURL('blocked.html') +
-        `?url=${encodeURIComponent(url)}`;
-      hostnameCache.set(hostname, blockedPageUrl);
-      recordBlockedTab(details.tabId, url);
-      return { redirectUrl: blockedPageUrl };
-    }
-
-    // Step 2: warn if a confusable character appears in a label that also
-    // mixes scripts. Requiring both conditions targets real homograph attacks
-    // (e.g. Cyrillic 'а' alongside Latin letters in 'аpple.com') without
-    // warning on legitimate international domains where confusable characters
-    // appear in a purely single-script label (e.g. a Russian domain where
-    // 'а' is surrounded only by other Cyrillic characters).
-    const confusables = getConfusableChars(hostname);
-    if (confusables.length > 0) {
-      const confusableSet = new Set(confusables.map(c => c.char));
-      const hasConfusableInMixedLabel = hostname.split('.').some(label => {
-        if (![...label].some(c => confusableSet.has(c))) return false;
-        const scripts = new Set(
-          [...label].map(getCharScript).filter(s => s && s !== 'Common' && s !== 'Inherited')
-        );
-        return scripts.size >= 2;
-      });
-      if (hasConfusableInMixedLabel) {
-        const warningPageUrl = browser.runtime.getURL('warning.html') +
-          `?url=${encodeURIComponent(url)}`;
-        hostnameCache.set(hostname, warningPageUrl);
-        recordBlockedTab(details.tabId, url);
-        return { redirectUrl: warningPageUrl };
-      }
-    }
-
-    // Step 3: warn if any single label mixes scripts from 2+ locales.
-    // Checks per-label (not per-hostname) so Latin TLDs like .com don't trigger
-    // false positives. Uses isSingleLocaleScriptMix to allow legitimate multi-
-    // script languages (Japanese: Han + Hiragana + Katakana) while flagging
-    // cross-locale mixes like Latin + Hiragana in the same label.
-    const labels = hostname.split('.');
-    const hasSuspiciousMix = labels.some(label => {
-      const labelScripts = new Set();
-      for (const char of label) {
-        const s = getCharScript(char);
-        if (s && s !== 'Common' && s !== 'Inherited') labelScripts.add(s);
-      }
-      return labelScripts.size >= 2 && !isSingleLocaleScriptMix(labelScripts, enabledLangScriptSets);
+  // Step 2: warn if a confusable character appears in a label that also
+  // mixes scripts. Requiring both conditions targets real homograph attacks
+  // (e.g. Cyrillic 'а' alongside Latin letters in 'аpple.com') without
+  // warning on legitimate international domains where confusable characters
+  // appear in a purely single-script label (e.g. a Russian domain where
+  // 'а' is surrounded only by other Cyrillic characters).
+  const confusables = getConfusableChars(hostname);
+  if (confusables.length > 0) {
+    const confusableSet = new Set(confusables.map(c => c.char));
+    const hasConfusableInMixedLabel = hostname.split('.').some(label => {
+      if (![...label].some(c => confusableSet.has(c))) return false;
+      const scripts = new Set(
+        [...label].map(getCharScript).filter(s => s && s !== 'Common' && s !== 'Inherited')
+      );
+      return scripts.size >= 2;
     });
-    if (hasSuspiciousMix) {
+    if (hasConfusableInMixedLabel) {
       const warningPageUrl = browser.runtime.getURL('warning.html') +
         `?url=${encodeURIComponent(url)}`;
       hostnameCache.set(hostname, warningPageUrl);
-      recordBlockedTab(details.tabId, url);
+      if (details.tabId >= 0) recordBlockedTab(details.tabId, url);
       return { redirectUrl: warningPageUrl };
     }
+  }
 
-    hostnameCache.set(hostname, '');
-    return {};
+  // Step 3: warn if any single label mixes scripts from 2+ locales.
+  // Checks per-label (not per-hostname) so Latin TLDs like .com don't trigger
+  // false positives. Uses isSingleLocaleScriptMix to allow legitimate multi-
+  // script languages (Japanese: Han + Hiragana + Katakana) while flagging
+  // cross-locale mixes like Latin + Hiragana in the same label.
+  const labels = hostname.split('.');
+  const hasSuspiciousMix = labels.some(label => {
+    const labelScripts = new Set();
+    for (const char of label) {
+      const s = getCharScript(char);
+      if (s && s !== 'Common' && s !== 'Inherited') labelScripts.add(s);
+    }
+    return labelScripts.size >= 2 && !isSingleLocaleScriptMix(labelScripts, enabledLangScriptSets);
+  });
+  if (hasSuspiciousMix) {
+    const warningPageUrl = browser.runtime.getURL('warning.html') +
+      `?url=${encodeURIComponent(url)}`;
+    hostnameCache.set(hostname, warningPageUrl);
+    if (details.tabId >= 0) recordBlockedTab(details.tabId, url);
+    return { redirectUrl: warningPageUrl };
+  }
+
+  hostnameCache.set(hostname, '');
+  return {};
+}
+
+// WebRequest listener — intercepts main-frame navigations only.
+// sub_frame is excluded to avoid breaking embedded content (CDNs, widgets).
+// Returns a Promise during the brief startup window so the first navigation
+// after an idle-suspension isn't evaluated with an empty whitelist.
+browser.webRequest.onBeforeRequest.addListener(
+  (details) => {
+    if (!settingsLoaded) return initPromise.then(() => evaluateRequest(details));
+    return evaluateRequest(details);
   },
   {
     urls: ["<all_urls>"],
@@ -404,4 +414,5 @@ browser.webRequest.onBeforeRequest.addListener(
   ["blocking"]
 );
 
-initialize();
+initPromise = initialize();
+initPromise.then(() => { settingsLoaded = true; });

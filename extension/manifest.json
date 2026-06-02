@@ -2,11 +2,11 @@
   "manifest_version": 3,
   "name": "URL Lookalike Blocker",
   "version": "1.0",
-  "description": "Blocks and warns when a domain uses characters from scripts outside your locale — protection against IDN homograph attacks.",
+  "description": "Blocks and warns when a domain uses characters from scripts (languages) outside your locale setting — protection against IDN homograph attacks.",
   "browser_specific_settings": {
     "gecko": {
       "id": "url-lookalike-blocker@feldegast.github.io",
-      "strict_min_version": "109.0"
+      "strict_min_version": "115.0"
     }
   },
   "icons": {
@@ -24,7 +24,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["blocked.html", "blocked.js", "warning.html", "warning.js", "icon.svg", "icon.png"],
+      "resources": ["blocked.html", "warning.html"],
       "matches": ["<all_urls>"]
     }
   ],
