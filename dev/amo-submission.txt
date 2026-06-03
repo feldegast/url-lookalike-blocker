@@ -84,5 +84,8 @@ permission. This is necessary because the extension must inspect and potentially
 redirect the request before the page loads — there is no way to implement IDN
 homograph detection without intercepting the request synchronously.
 
+The "menus" permission adds two items to the extension icon's right-click menu:
+"Open Options" and "Help". Both open extension-owned pages only.
+
 The extension does not modify page content, inject scripts into pages, or
 access page data. It only inspects the hostname of navigation requests.
