@@ -211,6 +211,11 @@ browser.storage.onChanged.addListener((changes) => {
 // Message handler for all extension pages.
 browser.runtime.onMessage.addListener((message, sender) => {
 
+  if (message.type === 'registerOptionsTab') {
+    optionsTabId = message.tabId;
+    return;
+  }
+
   if (message.type === 'openOptionsPage') {
     openOptions();
     return;

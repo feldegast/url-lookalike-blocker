@@ -111,7 +111,9 @@ document.addEventListener('DOMContentLoaded', async () => {
           urlEl.appendChild(document.createTextNode(char));
         }
       }
-      urlEl.appendChild(document.createTextNode(blockedUrl.slice(domainStart + punycodeDomain.length)));
+      let suffix = blockedUrl.slice(domainStart + punycodeDomain.length);
+      try { suffix = decodeURIComponent(suffix); } catch (e) { /* keep encoded form on malformed input */ }
+      urlEl.appendChild(document.createTextNode(suffix));
 
       document.getElementById('punycode-domain').textContent = punycodeDomain;
 

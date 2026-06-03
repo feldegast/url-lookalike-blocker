@@ -213,7 +213,6 @@
     }
     .unsaved-indicator {
       font-size: 13px;
-      color: #f57c00;
       font-style: italic;
     }
     .apply-btn {
@@ -233,6 +232,24 @@
     }
     .discard-btn:hover {
       background: #616161;
+    }
+    .sticky-apply-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      border-top: 2px solid #4caf50;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      box-shadow: 0 -4px 12px rgba(0,0,0,0.15);
+      z-index: 100;
+    }
+    body.has-sticky-bar {
+      padding-bottom: 74px;
     }
     .private-warning {
       display: flex;
@@ -299,11 +316,11 @@
       html:not([data-theme="light"]) .tab-selector { background: #2a2a2a; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
       html:not([data-theme="light"]) .tab-selector-label { color: #aaa; }
       html:not([data-theme="light"]) .scope-note { color: #aaa; }
-      html:not([data-theme="light"]) .unsaved-indicator { color: #ffb74d; }
       html:not([data-theme="light"]) .dirty-dot { background: #ffb74d; }
       html:not([data-theme="light"]) .private-warning { background: #2d2000; border-color: #b06000; border-left-color: #b06000; }
       html:not([data-theme="light"]) .theme-toggle { border-color: #555; color: #bbb; }
       html:not([data-theme="light"]) .theme-toggle:hover { background: rgba(255,255,255,0.07); }
+      html:not([data-theme="light"]) .sticky-apply-bar { background: #2a2a2a; border-top-color: #388e3c; box-shadow: 0 -4px 12px rgba(0,0,0,0.5); }
     }
     html[data-theme="dark"] body { background-color: #1a1a1a; color: #e0e0e0; }
     html[data-theme="dark"] h2 { color: #e0e0e0; border-bottom-color: #388e3c; }
@@ -323,11 +340,11 @@
     html[data-theme="dark"] .tab-selector { background: #2a2a2a; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
     html[data-theme="dark"] .tab-selector-label { color: #aaa; }
     html[data-theme="dark"] .scope-note { color: #aaa; }
-    html[data-theme="dark"] .unsaved-indicator { color: #ffb74d; }
     html[data-theme="dark"] .dirty-dot { background: #ffb74d; }
     html[data-theme="dark"] .private-warning { background: #2d2000; border-color: #b06000; border-left-color: #b06000; }
     html[data-theme="dark"] .theme-toggle { border-color: #555; color: #bbb; }
     html[data-theme="dark"] .theme-toggle:hover { background: rgba(255,255,255,0.07); }
+    html[data-theme="dark"] .sticky-apply-bar { background: #2a2a2a; border-top-color: #388e3c; box-shadow: 0 -4px 12px rgba(0,0,0,0.5); }
   </style>
 </head>
 <body>
@@ -342,7 +359,7 @@
     <div class="private-warning-text">
       <strong>Private browsing is not protected.</strong>
       This extension is not allowed to run in private windows, so homograph attacks will not be blocked there.
-      To enable protection, open the Firefox menu (≡) → <em>Add-ons and Themes</em>, find this extension, and set <em>Run in Private Windows</em> to <em>Allow</em>. Alternatively, type <code>about:addons</code> in a new tab's address bar.
+      To enable protection, open the Firefox menu (≡) → <em>Extensions and Themes</em>, find this extension, and set <em>Run in Private Windows</em> to <em>Allow</em>. Alternatively, type <code>about:addons</code> in a new tab's address bar.
     </div>
   </div>
 
@@ -368,16 +385,17 @@
 
     <div class="script-controls">
       <button id="reset-scripts">Reset to locale defaults</button>
-      <div class="apply-controls">
-        <span id="unsaved-indicator" class="unsaved-indicator" style="display:none">Unsaved changes</span>
-        <button id="discard-btn" class="discard-btn">Discard changes</button>
-        <button id="apply-btn" class="apply-btn">Apply changes</button>
-      </div>
     </div>
 
     <div id="latin-section" class="script-tree">
       <!-- Always-permitted Latin languages populated by JavaScript -->
     </div>
+  </div>
+
+  <div id="sticky-apply-bar" class="sticky-apply-bar" style="display:none">
+    <span id="unsaved-indicator" class="unsaved-indicator">URL Lookalike Blocker has unsaved changes</span>
+    <button id="discard-btn" class="discard-btn">Discard changes</button>
+    <button id="apply-btn" class="apply-btn">Apply changes</button>
   </div>
 
   <script src="unicode-scripts.js"></script>

@@ -179,12 +179,12 @@ Repeat step 1 after all the above to confirm nothing broke pass-through for norm
 
 Remove `"tabs"` from `permissions` in `manifest.json`, then reload the extension at `about:debugging` → This Firefox → Reload. Test that all tab-related features still work without it. Restore `tabs` if anything fails.
 
-- [ ] Toolbar button opens options page
-- [ ] Clicking a coloured square in options switches browser focus to that blocked tab
-- [ ] New blocked tab appears in the options bar while options is already open
-- [ ] Closing a blocked tab removes its square from options
-- [ ] "Try again" on a blocked/warning page navigates to the original URL
-- [ ] Apply in options closes options and returns focus to the correct tab
+- [x] Toolbar button opens options page
+- [x] Clicking a coloured square in options switches browser focus to that blocked tab
+- [x] New blocked tab appears in the options bar while options is already open
+- [x] Closing a blocked tab removes its square from options
+- [x] "Try again" on a blocked/warning page navigates to the original URL
+- [x] Apply in options closes options and returns focus to the correct tab
 
 If all pass: remove `"tabs"` permanently and commit. If any fail: restore `"tabs"` and note which test failed.
 
@@ -192,13 +192,13 @@ If all pass: remove `"tabs"` permanently and commit. If any fail: restore `"tabs
 
 ## 9. Toolbar badge
 
-- [ ] Navigate to a blocked URL — a red badge with "1" appears on the toolbar icon
-- [ ] Navigate to a second blocked URL in a new tab — badge updates to "2"
-- [ ] Close one blocked tab — badge updates to "1"
-- [ ] Allow the remaining blocked domain ("Allow this domain") — badge clears
-- [ ] Navigate to a warning page — badge shows "1"
-- [ ] Click "Go back" on the warning page — badge clears
-- [ ] Navigate to a blocked URL, reload the extension (`about:debugging` → Reload) — badge is restored from recovered blocked tabs (not blank)
+- [x] Navigate to a blocked URL — a red badge with "1" appears on the toolbar icon
+- [x] Navigate to a second blocked URL in a new tab — badge updates to "2"
+- [x] Close one blocked tab — badge updates to "1"
+- [x] Allow the remaining blocked domain ("Allow this domain") — badge clears
+- [x] Navigate to a warning page — badge shows "1"
+- [x] Click "Go back" on the warning page — badge clears
+- [ ] Badge recovery after background-page suspension — not manually testable via extension reload (reload closes all extension pages). `recoverBlockedTabs()` guards against Firefox silently suspending the idle background script while blocked tabs remain open; this happens automatically and cannot be triggered from about:debugging.
 
 ---
 
@@ -206,9 +206,9 @@ If all pass: remove `"tabs"` permanently and commit. If any fail: restore `"tabs
 
 > **Screenshots needed for help page:** Capture each screenshot in both light and dark mode — `img/block-page-light.png` / `img/block-page-dark.png` etc. Screenshots needed: block page, warning page, options page, coloured squares (options with 2+ blocked tabs), toolbar badge.
 
-- [ ] Right-click the toolbar icon — context menu shows "Open Options" and "Help"
-- [ ] Click "Help" in the context menu — help page opens in a new tab
-- [ ] Click the "Help" button on the options page — help page opens in a new tab
+- [x] Right-click the toolbar icon — context menu shows "Open Options" and "Help"
+- [x] Click "Help" in the context menu — help page opens in a new tab
+- [x] Click the "Help" button on the options page — help page opens in a new tab
 - [ ] Click "Open Options" on the help page — options page opens (or switches to it if already open)
 - [ ] Help page respects dark/light mode and the theme toggle works
 - [ ] All sections are present: What does this extension do, Block page, Warning page, Options page, Coloured squares, Extension icon

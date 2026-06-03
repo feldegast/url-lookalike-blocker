@@ -17,7 +17,6 @@
     "webRequest",
     "webRequestBlocking",
     "storage",
-    "tabs",
     "menus"
   ],
   "host_permissions": [

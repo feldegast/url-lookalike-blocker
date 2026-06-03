@@ -177,6 +177,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupEventListeners();
   await initTabSelector();
   await checkPrivateBrowsingAccess();
+
+  // Register this tab with background.js so it can close it on Apply even
+  // after a background-page restart (which resets optionsTabId to null).
+  browser.tabs.getCurrent().then(tab => {
+    if (tab) browser.runtime.sendMessage({ type: 'registerOptionsTab', tabId: tab.id }).catch(() => {});
+  });
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) syncTabDots();
   });
@@ -273,7 +279,9 @@ function checkDirty() {
     if (changed) anyLanguageDirty = true;
   });
   isDirty = anyLanguageDirty || !arraysEqualSorted(whitelist, initialWhitelist);
-  document.getElementById('unsaved-indicator').style.display = isDirty ? '' : 'none';
+  const bar = document.getElementById('sticky-apply-bar');
+  if (bar) bar.style.display = isDirty ? 'flex' : 'none';
+  document.body.classList.toggle('has-sticky-bar', isDirty);
 }
 
 function arraysEqualSorted(a, b) {
