@@ -7,10 +7,11 @@
   <style>
     body {
       font-family: Arial, sans-serif;
+      font-size: 16px;
       max-width: 800px;
       margin: 20px auto;
       padding: 20px;
-      background-color: #f5f5f5;
+      background-color: #e8e8e8;
     }
     .section {
       background: white;
@@ -99,6 +100,31 @@
       border-radius: 6px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
+    .badge-pair {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      align-items: flex-end;
+      flex-wrap: wrap;
+    }
+    .badge-pair figure {
+      margin: 0;
+      flex: 0 0 auto;
+    }
+    .badge-dark { display: none; }
+    @media (prefers-color-scheme: dark) {
+      html:not([data-theme="light"]) .badge-light { display: none; }
+      html:not([data-theme="light"]) .badge-dark  { display: block; }
+    }
+    html[data-theme="dark"] .badge-light { display: none; }
+    html[data-theme="dark"] .badge-dark  { display: block; }
+    .img-dark { display: none; }
+    @media (prefers-color-scheme: dark) {
+      html:not([data-theme="light"]) .img-light { display: none; }
+      html:not([data-theme="light"]) .img-dark  { display: block; }
+    }
+    html[data-theme="dark"] .img-light { display: none; }
+    html[data-theme="dark"] .img-dark  { display: block; }
     figcaption {
       font-size: 13px;
       color: #777;
@@ -164,9 +190,12 @@
   <div class="section">
     <h2><span class="pill pill-block">Blocked</span> Block page</h2>
     <p>A block page appears when the domain contains characters from scripts (writing systems) that you have not enabled in settings. For example, if a domain contains Cyrillic characters and you have not enabled Russian, it is blocked.</p>
-    <figure>
-      <!-- Replace placeholder with: <img src="img/block-page.png" alt="Block page screenshot"> -->
-      <div class="img-placeholder">Screenshot: block page — img/block-page.png</div>
+    <figure class="img-light">
+      <img src="img/block-page-light.png" alt="Block page, light theme">
+      <figcaption>The block page showing the offending characters and available actions.</figcaption>
+    </figure>
+    <figure class="img-dark">
+      <img src="img/block-page-dark.png" alt="Block page, dark theme">
       <figcaption>The block page showing the offending characters and available actions.</figcaption>
     </figure>
     <h3>What you can do</h3>
@@ -182,9 +211,12 @@
     <h2><span class="pill pill-warn">Warning</span> Warning page</h2>
     <p>A warning page appears when the domain mixes scripts in a way that suggests a homograph attack — for example, a domain that looks Latin but contains one hidden Cyrillic character. Warning pages can appear even if you have that script enabled, because legitimate sites do not mix scripts within a single domain label.</p>
     <p>The offending character is highlighted in red. If it only <em>looks like</em> a Latin character, that is shown too (e.g. "Looks like: a").</p>
-    <figure>
-      <!-- Replace placeholder with: <img src="img/warning-page.png" alt="Warning page screenshot"> -->
-      <div class="img-placeholder">Screenshot: warning page — img/warning-page.png</div>
+    <figure class="img-light">
+      <img src="img/warning-page-light.png" alt="Warning page, light theme">
+      <figcaption>The warning page highlighting a confusable character in the domain.</figcaption>
+    </figure>
+    <figure class="img-dark">
+      <img src="img/warning-page-dark.png" alt="Warning page, dark theme">
       <figcaption>The warning page highlighting a confusable character in the domain.</figcaption>
     </figure>
     <h3>What you can do</h3>
@@ -210,10 +242,23 @@
 
     <h3>Whitelisted domains</h3>
     <p>Domains you have explicitly allowed (via "Allow this domain" on a block or warning page) are listed here. You can remove them at any time — the domain will be blocked or warned again on the next visit.</p>
-    <figure>
-      <!-- Replace placeholder with: <img src="img/options-page.png" alt="Options page screenshot"> -->
-      <div class="img-placeholder">Screenshot: options page — img/options-page.png</div>
+    <figure class="img-light">
+      <img src="img/options-page-light.png" alt="Options page, light theme">
       <figcaption>The options page showing language settings and the whitelist.</figcaption>
+    </figure>
+    <figure class="img-dark">
+      <img src="img/options-page-dark.png" alt="Options page, dark theme">
+      <figcaption>The options page showing language settings and the whitelist.</figcaption>
+    </figure>
+
+    <h3>Unsaved changes</h3>
+    <figure class="img-light">
+      <img src="img/options-unsaved-light.png" alt="Options page with unsaved changes banner, light theme">
+      <figcaption>The orange unsaved changes banner appears when there are pending edits.</figcaption>
+    </figure>
+    <figure class="img-dark">
+      <img src="img/options-unsaved-dark.png" alt="Options page with unsaved changes banner, dark theme">
+      <figcaption>The orange unsaved changes banner appears when there are pending edits.</figcaption>
     </figure>
   </div>
 
@@ -226,9 +271,12 @@
       <li>When a blocked tab is closed or successfully loads its URL, its square disappears automatically.</li>
     </ul>
     <p>When you click <strong>Apply changes</strong> in Options, the page closes and focus returns to the blocked tab that opened it.</p>
-    <figure>
-      <!-- Replace placeholder with: <img src="img/coloured-squares.png" alt="Coloured squares screenshot"> -->
-      <div class="img-placeholder">Screenshot: coloured squares in options — img/coloured-squares.png</div>
+    <figure class="img-light">
+      <img src="img/coloured-squares-light.png" alt="Coloured squares in options, light theme">
+      <figcaption>The options page with two blocked tabs, each identified by a unique coloured square.</figcaption>
+    </figure>
+    <figure class="img-dark">
+      <img src="img/coloured-squares-dark.png" alt="Coloured squares in options, dark theme">
       <figcaption>The options page with two blocked tabs, each identified by a unique coloured square.</figcaption>
     </figure>
   </div>
@@ -238,11 +286,28 @@
     <p>Left-clicking the extension icon in the toolbar opens the Options page. Right-clicking gives a small menu with <strong>Open Options</strong> and <strong>Help</strong>.</p>
     <p>If the Options page is already open, clicking the icon switches to it rather than opening a second one.</p>
     <p>When one or more blocked or warning pages are open, the icon shows a <strong>red number badge</strong> indicating how many there are. The badge clears automatically once all blocked tabs have been resolved or closed.</p>
-    <figure>
-      <!-- Replace placeholder with: <img src="img/badge.png" alt="Toolbar badge screenshot"> -->
-      <div class="img-placeholder">Screenshot: toolbar icon with badge — img/badge.png</div>
-      <figcaption>The extension icon showing a badge count of blocked or warning tabs.</figcaption>
-    </figure>
+    <div class="badge-pair">
+      <div class="badge-light">
+        <figure>
+          <img src="img/badge-white-0.png" alt="Extension icon, no badge, light theme">
+          <figcaption>No blocked tabs</figcaption>
+        </figure>
+        <figure>
+          <img src="img/badge-white-1.png" alt="Extension icon, badge showing 1, light theme">
+          <figcaption>One blocked or warning tab</figcaption>
+        </figure>
+      </div>
+      <div class="badge-dark">
+        <figure>
+          <img src="img/badge-black-0.png" alt="Extension icon, no badge, dark theme">
+          <figcaption>No blocked tabs</figcaption>
+        </figure>
+        <figure>
+          <img src="img/badge-black-1.png" alt="Extension icon, badge showing 1, dark theme">
+          <figcaption>One blocked or warning tab</figcaption>
+        </figure>
+      </div>
+    </div>
   </div>
 
   <script src="theme.js"></script>

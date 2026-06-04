@@ -7,10 +7,11 @@
   <style>
     body {
       font-family: Arial, sans-serif;
+      font-size: 16px;
       max-width: 600px;
       margin: 50px auto;
       padding: 20px;
-      background-color: #f5f5f5;
+      background-color: #e8e8e8;
     }
     .container {
       background: white;
@@ -23,10 +24,14 @@
       font-size: 24px;
       margin-bottom: 20px;
     }
+    .warning-title {
+      display: inline-flex;
+      align-items: center;
+    }
     .details {
-      background: #fff3e0;
-      padding: 15px;
+      padding: 8px;
       border-radius: 4px;
+      border: 1px solid #333;
       margin: 20px 0;
     }
     .char-display {
@@ -42,12 +47,11 @@
     }
     .offending-chars-table th {
       text-align: left;
-      font-size: 12px;
-      color: #888;
-      padding: 2px 8px 2px 0;
+      font-size: 14px;
+      padding: 2px 8px 2px 8px;
     }
     .offending-chars-table td {
-      padding: 2px 8px 2px 0;
+      padding: 2px 8px 2px 8px;
     }
     .offending-char-glyph {
       font-size: 20px;
@@ -59,7 +63,7 @@
     }
     .details > strong {
       display: block;
-      margin-top: 10px;
+      padding-left: 8px;
       margin-bottom: 6px;
     }
     .unicode-domain {
@@ -125,7 +129,6 @@
       font-weight: normal;
       color: #555;
       vertical-align: middle;
-      margin-left: 14px;
       cursor: pointer;
       white-space: nowrap;
     }
@@ -137,14 +140,14 @@
     @media (prefers-color-scheme: dark) {
       html:not([data-theme="light"]) body { background-color: #1a1a1a; color: #e0e0e0; }
       html:not([data-theme="light"]) .container { background: #2a2a2a; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
-      html:not([data-theme="light"]) .details { background: #2d1500; }
+      html:not([data-theme="light"]) .details { border-color: #ccc; }
       html:not([data-theme="light"]) .unicode-domain { background: #333; }
       html:not([data-theme="light"]) .tab-dot-wrapper { color: #e0e0e0; }
       html:not([data-theme="light"]) .tab-dot-wrapper:hover { color: #fff; }
     }
     html[data-theme="dark"] body { background-color: #1a1a1a; color: #e0e0e0; }
     html[data-theme="dark"] .container { background: #2a2a2a; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
-    html[data-theme="dark"] .details { background: #2d1500; }
+    html[data-theme="dark"] .details { border-color: #ccc; }
     html[data-theme="dark"] .unicode-domain { background: #333; }
     html[data-theme="dark"] .tab-dot-wrapper { color: #e0e0e0; }
     html[data-theme="dark"] .tab-dot-wrapper:hover { color: #fff; }
@@ -152,13 +155,13 @@
 </head>
 <body>
   <div class="container">
-    <div class="warning"><img src="icon.svg" alt="" style="height: 1em; vertical-align: middle; margin-right: 0.4em;">URL Lookalike Blocker — Navigation Blocked<span id="tab-dot-wrapper" class="tab-dot-wrapper">Show options page <span id="tab-dot" class="tab-dot"></span></span></div>
+    <div class="warning"><span class="warning-title"><img src="icon.svg" alt="" style="height: 1em; margin-right: 0.4em;">URL Lookalike Blocker — Navigation Blocked</span><span id="tab-dot-wrapper" class="tab-dot-wrapper">Show options page <span id="tab-dot" class="tab-dot"></span></span></div>
     <p>The URL you tried to visit contains characters that may be part of a homograph attack.</p>
+    <div><strong>Blocked URL:</strong> <span id="blocked-url"></span></div>
+    <div id="punycode-row"><strong>Punycode domain:</strong> <span id="punycode-domain"></span></div>
+    <div id="unicode-row"><strong>Unicode domain:</strong> <span id="unicode-domain" class="unicode-domain"></span></div>
 
     <div class="details">
-      <div><strong>Blocked URL:</strong> <span id="blocked-url"></span></div>
-      <div id="punycode-row"><strong>Punycode domain:</strong> <span id="punycode-domain"></span></div>
-      <div id="unicode-row"><strong>Unicode domain:</strong> <span id="unicode-domain" class="unicode-domain"></span></div>
       <strong>Non-compliant characters:</strong>
       <table class="offending-chars-table">
         <thead><tr><th>Character</th><th>Codepoint</th><th>Script</th></tr></thead>
