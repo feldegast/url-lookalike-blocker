@@ -289,8 +289,11 @@ browser.runtime.onMessage.addListener((message, sender) => {
   }
 
   if (message.type === 'getBlockedTabs') {
-    // Options page queries this on load to populate the tab colour selector.
-    return Promise.resolve(
+    // Options page queries this on load and on visibilitychange. Await initPromise
+    // so recovery completes before we respond — prevents a race where Firefox
+    // wakes the background page and getBlockedTabs arrives before recoverBlockedTabs
+    // has finished, returning an empty array and wiping the options page dots.
+    return initPromise.then(() =>
       [...blockedTabs.entries()].map(([tabId, { url, color }]) => ({ tabId, url, color }))
     );
   }
