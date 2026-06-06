@@ -174,6 +174,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await initTheme();
   await loadSettings();
   buildLanguageTable();
+  updateTableState();
   setupEventListeners();
   await initTabSelector();
   await checkPrivateBrowsingAccess();
@@ -237,7 +238,6 @@ async function loadSettings() {
   initialLanguages = new Set(enabledLanguages);
   initialWhitelist = [...whitelist];
   renderWhitelist();
-  updateTableState();
 }
 
 // Builds additionalLangScripts for background.js mixed-script detection.

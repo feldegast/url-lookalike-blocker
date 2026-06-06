@@ -19,6 +19,13 @@
   <h1>URL Lookalike Blocker — Test URLs</h1>
   <p>Click a link to navigate. The extension should block all links unless marked <span class="allowed">ALLOWED</span>.</p>
 
+  <h2>Quick test — one URL per page type</h2>
+  <ul>
+    <li><a href="https://xn--qxa2abc.com/" target="_blank">xn--qxa2abc.com</a><span class="tag">BLOCKED page — τεστ.com (pure Greek; requires Greek disabled)</span></li>
+    <li><a href="https://xn--aypal-uye.com/" target="_blank">xn--aypal-uye.com</a><span class="tag">WARNING (confusable) — рaypal.com (Cyrillic 'р' in Latin label; requires Cyrillic enabled)</span></li>
+    <li><a href="https://xn--test-34d.com/" target="_blank">xn--test-34d.com</a><span class="tag">WARNING (mixed-script) — testж.com (Latin+Cyrillic; requires Cyrillic enabled, Serbian disabled)</span></li>
+  </ul>
+
   <h2>Cyrillic</h2>
   <ul>
     <li><a href="https://www.xn--80ak6aa92e.com/" target="_blank">www.xn--80ak6aa92e.com</a><span class="tag">"apple.com" in Cyrillic [DETECTION ONLY]</span></li>

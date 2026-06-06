@@ -1,5 +1,9 @@
 # TODO / Future Features
 
+## Active — restore box-shadow rules after screenshot recapture
+
+Box-shadow CSS rules across `extension/blocked.html`, `extension/warning.html`, `extension/options.html`, and `extension/help.html` (~19 declarations total) have been commented out with `/* ... */` markers as of 2026-06-07 so help-page screenshots can be captured without shadow halos bleeding into the crops. The shipped UI is meant to keep its drop shadows — they "look good, just a pain for cropping". Once the screenshot recapture pass is complete, uncomment every `/* box-shadow: ... */` declaration in the four HTML files. Find them with `grep -rn "/\* box-shadow" extension/*.html`.
+
 ## Dark Mode / Light Mode Theming
 
 **Goal:** Make the options, block, and warning pages respect the user's OS dark/light preference rather than always showing a white background.
