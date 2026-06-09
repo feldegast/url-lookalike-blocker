@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>URL Lookalike Blocker — Help</title>
   <link rel="icon" href="icon.svg">
+  <script src="bootstrap.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -19,7 +20,7 @@
       padding: 20px;
       margin-bottom: 20px;
       border-radius: 8px;
-      /* box-shadow: 0 2px 10px rgba(0,0,0,0.1); */
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
     h2 {
       color: #333;
@@ -92,14 +93,15 @@
     .pill-block { background: #ffebee; color: #c62828; border: 1px solid #ef9a9a; }
     .pill-warn  { background: #fff8e1; color: #e65100; border: 1px solid #ffcc02; }
     figure {
-      margin: 16px 0 8px;
+      margin: 24px 0;
+      padding-top: 16px;
       text-align: center;
+      border-top: 1px solid #ddd;
     }
     figure img {
       max-width: 100%;
-      border: 1px solid #ddd;
       border-radius: 6px;
-      /* box-shadow: 0 2px 8px rgba(0,0,0,0.1); */
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
     .badge-pair {
       display: flex;
@@ -113,12 +115,13 @@
       flex: 0 0 auto;
     }
     .badge-dark { display: none; }
+    .badge-light { display: flex; gap: 24px; justify-content: center; }
     @media (prefers-color-scheme: dark) {
       html:not([data-theme="light"]) .badge-light { display: none; }
-      html:not([data-theme="light"]) .badge-dark  { display: block; }
+      html:not([data-theme="light"]) .badge-dark  { display: flex; gap: 24px; justify-content: center; }
     }
     html[data-theme="dark"] .badge-light { display: none; }
-    html[data-theme="dark"] .badge-dark  { display: block; }
+    html[data-theme="dark"] .badge-dark  { display: flex; gap: 24px; justify-content: center; }
     .img-dark { display: none; }
     @media (prefers-color-scheme: dark) {
       html:not([data-theme="light"]) .img-light { display: none; }
@@ -129,7 +132,9 @@
     figcaption {
       font-size: 13px;
       color: #777;
-      margin-top: 6px;
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid #ddd;
     }
     .img-placeholder {
       display: flex;
@@ -151,26 +156,30 @@
       html:not([data-theme="light"]) body { background-color: #1a1a1a; color: #e0e0e0; }
       html:not([data-theme="light"]) h2 { color: #e0e0e0; border-bottom-color: #388e3c; }
       html:not([data-theme="light"]) h3 { color: #ccc; }
-      html:not([data-theme="light"]) .section { background: #2a2a2a; /* box-shadow: 0 2px 10px rgba(0,0,0,0.5); */ }
+      html:not([data-theme="light"]) .section { background: #2a2a2a; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
       html:not([data-theme="light"]) code { background: #333; }
       html:not([data-theme="light"]) .example-domain { background: #2d1500; border-color: #5a3000; }
       html:not([data-theme="light"]) .theme-toggle { border-color: #555; color: #bbb; }
       html:not([data-theme="light"]) .theme-toggle:hover { background: rgba(255,255,255,0.07); }
-      html:not([data-theme="light"]) figure img { border-color: #444; }
-      html:not([data-theme="light"]) figcaption { color: #888; }
+      html:not([data-theme="light"]) figcaption { color: #888; border-top-color: #444; }
+      html:not([data-theme="light"]) figure { border-top-color: #444; }
       html:not([data-theme="light"]) .img-placeholder { border-color: #444; background: #222; color: #666; }
     }
     html[data-theme="dark"] body { background-color: #1a1a1a; color: #e0e0e0; }
     html[data-theme="dark"] h2 { color: #e0e0e0; border-bottom-color: #388e3c; }
     html[data-theme="dark"] h3 { color: #ccc; }
-    html[data-theme="dark"] .section { background: #2a2a2a; /* box-shadow: 0 2px 10px rgba(0,0,0,0.5); */ }
+    html[data-theme="dark"] .section { background: #2a2a2a; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
     html[data-theme="dark"] code { background: #333; }
     html[data-theme="dark"] .example-domain { background: #2d1500; border-color: #5a3000; }
     html[data-theme="dark"] .theme-toggle { border-color: #555; color: #bbb; }
     html[data-theme="dark"] .theme-toggle:hover { background: rgba(255,255,255,0.07); }
-    html[data-theme="dark"] figure img { border-color: #444; }
-    html[data-theme="dark"] figcaption { color: #888; }
+    html[data-theme="dark"] figcaption { color: #888; border-top-color: #444; }
+    html[data-theme="dark"] figure { border-top-color: #444; }
     html[data-theme="dark"] .img-placeholder { border-color: #444; background: #222; color: #666; }
+
+    /* Interface option: when "Show shadows" is disabled, suppress all drop shadows. */
+    html.no-shadows .section,
+    html.no-shadows figure img { box-shadow: none; }
   </style>
 </head>
 <body>
@@ -210,19 +219,34 @@
 
   <div class="section">
     <h2><span class="pill pill-warn">Warning</span> Warning page</h2>
-    <p>A warning page appears when the domain mixes scripts in a way that suggests a homograph attack — for example, a domain that looks Latin but contains one hidden Cyrillic character. Warning pages can appear even if you have that script enabled, because legitimate sites do not mix scripts within a single domain label.</p>
-    <p>The offending character is highlighted in red. If it only <em>looks like</em> a Latin character, that is shown too (e.g. "Looks like: a").</p>
+    <p>A warning page appears when the domain mixes scripts in a way that suggests a homograph attack. Warning pages can appear even if you have the relevant scripts enabled, because legitimate sites do not normally mix scripts within a single domain label. There are two flavours depending on what the extension detected.</p>
+
+    <h3>Confusable character in a mixed-script label</h3>
+    <p>This appears when a domain contains a character that visually resembles a Latin letter — for example the Cyrillic <code>р</code> mimicking <code>p</code> in <code>рaypal.com</code>. The confusable character is highlighted in <strong>red</strong> and the lookalike is shown (e.g. "Looks like: p").</p>
     <figure class="img-light">
-      <img src="img/warning-white.png" alt="Warning page, light theme">
-      <figcaption>The warning page highlighting a confusable character in the domain.</figcaption>
+      <img src="img/warning-confusable-white.png" alt="Confusable warning page, light theme">
+      <figcaption>Confusable warning — the Cyrillic 'р' in рaypal.com is highlighted red.</figcaption>
     </figure>
     <figure class="img-dark">
-      <img src="img/warning-black.png" alt="Warning page, dark theme">
-      <figcaption>The warning page highlighting a confusable character in the domain.</figcaption>
+      <img src="img/warning-confusable-black.png" alt="Confusable warning page, dark theme">
+      <figcaption>Confusable warning — the Cyrillic 'р' in рaypal.com is highlighted red.</figcaption>
     </figure>
+
+    <h3>Mixed-script label</h3>
+    <p>This appears when a domain label mixes characters from two or more scripts that are not commonly combined — for example Latin and Cyrillic together in <code>testж.com</code>. The non-Latin characters are highlighted in <strong>amber</strong>. If enabling a specific language would permit this combination, that hint is shown (e.g. "enable Serbian in Extension Settings").</p>
+    <figure class="img-light">
+      <img src="img/warning-mixed-white.png" alt="Mixed-script warning page, light theme">
+      <figcaption>Mixed-script warning — Latin combined with Cyrillic in testж.com.</figcaption>
+    </figure>
+    <figure class="img-dark">
+      <img src="img/warning-mixed-black.png" alt="Mixed-script warning page, dark theme">
+      <figcaption>Mixed-script warning — Latin combined with Cyrillic in testж.com.</figcaption>
+    </figure>
+
     <h3>What you can do</h3>
     <ul>
       <li><strong>Allow this domain</strong> — permanently whitelists the domain if you know it is safe.</li>
+      <li><strong>Continue anyway</strong> — proceeds to the domain for this browser session only.</li>
       <li><strong>Open extension options</strong> — opens the Options page.</li>
       <li><strong>Try again</strong> — re-attempts the URL after applying new settings.</li>
       <li><strong>Go back</strong> — returns to the previous page.</li>
@@ -230,45 +254,71 @@
   </div>
 
   <div class="section">
-    <h2>Options page</h2>
-    <h3>Permitted languages</h3>
-    <p>Tick the languages whose scripts you want to allow in domain names. Your browser's locale is used as the starting point — so if your Firefox language is set to English, Latin is already permitted.</p>
-    <p>Enabling a language does two things: it allows that language's scripts in domain names, and it permits mixing those scripts within a single label (useful for languages like Serbian that legitimately combine Latin and Cyrillic).</p>
-
-    <h3>Apply changes / Discard changes</h3>
-    <p>Changes to language settings are held in memory until you click <strong>Apply changes</strong>. The orange "Unsaved changes" dot appears while there are pending edits. <strong>Discard changes</strong> reverts to the last saved state without closing the page.</p>
-
-    <h3>Reset to locale defaults</h3>
-    <p>Re-checks the languages that match your current Firefox locale setting, discarding any manual selections. Applied immediately.</p>
-
-    <h3>Whitelisted domains</h3>
-    <p>Domains you have explicitly allowed (via "Allow this domain" on a block or warning page) are listed here. You can remove them at any time — the domain will be blocked or warned again on the next visit.</p>
+    <h2>Extension icon (toolbar)</h2>
+    <p>Left-clicking the extension icon in the toolbar opens the Options page. Right-clicking gives a small menu with <strong>Open Options</strong> and <strong>Help</strong>.</p>
     <figure class="img-light">
-      <img src="img/whitelist-white.png" alt="Whitelist section, light theme">
-      <figcaption>The whitelist showing allowed domains.</figcaption>
+      <img src="img/menu-white.png" alt="Right-click menu, light theme">
+      <figcaption>The right-click context menu on the extension icon.</figcaption>
     </figure>
     <figure class="img-dark">
-      <img src="img/whitelist-black.png" alt="Whitelist section, dark theme">
-      <figcaption>The whitelist showing allowed domains.</figcaption>
+      <img src="img/menu-black.png" alt="Right-click menu, dark theme">
+      <figcaption>The right-click context menu on the extension icon.</figcaption>
     </figure>
+    <p>If the Options page is already open, clicking the icon switches to the Options page rather than opening a second copy.</p>
+    <p>When one or more blocked or warning pages are open, the icon shows a <strong>red number badge</strong> indicating how many there are. The badge clears automatically once all blocked and warning tabs have been resolved or closed.</p>
+    <div class="badge-pair">
+      <div class="badge-light">
+        <figure>
+          <img src="img/badge-0-white.png" alt="Extension icon, no badge, light theme">
+          <figcaption>No blocked tabs</figcaption>
+        </figure>
+        <figure>
+          <img src="img/badge-1-white.png" alt="Extension icon, badge showing 1, light theme">
+          <figcaption>One blocked or warning tab</figcaption>
+        </figure>
+      </div>
+      <div class="badge-dark">
+        <figure>
+          <img src="img/badge-0-black.png" alt="Extension icon, no badge, dark theme">
+          <figcaption>No blocked tabs</figcaption>
+        </figure>
+        <figure>
+          <img src="img/badge-1-black.png" alt="Extension icon, badge showing 1, dark theme">
+          <figcaption>One blocked or warning tab</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Options page</h2>
     <figure class="img-light">
       <img src="img/options-white.png" alt="Options page, light theme">
-      <figcaption>The options page showing language settings and the whitelist.</figcaption>
+      <figcaption>The options page showing coloured tabs, interface options, whitelisted domains and permitted languages.</figcaption>
     </figure>
     <figure class="img-dark">
       <img src="img/options-black.png" alt="Options page, dark theme">
-      <figcaption>The options page showing language settings and the whitelist.</figcaption>
+      <figcaption>The options page showing coloured tabs, interface options, whitelisted domains and permitted languages.</figcaption>
     </figure>
+    <p>The Options page is where you configure which scripts are permitted, manage your whitelist, and adjust interface options. The sections below appear on the page in the order shown here.</p>
+  </div>
 
-    <h3>Unsaved changes</h3>
+  <div class="section">
+    <h2>Private browsing protection</h2>
+    <p>By default, Firefox does not run extensions in private windows. If you use private browsing and want this extension to protect those windows too, you need to enable it manually.</p>
+    <p>When the extension is not allowed to run in private windows, the Options page shows a warning banner at the top:</p>
     <figure class="img-light">
-      <img src="img/change-language-with-apply-changes-white.png" alt="Options page with unsaved changes banner, light theme">
-      <figcaption>The orange unsaved changes banner appears when there are pending edits.</figcaption>
+      <img src="img/options-private-warning-white.png" alt="Private browsing warning banner, light theme">
+      <figcaption>The private-browsing warning banner shown in Options.</figcaption>
     </figure>
     <figure class="img-dark">
-      <img src="img/change-language-with-apply-changes-black.png" alt="Options page with unsaved changes banner, dark theme">
-      <figcaption>The orange unsaved changes banner appears when there are pending edits.</figcaption>
+      <img src="img/options-private-warning-black.png" alt="Private browsing warning banner, dark theme">
+      <figcaption>The private-browsing warning banner shown in Options.</figcaption>
     </figure>
+    <h3>Enabling protection in private windows</h3>
+    <p>Open the Firefox menu (≡) → <em>Extensions and Themes</em>, find this extension, and set <em>Run in Private Windows</em> to <em>Allow</em>. Alternatively, type <code>about:addons</code> into a new tab's address bar.</p>
+    <h3>Dismissing the warning</h3>
+    <p>If you cannot grant private-window access — for example in a managed Firefox setup where the option is disabled by policy — click <strong>Dismiss this warning</strong> on the banner, or untick <strong>Show private-browsing warning when access is not granted</strong> in the <em>Interface options</em> section. The protection itself remains off; dismissing only hides the banner.</p>
   </div>
 
   <div class="section">
@@ -276,7 +326,7 @@
     <p>When multiple blocked or warning pages are open at once, each tab gets a unique coloured rounded square so you can tell them apart.</p>
     <ul>
       <li>Clicking the square on a <strong>blocked or warning page</strong> opens the Options page.</li>
-      <li>From the <strong>Options page</strong>, clicking a square switches browser focus to that blocked tab.</li>
+      <li>From the <strong>Options page</strong>, clicking a square switches browser focus to the page with the matching colour.</li>
       <li>When a blocked tab is closed or successfully loads its URL, its square disappears automatically.</li>
     </ul>
     <p>When you click <strong>Apply changes</strong> in Options, the page closes and focus returns to the blocked tab that opened it.</p>
@@ -291,40 +341,49 @@
   </div>
 
   <div class="section">
-    <h2>Extension icon (toolbar)</h2>
-    <p>Left-clicking the extension icon in the toolbar opens the Options page. Right-clicking gives a small menu with <strong>Open Options</strong> and <strong>Help</strong>.</p>
+    <h2>Interface options</h2>
+    <p>Two visual preferences that take effect immediately when changed, with no Apply step required.</p>
+    <ul>
+      <li><strong>Show shadows</strong> — controls the drop shadows around panels on every extension page. Untick for a flatter look. Default: on.</li>
+      <li><strong>Show private-browsing warning when access is not granted</strong> — controls whether the private-browsing banner appears on the Options page. Useful in managed Firefox setups where the underlying permission cannot be granted. See <em>Private browsing protection</em> above for details. Default: on.</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>Whitelisted domains</h2>
+    <p>Domains you have explicitly allowed (via "Allow this domain" on a block or warning page) are listed here. You can remove them at any time — the domain will be blocked or warned again on the next visit.</p>
     <figure class="img-light">
-      <img src="img/menu-white.png" alt="Right-click menu, light theme">
-      <figcaption>The right-click context menu on the extension icon.</figcaption>
+      <img src="img/whitelist-white.png" alt="Whitelist section, light theme">
+      <figcaption>The whitelist showing allowed domains.</figcaption>
     </figure>
     <figure class="img-dark">
-      <img src="img/menu-black.png" alt="Right-click menu, dark theme">
-      <figcaption>The right-click context menu on the extension icon.</figcaption>
+      <img src="img/whitelist-black.png" alt="Whitelist section, dark theme">
+      <figcaption>The whitelist showing allowed domains.</figcaption>
     </figure>
-    <p>If the Options page is already open, clicking the icon switches to it rather than opening a second one.</p>
-    <p>When one or more blocked or warning pages are open, the icon shows a <strong>red number badge</strong> indicating how many there are. The badge clears automatically once all blocked tabs have been resolved or closed.</p>
-    <div class="badge-pair">
-      <div class="badge-light">
-        <figure>
-          <img src="img/badge-white-0.png" alt="Extension icon, no badge, light theme">
-          <figcaption>No blocked tabs</figcaption>
-        </figure>
-        <figure>
-          <img src="img/badge-white-1.png" alt="Extension icon, badge showing 1, light theme">
-          <figcaption>One blocked or warning tab</figcaption>
-        </figure>
-      </div>
-      <div class="badge-dark">
-        <figure>
-          <img src="img/badge-black-0.png" alt="Extension icon, no badge, dark theme">
-          <figcaption>No blocked tabs</figcaption>
-        </figure>
-        <figure>
-          <img src="img/badge-black-1.png" alt="Extension icon, badge showing 1, dark theme">
-          <figcaption>One blocked or warning tab</figcaption>
-        </figure>
-      </div>
-    </div>
+  </div>
+
+  <div class="section">
+    <h2>Permitted languages</h2>
+    <p>Tick the languages whose scripts (character sets) you want to allow in domain names. Your browser's locale is used as the starting point — so if your Firefox language is set to Japanese, then Japanese is already permitted and the Han, Hiragana, and Katakana scripts are allowed. In addition, Latin is universally permitted regardless of locale, since disabling Latin would block a significant portion of the internet.</p>
+    <p>Enabling a language does two things: it allows that language's scripts in domain names, and it permits mixing those scripts within a single label (useful for languages like Serbian that legitimately combine Latin and Cyrillic).</p>
+  </div>
+
+  <div class="section">
+    <h2>Reset to locale defaults</h2>
+    <p>Re-checks the languages that match your current Firefox locale setting, and resets to just those language(s). Applied immediately.</p>
+  </div>
+
+  <div class="section">
+    <h2>Apply changes / Discard changes</h2>
+    <p>Changes to language settings are held in memory until you click <strong>Apply changes</strong>. The orange "Unsaved changes" dot appears while there are pending edits. <strong>Discard changes</strong> reverts to the last saved state without closing the page.</p>
+    <figure class="img-light">
+      <img src="img/options-apply-bar-white.png" alt="Options page with unsaved changes banner, light theme">
+      <figcaption>The unsaved changes banner appears when there are pending edits.</figcaption>
+    </figure>
+    <figure class="img-dark">
+      <img src="img/options-apply-bar-black.png" alt="Options page with unsaved changes banner, dark theme">
+      <figcaption>The unsaved changes banner appears when there are pending edits.</figcaption>
+    </figure>
   </div>
 
   <script src="theme.js"></script>

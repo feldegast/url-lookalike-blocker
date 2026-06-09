@@ -167,11 +167,33 @@ systemDark.addEventListener('change', () => {
 
 async function initTheme() {
   const result = await browser.storage.local.get('theme');
-  applyTheme(result.theme || 'auto');
+  const value = result.theme || 'auto';
+  applyTheme(value);
+  // Mirror to localStorage so bootstrap.js has a fresh sync cache next paint.
+  try { localStorage.setItem('theme', value); } catch (e) { /* unavailable */ }
+}
+
+// Shadows default ON. Only suppress when explicitly disabled (false). Mirrors
+// the logic in theme.js so blocked/warning/help pages stay in sync.
+function applyShadowPref(showShadows) {
+  document.documentElement.classList.toggle('no-shadows', showShadows === false);
+  const cb = document.getElementById('show-shadows');
+  if (cb) cb.checked = showShadows !== false;
+}
+
+async function initShadows() {
+  const result = await browser.storage.local.get('showShadows');
+  applyShadowPref(result.showShadows);
+  // Mirror to localStorage so bootstrap.js has a fresh sync cache next paint.
+  try {
+    if (result.showShadows === undefined) localStorage.removeItem('showShadows');
+    else localStorage.setItem('showShadows', String(result.showShadows));
+  } catch (e) { /* unavailable */ }
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
   await initTheme();
+  await initShadows();
   await loadSettings();
   buildLanguageTable();
   updateTableState();
@@ -615,17 +637,30 @@ function removeFromWhitelist(domain) {
 }
 
 // Show a warning banner if the extension has not been granted access to
-// private windows. The banner includes a button that opens about:addons so
-// the user can find the extension and set "Run in Private Windows" to Allow.
+// private windows AND the user has not dismissed the warning. The dismissal
+// flag exists for environments where access cannot be granted (locked-down
+// corporate Firefox builds with policy-disabled private windows) — without it
+// the warning would be permanent noise the user cannot act on.
+let privateAccessAllowed = false;
 async function checkPrivateBrowsingAccess() {
   try {
-    const allowed = await browser.extension.isAllowedIncognitoAccess();
-    if (!allowed) {
-      document.getElementById('private-warning').style.display = 'flex';
-    }
+    privateAccessAllowed = await browser.extension.isAllowedIncognitoAccess();
   } catch (e) {
-    // API unavailable — skip the check silently.
+    // API unavailable — assume allowed so the warning never shows.
+    privateAccessAllowed = true;
   }
+  const { dismissedPrivateWarning } = await browser.storage.local.get('dismissedPrivateWarning');
+  applyPrivateWarningVisibility(!!dismissedPrivateWarning);
+  const cb = document.getElementById('show-private-warning');
+  if (cb) cb.checked = !dismissedPrivateWarning;
+}
+
+// Visibility = not granted AND not dismissed. The user can toggle visibility
+// via the Interface options checkbox or the inline Dismiss button.
+function applyPrivateWarningVisibility(dismissed) {
+  const el = document.getElementById('private-warning');
+  if (!el) return;
+  el.style.display = (!privateAccessAllowed && !dismissed) ? 'flex' : 'none';
 }
 
 function setupEventListeners() {
@@ -637,7 +672,37 @@ function setupEventListeners() {
     const current = themePref;
     const next = { auto: 'opposite', opposite: 'dark', dark: 'light', light: 'auto' }[current] || 'auto';
     applyTheme(next);
+    // Mirror to localStorage so bootstrap.js can apply this synchronously on
+    // the next page load and avoid a flash of the previous theme.
+    try { localStorage.setItem('theme', next); } catch (e) { /* unavailable */ }
     await browser.storage.local.set({ theme: next });
+  });
+
+  // Instant-apply cosmetic toggle — no dirty bar, persisted immediately so
+  // already-open blocked/warning/help tabs react via theme.js's storage listener.
+  document.getElementById('show-shadows').addEventListener('change', async (e) => {
+    const showShadows = e.target.checked;
+    applyShadowPref(showShadows);
+    try { localStorage.setItem('showShadows', String(showShadows)); } catch (e) { /* unavailable */ }
+    await browser.storage.local.set({ showShadows });
+  });
+
+  // Show private-browsing warning toggle. Checkbox checked = show warning =
+  // dismissed flag false. Inverted internally so the storage default (undefined)
+  // means "not dismissed" and the warning shows naturally on first run.
+  document.getElementById('show-private-warning').addEventListener('change', async (e) => {
+    const dismissed = !e.target.checked;
+    applyPrivateWarningVisibility(dismissed);
+    await browser.storage.local.set({ dismissedPrivateWarning: dismissed });
+  });
+
+  // Inline dismiss link inside the warning banner. Sets the same flag and
+  // keeps the Interface options checkbox in sync.
+  document.getElementById('private-warning-dismiss').addEventListener('click', async () => {
+    applyPrivateWarningVisibility(true);
+    const cb = document.getElementById('show-private-warning');
+    if (cb) cb.checked = false;
+    await browser.storage.local.set({ dismissedPrivateWarning: true });
   });
 
   document.getElementById('reset-scripts').addEventListener('click', async () => {

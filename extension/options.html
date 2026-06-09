@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>URL Lookalike Blocker Options</title>
   <link rel="icon" href="icon.svg">
+  <script src="bootstrap.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -19,7 +20,7 @@
       padding: 20px;
       margin-bottom: 20px;
       border-radius: 8px;
-      /* box-shadow: 0 2px 10px rgba(0,0,0,0.1); */
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
     h2 {
       color: #333;
@@ -119,6 +120,14 @@
       gap: 6px;
       cursor: pointer;
     }
+    .interface-option {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      margin-bottom: 6px;
+    }
+    .interface-option:last-child { margin-bottom: 0; }
     .script-tag {
       display: inline-block;
       font-size: 12px;
@@ -160,7 +169,7 @@
       padding: 10px 20px;
       background: white;
       border-radius: 8px;
-      /* box-shadow: 0 2px 10px rgba(0,0,0,0.1); */
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
       margin-bottom: 20px;
     }
     .tab-selector-label {
@@ -247,7 +256,7 @@
       align-items: center;
       justify-content: flex-end;
       gap: 10px;
-      /* box-shadow: 0 -4px 12px rgba(0,0,0,0.15); */
+      box-shadow: 0 -4px 12px rgba(0,0,0,0.15);
       z-index: 100;
     }
     body.has-sticky-bar {
@@ -274,6 +283,18 @@
       font-size: 14px;
       line-height: 1.5;
     }
+    .private-warning-dismiss {
+      display: block;
+      margin-top: 8px;
+      font-size: 13px;
+      background: none;
+      border: none;
+      padding: 0;
+      color: #555;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    .private-warning-dismiss:hover { color: #222; }
     .page-header {
       display: flex;
       align-items: center;
@@ -302,7 +323,7 @@
     @media (prefers-color-scheme: dark) {
       html:not([data-theme="light"]) body { background-color: #1a1a1a; color: #e0e0e0; }
       html:not([data-theme="light"]) h2 { color: #e0e0e0; border-bottom-color: #388e3c; }
-      html:not([data-theme="light"]) .section { background: #2a2a2a; /* box-shadow: 0 2px 10px rgba(0,0,0,0.5); */ }
+      html:not([data-theme="light"]) .section { background: #2a2a2a; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
       html:not([data-theme="light"]) .whitelist-item { border-color: #444; }
       html:not([data-theme="light"]) .whitelist-unicode-domain { background: #333; }
       html:not([data-theme="light"]) .offending-chars-table th { color: #999; }
@@ -315,18 +336,20 @@
       html:not([data-theme="light"]) .script-sub-label { color: #999; }
       html:not([data-theme="light"]) .latin-only-separator { background: #333; color: #e0e0e0; }
       html:not([data-theme="light"]) .latin-only-list { color: #aaa; }
-      html:not([data-theme="light"]) .tab-selector { background: #2a2a2a; /* box-shadow: 0 2px 10px rgba(0,0,0,0.5); */ }
+      html:not([data-theme="light"]) .tab-selector { background: #2a2a2a; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
       html:not([data-theme="light"]) .tab-selector-label { color: #aaa; }
       html:not([data-theme="light"]) .scope-note { color: #aaa; }
       html:not([data-theme="light"]) .dirty-dot { background: #ffb74d; }
       html:not([data-theme="light"]) .private-warning { background: #2d2000; border-color: #b06000; border-left-color: #b06000; }
+      html:not([data-theme="light"]) .private-warning-dismiss { color: #ccc; }
+      html:not([data-theme="light"]) .private-warning-dismiss:hover { color: #fff; }
       html:not([data-theme="light"]) .theme-toggle { border-color: #555; color: #bbb; }
       html:not([data-theme="light"]) .theme-toggle:hover { background: rgba(255,255,255,0.07); }
-      html:not([data-theme="light"]) .sticky-apply-bar { background: #2a2a2a; border-top-color: #388e3c; /* box-shadow: 0 -4px 12px rgba(0,0,0,0.5); */ }
+      html:not([data-theme="light"]) .sticky-apply-bar { background: #2a2a2a; border-top-color: #388e3c; box-shadow: 0 -4px 12px rgba(0,0,0,0.5); }
     }
     html[data-theme="dark"] body { background-color: #1a1a1a; color: #e0e0e0; }
     html[data-theme="dark"] h2 { color: #e0e0e0; border-bottom-color: #388e3c; }
-    html[data-theme="dark"] .section { background: #2a2a2a; /* box-shadow: 0 2px 10px rgba(0,0,0,0.5); */ }
+    html[data-theme="dark"] .section { background: #2a2a2a; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
     html[data-theme="dark"] .whitelist-item { border-color: #444; }
     html[data-theme="dark"] .whitelist-unicode-domain { background: #333; }
     html[data-theme="dark"] .offending-chars-table th { color: #999; }
@@ -339,14 +362,21 @@
     html[data-theme="dark"] .script-sub-label { color: #999; }
     html[data-theme="dark"] .latin-only-separator { background: #333; color: #e0e0e0; }
     html[data-theme="dark"] .latin-only-list { color: #aaa; }
-    html[data-theme="dark"] .tab-selector { background: #2a2a2a; /* box-shadow: 0 2px 10px rgba(0,0,0,0.5); */ }
+    html[data-theme="dark"] .tab-selector { background: #2a2a2a; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
     html[data-theme="dark"] .tab-selector-label { color: #aaa; }
     html[data-theme="dark"] .scope-note { color: #aaa; }
     html[data-theme="dark"] .dirty-dot { background: #ffb74d; }
     html[data-theme="dark"] .private-warning { background: #2d2000; border-color: #b06000; border-left-color: #b06000; }
+    html[data-theme="dark"] .private-warning-dismiss { color: #ccc; }
+    html[data-theme="dark"] .private-warning-dismiss:hover { color: #fff; }
     html[data-theme="dark"] .theme-toggle { border-color: #555; color: #bbb; }
     html[data-theme="dark"] .theme-toggle:hover { background: rgba(255,255,255,0.07); }
-    html[data-theme="dark"] .sticky-apply-bar { background: #2a2a2a; border-top-color: #388e3c; /* box-shadow: 0 -4px 12px rgba(0,0,0,0.5); */ }
+    html[data-theme="dark"] .sticky-apply-bar { background: #2a2a2a; border-top-color: #388e3c; box-shadow: 0 -4px 12px rgba(0,0,0,0.5); }
+
+    /* Interface option: when "Show shadows" is disabled, suppress all drop shadows. */
+    html.no-shadows .section,
+    html.no-shadows .tab-selector,
+    html.no-shadows .sticky-apply-bar { box-shadow: none; }
   </style>
 </head>
 <body>
@@ -360,13 +390,20 @@
     <div class="private-warning-icon">⚠</div>
     <div class="private-warning-text">
       <strong>Private browsing is not protected.</strong>
-      This extension is not allowed to run in private windows, so homograph attacks will not be blocked there.
+      This extension is not allowed to run in private windows, so it will not work there.
       To enable protection, open the Firefox menu (≡) → <em>Extensions and Themes</em>, find this extension, and set <em>Run in Private Windows</em> to <em>Allow</em>. Alternatively, type <code>about:addons</code> in a new tab's address bar.
+      <button type="button" id="private-warning-dismiss" class="private-warning-dismiss">Dismiss this warning (private browsing will still be unprotected)</button>
     </div>
   </div>
 
   <div id="tab-selector" class="tab-selector" style="display:none">
     <span class="tab-selector-label">Tabs:</span>
+  </div>
+
+  <div class="section">
+    <h2>Interface options</h2>
+    <label class="interface-option"><input type="checkbox" id="show-shadows" checked> Show shadows</label>
+    <label class="interface-option"><input type="checkbox" id="show-private-warning" checked> Show private-browsing warning when access is not granted</label>
   </div>
 
   <div class="section">
