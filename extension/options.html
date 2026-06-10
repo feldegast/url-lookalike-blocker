@@ -128,6 +128,18 @@
       margin-bottom: 6px;
     }
     .interface-option:last-child { margin-bottom: 0; }
+    .page-footer {
+      text-align: center;
+      font-size: 12px;
+      color: #888;
+      padding: 24px 0 28px;
+      margin-top: 8px;
+    }
+    .page-footer a {
+      color: inherit;
+      text-decoration: underline;
+    }
+    .page-footer a:hover { color: #444; }
     .script-tag {
       display: inline-block;
       font-size: 12px;
@@ -346,6 +358,8 @@
       html:not([data-theme="light"]) .theme-toggle { border-color: #555; color: #bbb; }
       html:not([data-theme="light"]) .theme-toggle:hover { background: rgba(255,255,255,0.07); }
       html:not([data-theme="light"]) .sticky-apply-bar { background: #2a2a2a; border-top-color: #388e3c; box-shadow: 0 -4px 12px rgba(0,0,0,0.5); }
+      html:not([data-theme="light"]) .page-footer { color: #777; }
+      html:not([data-theme="light"]) .page-footer a:hover { color: #ccc; }
     }
     html[data-theme="dark"] body { background-color: #1a1a1a; color: #e0e0e0; }
     html[data-theme="dark"] h2 { color: #e0e0e0; border-bottom-color: #388e3c; }
@@ -372,6 +386,8 @@
     html[data-theme="dark"] .theme-toggle { border-color: #555; color: #bbb; }
     html[data-theme="dark"] .theme-toggle:hover { background: rgba(255,255,255,0.07); }
     html[data-theme="dark"] .sticky-apply-bar { background: #2a2a2a; border-top-color: #388e3c; box-shadow: 0 -4px 12px rgba(0,0,0,0.5); }
+    html[data-theme="dark"] .page-footer { color: #777; }
+    html[data-theme="dark"] .page-footer a:hover { color: #ccc; }
 
     /* Interface option: when "Show shadows" is disabled, suppress all drop shadows. */
     html.no-shadows .section,
@@ -430,6 +446,10 @@
       <!-- Always-permitted Latin languages populated by JavaScript -->
     </div>
   </div>
+
+  <footer class="page-footer">
+    © 2026 Lee MacKinnell · MPL-2.0 / GPL-3.0 · <a href="#" id="help-footer-link">Help</a>
+  </footer>
 
   <div id="sticky-apply-bar" class="sticky-apply-bar" style="display:none">
     <span id="unsaved-indicator" class="unsaved-indicator">URL Lookalike Blocker has unsaved changes</span>

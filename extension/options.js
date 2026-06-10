@@ -668,6 +668,13 @@ function setupEventListeners() {
     browser.tabs.create({ url: browser.runtime.getURL('help.html') });
   });
 
+  // Footer Help link mirrors the header Help button — opens help.html in a
+  // new tab so any unsaved Options edits are preserved.
+  document.getElementById('help-footer-link').addEventListener('click', (e) => {
+    e.preventDefault();
+    browser.tabs.create({ url: browser.runtime.getURL('help.html') });
+  });
+
   document.getElementById('theme-toggle').addEventListener('click', async () => {
     const current = themePref;
     const next = { auto: 'opposite', opposite: 'dark', dark: 'light', light: 'auto' }[current] || 'auto';
