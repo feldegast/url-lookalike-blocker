@@ -10,6 +10,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - **Copyright and licence visible inside the extension UI.** The Help page now has an "About" section with the copyright line, the MPL-2.0 OR GPL-3.0 dual-licence summary, and a link to the GitHub repo where the full licence text lives. The Options page has a small footer line with the same information plus a Help link that opens the Help page in a new tab so unsaved Options edits are preserved.
 
+### Changed
+
+- **Icon homograph theme expanded.** The toolbar icon and AMO listing icon now read as Armenian Մ + Latin R + Armenian Լ — two of the three "URL" letters are non-Latin homograph substitutions instead of one, both rendered in red. The diagonal slash crosses the Latin R, the only letter that remains as itself.
+- **Icon SVG is now font-independent.** `extension/icon.svg` embeds the Մ, R, and Լ glyph contours as `<path>` elements instead of `<text>` elements with font references. The toolbar icon renders identically on every system regardless of which fonts are installed (previously the SVG depended on Arial Unicode MS being present, with sans-serif fallbacks each producing slightly different glyphs). A new `dev/render_icon_paths.py` regenerates the SVG from the source fonts using `fonttools`; `dev/render_icon_pillow.py` continues to produce the PNG from the same source fonts at build time so both formats remain visually identical.
+
 ## [1.0] — 2026-06-10
 
 Initial release submitted to Mozilla AMO.
