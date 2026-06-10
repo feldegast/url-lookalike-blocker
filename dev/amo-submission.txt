@@ -20,17 +20,23 @@ DESCRIPTION  (HTML is supported)
 <p>When you navigate to a URL, the extension decodes the hostname from punycode and checks every character. Three things can happen:</p>
 <ul>
   <li><b>Blocked</b> — a character belongs to a script that is not in your permitted set.</li>
-  <li><b>Warning</b> — all characters are permitted, but the domain contains a known confusable character (a codepoint that looks like a different character) or mixes characters from two or more scripts.</li>
+  <li><b>Warning</b> — all characters are permitted, but either (a) the label contains a known confusable character that mimics a Latin letter in a mixed-script context (highlighted red with "Looks like: …"), or (b) the label mixes characters from two or more scripts in a way that is not common for any single language (highlighted amber, with a hint suggesting which language to enable if the combination is legitimate).</li>
   <li><b>Allowed</b> — everything checks out.</li>
 </ul>
 
 <p><b>Blocked and warning pages</b> show the punycode and Unicode forms of the domain, and a table of every suspicious character with its Unicode codepoint, script, and what it visually resembles.</p>
 
-<p><b>From a blocked page</b> you can allow the domain permanently, go back, or open settings to enable the required scripts. If you open settings from a blocked page, clicking Apply automatically retries the blocked URL.</p>
+<p><b>From a blocked page</b> you can allow the domain permanently, go back, or open settings to enable the required language. If you open settings from a blocked page, clicking Apply automatically retries the blocked URL.</p>
 
 <p><b>From a warning page</b> you can allow the domain permanently, continue for this browser session only, go back, or open settings.</p>
 
-<p><b>Options page</b> (opened from the toolbar icon) lets you manage whitelisted domains and configure which Unicode scripts are permitted beyond your locale defaults. Changes are held in memory until you click Apply — there is no auto-save.</p>
+<p><b>Options page</b> (opened from the toolbar icon) lets you enable additional permitted languages, manage your whitelist of trusted domains, and adjust interface options. Language and whitelist changes are held in memory until you click Apply — there is no auto-save for security-relevant settings. Interface options (Show shadows, Show private-browsing warning) take effect instantly.</p>
+
+<p><b>Multiple blocked or warning tabs at once</b> are tracked with a numeric badge on the toolbar icon and coloured rounded squares in the Options page, so you can switch between them and resolve each one. Resolved or closed tabs clear from the badge automatically.</p>
+
+<p><b>Help page</b> with screenshots and explanations of every feature is available from the toolbar icon's right-click menu.</p>
+
+<p><b>Themes:</b> light, dark, or follow-system, with a toggle on every extension page.</p>
 
 <p><b>Known limitations:</b></p>
 <ul>
@@ -68,13 +74,36 @@ browser/integration use.)
 
 PRIVACY POLICY
 --------------
-This extension collects no data. All processing happens locally in the browser.
-No information about visited URLs, blocked domains, or user settings is transmitted
-to any server. Settings (permitted scripts and whitelisted domains) are stored
-locally using the browser's built-in storage API.
+URL Lookalike Blocker collects no data. All processing happens locally in
+your browser. No information about the URLs you visit, the domains the
+extension blocks or warns about, or your extension settings is transmitted
+to any server.
 
-(AMO may ask for a privacy policy URL or inline text. The inline text above
-can be pasted directly into the field if no URL is required.)
+What is stored locally (via browser.storage.local):
+  - The set of languages whose Unicode scripts you have permitted beyond
+    your locale defaults.
+  - The list of domains you have explicitly whitelisted.
+  - Your interface preferences (theme choice; whether drop shadows are
+    shown; whether the private-browsing warning is dismissed).
+
+A small localStorage cache holds two of those preferences (your theme and
+the show-shadows setting) so the next page-load can apply them
+synchronously and avoid a brief flash of the previous theme. This cache
+contains only those two values and never leaves your browser.
+
+Everything listed above is stored on your device only and is removed if
+you uninstall the extension. The extension does not modify page content,
+inject scripts into pages, read browser history or cookies, or use any
+third-party analytics, tracking, or telemetry.
+
+Contact for privacy questions: open an issue at
+https://github.com/feldegast/url-lookalike-blocker/issues or email
+aussiefeld@gmail.com.
+
+(AMO may ask for a privacy policy URL or inline text. The text above
+can be pasted directly into the field. Alternatively, point the URL field
+at https://github.com/feldegast/url-lookalike-blocker/blob/main/PRIVACY.md
+once the repo is public.)
 
 
 NOTES FOR REVIEWER  (the AMO reviewer notes field)
@@ -89,3 +118,11 @@ The "menus" permission adds two items to the extension icon's right-click menu:
 
 The extension does not modify page content, inject scripts into pages, or
 access page data. It only inspects the hostname of navigation requests.
+
+No data is collected, logged, or transmitted. User settings (permitted
+languages, whitelisted domains, interface preferences) are stored locally
+via browser.storage.local. A small localStorage cache mirrors the theme
+and shadow preferences so the next page-load can apply them synchronously
+and avoid a flash of the previous theme; this cache holds only those two
+preference values and never leaves the browser. The manifest's
+data_collection_permissions is declared as "none".

@@ -1,6 +1,6 @@
 # url-lookalike-blocker
 
-A Firefox extension that protects against IDN homograph attacks — attempts by attackers to register domain names that look identical to legitimate sites by substituting visually similar characters from other Unicode scripts (e.g. Cyrillic `а` in place of Latin `a`).
+A Firefox extension that protects against IDN homograph attacks — attempts by attackers to register domain names that look identical to legitimate sites by substituting visually similar characters from other Unicode scripts. For example, a fake `apple.com` can be registered using a Cyrillic character (U+0430) that is visually indistinguishable from the corresponding Latin letter.
 
 **Firefox only.** Chrome's Manifest V3 does not support blocking `webRequest`, which is required for dynamic Unicode script detection.
 
@@ -9,7 +9,7 @@ A Firefox extension that protects against IDN homograph attacks — attempts by 
 When you navigate to a URL, the extension decodes the hostname from punycode and checks every character against the list of permitted Unicode scripts for your locale. Three things can happen:
 
 1. **Blocked** — a character belongs to a script that is not in your permitted set. Navigation stops and a details page is shown.
-2. **Warning** — all characters are from permitted scripts, but the domain contains a known confusable character (a codepoint that visually resembles a different character, e.g. Cyrillic `о` looking like Latin `o`), or the domain mixes characters from two or more different scripts. A warning page is shown with the option to continue or go back.
+2. **Warning** — all characters are from permitted scripts, but the domain contains a known confusable character (a codepoint that visually resembles a different character — for example, Cyrillic `о` U+043E mimicking Latin `o`), or the domain mixes characters from two or more different scripts. A warning page is shown with the option to continue or go back.
 3. **Allowed** — all characters are from permitted scripts with no confusable or mixed-script concerns.
 
 Latin characters are always permitted — disabling them would block too many legitimate URLs.
@@ -49,7 +49,7 @@ Changes are **not saved automatically**. Click **Apply Changes** (or **Apply & R
 
 ## Known limitations
 
-The extension detects single characters that visually resemble a different character (e.g. Cyrillic `а` looking like Latin `a`). It does not currently detect multi-character sequences that resemble a single character (e.g. `rn` → `m`, `vv` → `w`, `cl` → `d`). Detecting these without a list of known legitimate domains to compare against would produce too many false positives.
+The extension detects single characters that visually resemble a different character (for example, a Cyrillic letter at U+0430 that mimics Latin `a`). It does not currently detect multi-character sequences that resemble a single character (e.g. `rn` → `m`, `vv` → `w`, `cl` → `d`). Detecting these without a list of known legitimate domains to compare against would produce too many false positives.
 
 ## License
 

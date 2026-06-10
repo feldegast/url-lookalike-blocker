@@ -1,12 +1,20 @@
 # TODO / Future Features
 
-## Dark Mode / Light Mode Theming
+## Firefox for Android compatibility
 
-**Goal:** Make the options, block, and warning pages respect the user's OS dark/light preference rather than always showing a white background.
+**Goal:** Make the extension installable and usable on Firefox for Android, so the homograph protection extends to mobile browsing.
 
-**Approach:** Use the `prefers-color-scheme` CSS media query across all three HTML files (`options.html`, `blocked.html`, `warning.html`). No JavaScript needed — CSS-only change.
+**What ports for free:** The detection logic itself is platform-agnostic. `webRequest`, `storage`, and the Unicode-script work in `background.js` and `unicode-scripts.js` would behave identically on Android, so the core security value carries over without code changes.
 
-**Decided against** Firefox Theme API (too many theme combinations to test) — OS-level dark/light covers the vast majority of users with minimal complexity.
+**What needs attention:**
+
+- **Responsive CSS** across `options.html`, `blocked.html`, `warning.html`, and `help.html`. The options page's wide language table, the multi-button rows on the block/warning pages, and the dense whitelist/coloured-squares layouts are all desktop-first and will overflow or wrap badly on narrow screens. Add `@media (max-width: …)` rules to stack buttons vertically, narrow the language table, and reduce padding.
+- **`menus` API on Android** — Firefox for Android has no traditional right-click, so the "Open Options" / "Help" context menu items either won't surface or will behave differently. Verify whether the menus declarations are silently ignored or cause errors; either way the toolbar-icon flow and in-page links should remain the primary entry points.
+- **Toolbar icon UX** — on Android the extension icon lives inside the browser menu rather than the toolbar, so the icon-click → options flow still works but the badge may not appear (Android doesn't show toolbar badges). Confirm and adjust expectations in the help docs if needed.
+- **`gecko_android` declaration** in `browser_specific_settings.gecko_android` so Firefox for Android treats the extension as supported (currently only `gecko` is declared, which is desktop-only).
+- **Testing** on an Android device or emulator before submission — manifest-only changes are risky to ship blind.
+
+**Estimated effort:** Half a day for an acceptable port (mostly CSS + manifest), more for a polished one with Android-specific UX tweaks. Reasonable as a 1.1 follow-up after gathering any feedback from the 1.0 desktop submission.
 
 ## Domain Age Check (RDAP)
 
