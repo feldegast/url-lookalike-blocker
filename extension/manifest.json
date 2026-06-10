@@ -19,7 +19,8 @@
     "webRequest",
     "webRequestBlocking",
     "storage",
-    "menus"
+    "menus",
+    "downloads"
   ],
   "host_permissions": [
     "<all_urls>"

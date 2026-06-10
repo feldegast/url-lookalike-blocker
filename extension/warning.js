@@ -271,4 +271,23 @@ document.addEventListener('DOMContentLoaded', async () => {
       blockedUrl
     });
   });
+
+  browser.runtime.onMessage.addListener((message) => {
+    if (message.type === 'devSetDotColor') {
+      const d = document.getElementById('tab-dot');
+      if (d) d.style.background = message.color;
+      return;
+    }
+    if (message.type === 'devCapturePrepare') {
+      const el = document.querySelector(message.selector);
+      if (!el) return Promise.resolve(null);
+      const bg = window.getComputedStyle(document.querySelector('.container') || document.body).backgroundColor;
+      document.body.style.backgroundColor = bg;
+      const r = el.getBoundingClientRect();
+      return Promise.resolve({ bounds: { x: r.x, y: r.y, width: r.width, height: r.height }, dpr: window.devicePixelRatio, bg });
+    }
+    if (message.type === 'devCaptureRestore') {
+      document.body.style.backgroundColor = '';
+    }
+  });
 });
