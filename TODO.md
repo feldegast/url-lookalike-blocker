@@ -16,6 +16,18 @@
 
 **Estimated effort:** Half a day for an acceptable port (mostly CSS + manifest), more for a polished one with Android-specific UX tweaks. Reasonable as a 1.1 follow-up after gathering any feedback from the 1.0 desktop submission.
 
+## Unified 128×128 extension icon
+
+**Goal:** Have a single, identical 128×128 icon used everywhere — the Firefox toolbar, the AMO listing, the addons manager, and the help-page header — rather than the current SVG (rendered live with system-font fallback) versus PNG (baked from Pillow with Arial Unicode MS) split that produces small but visible differences in the Armenian Մ glyph.
+
+**Approach options:**
+
+- **Render a master 128×128 PNG** from a definitive source (Pillow with a pinned font, or Inkscape from an SVG with embedded fonts) and reference that PNG for both the manifest icons block and the action's default_icon. Drop the SVG-based toolbar render. Smaller, identical everywhere, but loses scalability — the browser will downscale to ~16px / 32px for the toolbar.
+- **Embed the font in `extension/icon.svg`** so the toolbar render becomes deterministic. Keeps SVG for the toolbar (crisp at any zoom level) and have Inkscape/cairosvg re-render the PNG from the same SVG so AMO and the toolbar match exactly. Larger SVG (~50–100 KB depending on the embedded glyphs) but full visual parity.
+- **Hand-craft a vector icon** that doesn't depend on a font for the Armenian glyph — trace the letter as a `<path>` so it renders identically on every system without font dependencies. Smallest SVG, full parity, but requires icon-design work.
+
+**Recommendation:** Option 3 if you want a long-term clean answer; option 2 if you want the quickest path to visual parity without redesigning. Skip option 1 unless toolbar pixel-precision at 16/32 matters more than scalable rendering.
+
 ## Domain Age Check (RDAP)
 
 **Goal:** Catch typosquatting by flagging recently registered domains.
