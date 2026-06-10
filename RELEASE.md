@@ -20,7 +20,27 @@ Edit `extension/manifest.json` and set the `version` field to the new value (e.g
 
 In `CHANGELOG.md`, rename the `## [Unreleased]` heading to `## [<new-version>] — YYYY-MM-DD` using today's date. Optionally add a new empty `## [Unreleased]` heading above it so post-release work has somewhere to land.
 
-### 3. Regenerate icons if the source changed
+### 3. Disable and strip dev-mode code
+
+`background.js` contains a developer-only screenshot capture tool gated behind `DEV_MODE`. It must be stripped before submission because it references `captureVisibleTab()` and `downloads.download()` — APIs that would require explanation to AMO reviewers even as dead code.
+
+Two edits are required:
+
+**`extension/background.js` — disable the tool:**
+```
+const DEV_MODE = true;   →   const DEV_MODE = false;
+```
+
+**`extension/manifest.json` — remove the dev-only permission:**
+```json
+"downloads"   ← delete this line from the permissions array
+```
+
+The `downloads` permission exists solely for the capture tool and must not appear in the submitted manifest. AMO reviewers read all code regardless of reachability; leaving a screenshot API and a download API in a domain-blocking extension without explanation would invite rejection.
+
+After the submission is accepted and you return to development, restore both values.
+
+### 4. Regenerate icons if the source changed
 
 If `dev/render_icon_paths.py` or `dev/render_icon_pillow.py` was modified since the last release:
 
@@ -32,7 +52,7 @@ python dev/render_listing_icons.py
 
 The three commands produce `extension/icon.svg`, `extension/icon.png`, and `dev/listing-icons/icon-{32,64,128}.png` respectively. Only the first two are bundled into the AMO zip; the listing icons are uploaded separately on the AMO listing page if you want crisp small-size renders.
 
-### 4. Strip PNG metadata if screenshots were updated
+### 5. Strip PNG metadata if screenshots were updated
 
 If new screenshots were added or replaced in `extension/img/`:
 
@@ -42,7 +62,7 @@ python dev/strip-png-metadata.py
 
 This removes Adobe XMP metadata (Photoshop version, edit-history timestamps, timezone) that Photoshop adds to exported PNGs. Pillow-rendered PNGs do not need this but the script is safe to run on every PNG either way.
 
-### 5. Build the submission zip
+### 6. Build the submission zip
 
 The zip must contain only files inside `extension/`, with `manifest.json` at the **zip root** (not under an `extension/` subdirectory). Exclude `extension/img/working files/` (Photoshop source files).
 
@@ -60,7 +80,7 @@ Remove-Item -Recurse -Force $staging
 
 The `dev/review-bundle.zip` filename is conventional; rename if you want a version-stamped artifact for the GitHub release later.
 
-### 6. Validate locally
+### 7. Validate locally
 
 Two layers:
 
@@ -72,11 +92,11 @@ Two layers:
 
 - AMO runs an automated validator on upload. If you want to pre-check, you can drag the zip onto the AMO "Validate" page before formal submission.
 
-### 7. Pre-AMO code review (optional but recommended)
+### 8. Pre-AMO code review (optional but recommended)
 
 A second model can spot fingerprinting, CSP, permission justification, and detection-logic concerns. Drop `dev/review-bundle.zip` into a fresh chat session with the framing in `dev/review-prompt.txt`. The previous reviewer caught the PNG XMP fingerprints and the legacy `bootstrap.js` filename; both turned into shipped fixes before v1.0 reached AMO.
 
-### 8. Commit and push the release commit
+### 9. Commit and push the release commit
 
 Stage `extension/manifest.json`, `CHANGELOG.md`, and any code or asset changes for the release. Push to `main`. The submitted commit is the one whose SHA will be tagged after acceptance.
 
