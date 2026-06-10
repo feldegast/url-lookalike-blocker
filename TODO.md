@@ -16,18 +16,6 @@
 
 **Estimated effort:** Half a day for an acceptable port (mostly CSS + manifest), more for a polished one with Android-specific UX tweaks. Reasonable as a 1.1 follow-up after gathering any feedback from the 1.0 desktop submission.
 
-## User-visible copyright and licensing
-
-**Goal:** Show the copyright and licence inside the extension's own UI so a user who installed it (and may never look at the AMO listing or GitHub) can see who wrote it and under what terms.
-
-**What needs attention:**
-
-- **"About" section on the Help page** — a short block near the bottom of `help.html` with: copyright line ("© 2026 Lee MacKinnell"), licence summary ("Dual-licensed MPL-2.0 OR GPL-3.0"), and a link to the full licence text in the repo. Optional one-line credit for any libraries used (currently none, but worth a slot if Pillow-rendered icons stay in scope).
-- **Footer line on the Options page** — a small, low-contrast line under the bottom-most section ("© 2026 Lee MacKinnell · MPL-2.0 / GPL-3.0 · [Help]"). Keeps the Help page as the canonical place, but the Options page is where users go most often, so a footer makes the info one click away from every session.
-- **Link from the toolbar right-click menu** — already has "Open Options" and "Help"; consider whether an explicit "About" item is worth adding, or whether the Help-page "About" block is enough. Probably enough — keeps the menu minimal.
-
-**Estimated effort:** Half an hour. Pure copy + small CSS for the footer; no logic changes.
-
 ## Unified 128×128 extension icon
 
 **Goal:** Have a single, identical 128×128 icon used everywhere — the Firefox toolbar, the AMO listing, the addons manager, and the help-page header — rather than the current SVG (rendered live with system-font fallback) versus PNG (baked from Pillow with Arial Unicode MS) split that produces small but visible differences in the Armenian Մ glyph.
