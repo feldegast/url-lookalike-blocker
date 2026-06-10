@@ -1,6 +1,6 @@
-// bootstrap.js — synchronously apply cached visual prefs (theme, shadows)
-// BEFORE the page paints, eliminating the flash of incorrect theme that
-// occurs when browser.storage.local (async) is the only source.
+// apply-theme-early.js — synchronously apply cached visual prefs (theme,
+// shadows) BEFORE the page paints, eliminating the flash of incorrect theme
+// that occurs when browser.storage.local (async) is the only source.
 //
 // localStorage is a fast synchronous cache; the canonical source remains
 // browser.storage.local. theme.js and options.js keep the localStorage

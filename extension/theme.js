@@ -25,8 +25,8 @@
     document.documentElement.classList.toggle('no-shadows', showShadows === false);
   }
 
-  // Mirror writes to localStorage so bootstrap.js can apply the same prefs
-  // synchronously on the next page load and avoid a flash of incorrect theme.
+  // Mirror writes to localStorage so apply-theme-early.js can apply the same
+  // prefs synchronously on the next page load and avoid a flash of incorrect theme.
   function mirrorTheme(value) {
     try {
       if (value === undefined || value === null) localStorage.removeItem('theme');

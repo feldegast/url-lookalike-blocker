@@ -169,7 +169,7 @@ async function initTheme() {
   const result = await browser.storage.local.get('theme');
   const value = result.theme || 'auto';
   applyTheme(value);
-  // Mirror to localStorage so bootstrap.js has a fresh sync cache next paint.
+  // Mirror to localStorage so apply-theme-early.js has a fresh sync cache next paint.
   try { localStorage.setItem('theme', value); } catch (e) { /* unavailable */ }
 }
 
@@ -184,7 +184,7 @@ function applyShadowPref(showShadows) {
 async function initShadows() {
   const result = await browser.storage.local.get('showShadows');
   applyShadowPref(result.showShadows);
-  // Mirror to localStorage so bootstrap.js has a fresh sync cache next paint.
+  // Mirror to localStorage so apply-theme-early.js has a fresh sync cache next paint.
   try {
     if (result.showShadows === undefined) localStorage.removeItem('showShadows');
     else localStorage.setItem('showShadows', String(result.showShadows));
@@ -672,8 +672,8 @@ function setupEventListeners() {
     const current = themePref;
     const next = { auto: 'opposite', opposite: 'dark', dark: 'light', light: 'auto' }[current] || 'auto';
     applyTheme(next);
-    // Mirror to localStorage so bootstrap.js can apply this synchronously on
-    // the next page load and avoid a flash of the previous theme.
+    // Mirror to localStorage so apply-theme-early.js can apply this synchronously
+    // on the next page load and avoid a flash of the previous theme.
     try { localStorage.setItem('theme', next); } catch (e) { /* unavailable */ }
     await browser.storage.local.set({ theme: next });
   });
