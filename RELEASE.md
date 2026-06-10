@@ -22,31 +22,20 @@ In `CHANGELOG.md`, rename the `## [Unreleased]` heading to `## [<new-version>] �
 
 ### 3. Strip dev-mode files
 
-The dev screenshot capture tool lives in two dedicated files that are **not bundled in the AMO submission**. They reference `captureVisibleTab()` and `downloads.download()` — APIs that AMO reviewers would question regardless of reachability in a domain-blocking extension.
+The dev screenshot capture tool lives in dedicated `*-dev.js` files. **Remove every reference to a `*-dev.js` file** from the staging copy before zipping:
 
-**Files to exclude from the staging copy:**
+1. **Manifest — scripts array:** remove `"background-dev.js"`
+   ```json
+   "scripts": ["unicode-scripts.js", "background.js"]
+   ```
 
-- `extension/background-dev.js`
-- `extension/pages-dev.js`
+2. **Manifest — permissions:** remove `"downloads"` (used only by the capture tool)
 
-**Manifest edit — remove `background-dev.js` from the scripts array:**
-```json
-"scripts": ["unicode-scripts.js", "background.js"]   ← remove "background-dev.js"
-```
+3. **HTML files — script tags:** remove `<script src="pages-dev.js"></script>` from `blocked.html`, `warning.html`, and `options.html`
 
-**Manifest edit — remove the dev-only permission:**
-```json
-"downloads"   ← delete this line from the permissions array
-```
+Quick audit: `grep -r "\-dev\.js" dev/review-staging/` should return nothing before you zip.
 
-**HTML edits — remove the `pages-dev.js` script tag from each page:**
-```html
-<script src="pages-dev.js"></script>   ← delete from blocked.html, warning.html, options.html
-```
-
-The simplest approach is to perform these edits on the staging copy (created in step 6) rather than on the working files, so the development environment remains fully intact for the next cycle.
-
-After the submission is accepted and you return to development, restore the staging copy to its dev-ready state (or simply use the working files directly — they are already the dev-ready versions).
+The staging copy is a throwaway so these edits do not touch the working files. After submission, the working tree is already the correct dev-ready state for the next cycle.
 
 ### 4. Regenerate icons if the source changed
 
