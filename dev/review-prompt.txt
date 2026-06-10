@@ -1,0 +1,20 @@
+URL Lookalike Blocker — FINAL pre-AMO confirmation pass
+
+Attached: review-bundle.zip — the exact contents I intend to upload to Mozilla AMO. manifest.json is at the root. The Photoshop working files (badge-images.psd) are deliberately excluded.
+
+This is a SECOND review pass. You (or a prior model) already reviewed this codebase and flagged two pre-flight items:
+  1. Strip Adobe XMP metadata from the PNGs.
+  2. Optional: rename bootstrap.js to something less reminiscent of legacy-addon entry points.
+
+Both have been actioned in this build:
+  - All 22 PNGs in img/ were re-saved via Pillow with empty info and optimize=True. Net saving ≈ 59 KB. No XMP, no Photoshop fingerprints, no edit-history timestamps.
+  - bootstrap.js renamed to apply-theme-early.js. All four <script src=> references and four code-comment references updated. Functionality unchanged.
+
+Manifest version is intentionally 1.0 — this is a first AMO submission with no prior release to bump from.
+
+Please re-scan the bundle for:
+  1. Anything broken or regressed by the rename or the PNG re-save.
+  2. Any concern from the previous review that did not get fully addressed.
+  3. Any new issue you can spot that the previous pass missed — security, MV3 compliance, permission justification, CSP, detection logic, state handling, AMO automated-scanner triggers.
+
+If everything passes, this same zip will be the AMO submission. So please be strict — flag anything that smells off even if you cannot immediately prove it is a bug. File path and line number on every concern.
