@@ -32,7 +32,7 @@
     }
   ],
   "background": {
-    "scripts": ["unicode-scripts.js", "background.js"]
+    "scripts": ["unicode-scripts.js", "background.js", "background-dev.js"]
   },
   "action": {
     "default_title": "URL Lookalike Blocker Options",

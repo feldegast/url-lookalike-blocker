@@ -10,7 +10,6 @@ let whitelist = [];
 let initialLanguages = new Set();
 let initialWhitelist = [];
 let isDirty = false;
-let devOriginalWhitelist = null; // dev capture tool: saved whitelist before temporary override
 
 
 const urlParams = new URLSearchParams(window.location.search);
@@ -228,67 +227,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       initialWhitelist = [...whitelist];
       renderWhitelist();
       checkDirty();
-    }
-    if (message.type === 'devSetDotColor') {
-      const d = document.getElementById('tab-dot');
-      if (d) d.style.background = message.color;
-      return;
-    }
-    if (message.type === 'devCapturePrepare') {
-      const el = document.querySelector(message.selector);
-      if (!el) return Promise.resolve(null);
-      const pos = window.getComputedStyle(el).position;
-      const isFixed = pos === 'fixed' || pos === 'sticky';
-      if (!isFixed) {
-        el.scrollIntoView({ block: 'center', behavior: 'instant' });
-        document.body.style.backgroundColor = window.getComputedStyle(el).backgroundColor;
-      }
-      const r = el.getBoundingClientRect();
-      return Promise.resolve({ bounds: { x: r.x, y: r.y, width: r.width, height: r.height }, dpr: window.devicePixelRatio, bg: window.getComputedStyle(el).backgroundColor });
-    }
-    if (message.type === 'devCaptureRestore') {
-      document.body.style.backgroundColor = '';
-    }
-    if (message.type === 'devShowPrivateWarning') {
-      document.getElementById('private-warning').style.display = 'flex';
-    }
-    if (message.type === 'devHidePrivateWarning') {
-      document.getElementById('private-warning').style.display = 'none';
-    }
-    if (message.type === 'devShowApplyBar') {
-      document.getElementById('sticky-apply-bar').style.display = 'flex';
-      document.body.classList.add('has-sticky-bar');
-    }
-    if (message.type === 'devHideApplyBar') {
-      document.getElementById('sticky-apply-bar').style.display = 'none';
-      document.body.classList.remove('has-sticky-bar');
-    }
-    if (message.type === 'devSetWhitelist') {
-      devOriginalWhitelist = [...whitelist];
-      whitelist = message.entries;
-      renderWhitelist();
-    }
-    if (message.type === 'devRestoreWhitelist') {
-      if (devOriginalWhitelist !== null) {
-        whitelist = devOriginalWhitelist;
-        devOriginalWhitelist = null;
-        renderWhitelist();
-      }
-    }
-    if (message.type === 'devGetPageDimensions') {
-      const bodyR = document.body.getBoundingClientRect();
-      return Promise.resolve({
-        scrollHeight:  document.documentElement.scrollHeight,
-        viewportHeight: window.innerHeight,
-        captureWidth:  Math.round(bodyR.width),
-        contentLeft:   Math.round(bodyR.left),
-        dpr:           window.devicePixelRatio,
-        bodyBg:        window.getComputedStyle(document.body).backgroundColor,
-      });
-    }
-    if (message.type === 'devScrollTo') {
-      window.scrollTo({ top: message.y, behavior: 'instant' });
-      return Promise.resolve();
     }
   });
 });
@@ -821,3 +759,10 @@ function setupEventListeners() {
     if (isDirty) { e.preventDefault(); e.returnValue = ''; }
   });
 }
+
+// Bridge for pages-dev.js — exposes options internals that are not on window.
+window._devHooks = {
+  getWhitelist:    () => whitelist,
+  setWhitelist:    v  => { whitelist = v; },
+  renderWhitelist: () => renderWhitelist(),
+};

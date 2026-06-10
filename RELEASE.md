@@ -20,25 +20,33 @@ Edit `extension/manifest.json` and set the `version` field to the new value (e.g
 
 In `CHANGELOG.md`, rename the `## [Unreleased]` heading to `## [<new-version>] — YYYY-MM-DD` using today's date. Optionally add a new empty `## [Unreleased]` heading above it so post-release work has somewhere to land.
 
-### 3. Disable and strip dev-mode code
+### 3. Strip dev-mode files
 
-`background.js` contains a developer-only screenshot capture tool gated behind `DEV_MODE`. It must be stripped before submission because it references `captureVisibleTab()` and `downloads.download()` — APIs that would require explanation to AMO reviewers even as dead code.
+The dev screenshot capture tool lives in two dedicated files that are **not bundled in the AMO submission**. They reference `captureVisibleTab()` and `downloads.download()` — APIs that AMO reviewers would question regardless of reachability in a domain-blocking extension.
 
-Two edits are required:
+**Files to exclude from the staging copy:**
 
-**`extension/background.js` — disable the tool:**
+- `extension/background-dev.js`
+- `extension/pages-dev.js`
+
+**Manifest edit — remove `background-dev.js` from the scripts array:**
+```json
+"scripts": ["unicode-scripts.js", "background.js"]   ← remove "background-dev.js"
 ```
-const DEV_MODE = true;   →   const DEV_MODE = false;
-```
 
-**`extension/manifest.json` — remove the dev-only permission:**
+**Manifest edit — remove the dev-only permission:**
 ```json
 "downloads"   ← delete this line from the permissions array
 ```
 
-The `downloads` permission exists solely for the capture tool and must not appear in the submitted manifest. AMO reviewers read all code regardless of reachability; leaving a screenshot API and a download API in a domain-blocking extension without explanation would invite rejection.
+**HTML edits — remove the `pages-dev.js` script tag from each page:**
+```html
+<script src="pages-dev.js"></script>   ← delete from blocked.html, warning.html, options.html
+```
 
-After the submission is accepted and you return to development, restore both values.
+The simplest approach is to perform these edits on the staging copy (created in step 6) rather than on the working files, so the development environment remains fully intact for the next cycle.
+
+After the submission is accepted and you return to development, restore the staging copy to its dev-ready state (or simply use the working files directly — they are already the dev-ready versions).
 
 ### 4. Regenerate icons if the source changed
 
