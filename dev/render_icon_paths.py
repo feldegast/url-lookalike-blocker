@@ -4,11 +4,21 @@ icon render identically on any system, independent of which fonts are
 installed.
 
 Sources match render_icon_pillow.py exactly:
-    Մ (U+0544)  →  Noto Sans Armenian Bold, red
-    R           →  Segoe UI Bold, black (kept Latin so it reads correctly
-                   behind the red diagonal slash)
+    Մ (U+0544)  →  Noto Sans Armenian Bold, red (#d32f2f)
+    R           →  Segoe UI Bold, blue (#1976d2; kept Latin so it reads
+                   correctly behind the red diagonal slash, recoloured from
+                   black so the icon stays legible on dark toolbars)
     Լ (U+053C)  →  Noto Sans Armenian Bold, red (Armenian Liwn — a homograph
                    for Latin L, matching the homograph theme set by Մ)
+
+Fonts:
+    NotoSansArmenian-Bold.ttf — OFL-licensed, supplied in dev/.
+    segoeuib.ttf (Segoe UI Bold) — Microsoft proprietary, NOT supplied with
+        this repo (Microsoft's EULA does not permit redistribution). Each
+        developer installs it locally so the script can find it:
+            Windows: ships with the OS at C:\\Windows\\Fonts\\segoeuib.ttf
+            Linux:   drop segoeuib.ttf into ~/.local/share/fonts/ then
+                     run `fc-cache -f`
 
 Layout math also matches render_icon_pillow.py:
     canvas 128×128, font_size 54, spacing −9, baseline y = 82,

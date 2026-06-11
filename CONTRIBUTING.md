@@ -38,10 +38,31 @@ Open an issue describing the use case and the change you have in mind. The `TODO
 ## Code style and conventions
 
 - **No build step.** The extension ships its source files directly. Do not introduce bundlers, minifiers, or transpilers.
+- **Developer-only `-dev.js` files.** Files ending in `-dev.js` (currently `background-dev.js` and `pages-dev.js`) live in `extension/` but are **not** bundled into the AMO submission — they're stripped at packaging time (see `RELEASE.md` step 3). They power the "Developer: Capture screenshots" action used to refresh the help-page screenshots in `extension/img/`. New dev-only files should follow the same `-dev.js` suffix so the packaging step excludes them automatically.
 - **Vanilla JS.** No frameworks. The extension uses plain `browser.*` MV3 APIs throughout.
 - **Comments capture the WHY**, not the WHAT. Named identifiers describe behaviour; comments are reserved for non-obvious constraints, subtle invariants, or workarounds for specific bugs.
 - **Match indentation** of the file you are editing (2 spaces).
 - **Keep permissions minimal.** Any change that requires a new manifest permission needs justification in the PR description, since the AMO review will ask the same question.
+
+## Regenerating the icon
+
+The icon is generated from two source fonts, only one of which is in the repo:
+
+- **`dev/NotoSansArmenian-Bold.ttf`** — supplied, OFL-licensed. Provides the Armenian Մ and Լ glyphs.
+- **`segoeuib.ttf` (Segoe UI Bold)** — *not supplied.* It is a Microsoft proprietary font whose EULA does not permit redistribution. Install it locally before running the scripts:
+  - **Windows** — already present at `C:\Windows\Fonts\segoeuib.ttf` (ships with the OS).
+  - **Linux** — drop `segoeuib.ttf` into `~/.local/share/fonts/` and run `fc-cache -f`.
+
+Then from the repo root:
+
+```
+pip install Pillow fonttools
+python dev/render_icon_paths.py     # writes extension/icon.svg (shipped)
+python dev/render_help_badges.py    # writes extension/img/badge-{0,1}.svg (shipped)
+python dev/render_icon_pillow.py    # writes dev/listing-icons/ PNGs (AMO listing, not shipped)
+```
+
+The first two regenerate the assets that ship inside the extension. The third regenerates the PNG listing icons that get uploaded to the AMO listing page (not bundled with the extension). See `dev/README.txt` for the full list of dev-side scripts and their roles.
 
 ## Repository layout
 

@@ -94,14 +94,16 @@
     .pill-warn  { background: #fff8e1; color: #e65100; border: 1px solid #ffcc02; }
     figure {
       margin: 24px 0;
-      padding-top: 16px;
       text-align: center;
-      border-top: 1px solid #ddd;
     }
     figure img {
       max-width: 100%;
       border-radius: 6px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    figure.img-light img,
+    figure.img-dark img {
+      border: 1px solid #ddd;
     }
     .badge-pair {
       display: flex;
@@ -125,8 +127,6 @@
       font-size: 13px;
       color: #777;
       margin-top: 16px;
-      padding-top: 12px;
-      border-top: 1px solid #ddd;
     }
     .img-placeholder {
       display: flex;
@@ -153,8 +153,9 @@
       html:not([data-theme="light"]) .example-domain { background: #2d1500; border-color: #5a3000; }
       html:not([data-theme="light"]) .theme-toggle { border-color: #555; color: #bbb; }
       html:not([data-theme="light"]) .theme-toggle:hover { background: rgba(255,255,255,0.07); }
-      html:not([data-theme="light"]) figcaption { color: #888; border-top-color: #444; }
-      html:not([data-theme="light"]) figure { border-top-color: #444; }
+      html:not([data-theme="light"]) figcaption { color: #888; }
+      html:not([data-theme="light"]) figure.img-light img,
+      html:not([data-theme="light"]) figure.img-dark img { border-color: #444; }
       html:not([data-theme="light"]) .img-placeholder { border-color: #444; background: #222; color: #666; }
     }
     html[data-theme="dark"] body { background-color: #1a1a1a; color: #e0e0e0; }
@@ -165,8 +166,9 @@
     html[data-theme="dark"] .example-domain { background: #2d1500; border-color: #5a3000; }
     html[data-theme="dark"] .theme-toggle { border-color: #555; color: #bbb; }
     html[data-theme="dark"] .theme-toggle:hover { background: rgba(255,255,255,0.07); }
-    html[data-theme="dark"] figcaption { color: #888; border-top-color: #444; }
-    html[data-theme="dark"] figure { border-top-color: #444; }
+    html[data-theme="dark"] figcaption { color: #888; }
+    html[data-theme="dark"] figure.img-light img,
+    html[data-theme="dark"] figure.img-dark img { border-color: #444; }
     html[data-theme="dark"] .img-placeholder { border-color: #444; background: #222; color: #666; }
 
     /* Interface option: when "Show shadows" is disabled, suppress all drop shadows. */
