@@ -23,6 +23,30 @@
 
 **Estimated effort:** Half a day for an acceptable port (mostly CSS + manifest), more for a polished one with Android-specific UX tweaks. Reasonable as a 1.1 follow-up after gathering any feedback from the 1.0 desktop submission.
 
+## Internationalisation (i18n)
+
+**Goal:** Render the extension UI in the user's Firefox display language. The languages worth covering are the ones already listed on the options page as permitted scripts — Russian, Greek, Armenian, Serbian, Hebrew, Arabic, and so on.
+
+**What's involved:**
+
+- Refactor all hardcoded strings in `options.html`, `help.html`, `blocked.html`, `warning.html`, and their supporting `.js` files to use the WebExtensions `i18n` API (`browser.i18n.getMessage('key')` in code, `__MSG_key__` placeholders in manifest and HTML).
+- Add `"default_locale": "en"` to `manifest.json`.
+- Create `_locales/en/messages.json` as the canonical English source.
+- Per-language translations live in `_locales/<lang>/messages.json` and are picked up automatically by Firefox based on the user's display language.
+
+**Scope of strings:**
+- Options page: labels, buttons, language names, whitelist headers, interface options.
+- Block/warning pages: titles, action buttons, character-table headers, the "Looks like" annotation.
+- Help page: substantial body copy — by far the biggest translation burden.
+
+**Concerns to address:**
+- Some technical terms (Cyrillic, homograph, mixed-script) may not have natural translations in every language; may need to coin or borrow.
+- Right-to-left support (Hebrew, Arabic) — the CSS uses left-to-right layout implicitly in many places; would need `[dir="rtl"]` overrides.
+- Pluralisation is minimal in WebExtensions i18n — usually handled by separate keys (`oneTab` / `manyTabs`).
+- Translation maintenance burden when strings change — every locale file needs an update.
+
+**Estimated effort:** A few hours for the i18n scaffolding (the string-extraction refactor), plus roughly 1–2 hours per language for the translations themselves (more for the help-page text). Could land in stages — scaffolding + English-only first as a no-op refactor, then add languages incrementally as translations come in. Community translation via AMO's translation flow is an option once scaffolded.
+
 ## Domain Age Check (RDAP)
 
 **Goal:** Catch typosquatting by flagging recently registered domains.
