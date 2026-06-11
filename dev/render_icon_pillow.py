@@ -6,8 +6,8 @@ size = 128
 img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
 draw = ImageDraw.Draw(img)
 
-font_arm = ImageFont.truetype(r'C:\Windows\Fonts\ARIALUNI.TTF', 54)   # Armenian Մ and Լ
-font_r   = ImageFont.truetype(r'C:\Windows\Fonts\segoeuib.ttf', 54)   # Latin R
+font_arm = ImageFont.truetype('/usr/share/fonts/truetype/noto/NotoSansArmenian-Bold.ttf', 54)  # Armenian Մ and Լ
+font_r   = ImageFont.truetype('/home/aussiefeld/.local/share/fonts/segoeuib.ttf', 54)          # Latin R
 
 text_u = 'Մ'  # Armenian Մ (U+0544) — homograph for Latin U
 text_r = 'R'  # Latin R kept (no Armenian homograph for R, and the red diagonal slash crosses it)

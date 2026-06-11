@@ -4,19 +4,19 @@ icon render identically on any system, independent of which fonts are
 installed.
 
 Sources match render_icon_pillow.py exactly:
-    Մ (U+0544)  →  Arial Unicode MS, red
+    Մ (U+0544)  →  Noto Sans Armenian Bold, red
     R           →  Segoe UI Bold, black (kept Latin so it reads correctly
                    behind the red diagonal slash)
-    Լ (U+053C)  →  Arial Unicode MS, red (Armenian Liwn — a homograph for
-                   Latin L, matching the homograph theme already set by Մ)
+    Լ (U+053C)  →  Noto Sans Armenian Bold, red (Armenian Liwn — a homograph
+                   for Latin L, matching the homograph theme set by Մ)
 
 Layout math also matches render_icon_pillow.py:
     canvas 128×128, font_size 54, spacing −9, baseline y = 82,
     horizontally centred row.
 
 After running this script, re-run dev/render_icon_pillow.py to regenerate
-extension/icon.png. Both files now derive from the same source fonts and
-should render visually identically.
+extension/icon.png. Both files derive from the same source fonts and should
+render visually identically.
 
 Run from the repo root:  python dev/render_icon_paths.py
 """
@@ -28,8 +28,8 @@ from fontTools.ttLib import TTFont
 from fontTools.pens.svgPathPen import SVGPathPen
 from fontTools.pens.boundsPen import BoundsPen
 
-ARIAL_UNICODE = r'C:\Windows\Fonts\ARIALUNI.TTF'
-SEGOE_UI_BOLD = r'C:\Windows\Fonts\segoeuib.ttf'
+NOTO_ARMENIAN_BOLD = '/usr/share/fonts/truetype/noto/NotoSansArmenian-Bold.ttf'
+SEGOE_UI_BOLD      = '/home/aussiefeld/.local/share/fonts/segoeuib.ttf'
 
 SIZE = 128
 FONT_SIZE = 54
@@ -62,9 +62,9 @@ def glyph_path_and_bbox(font_path, char):
 
 
 # Step 1: advance widths via Pillow (matches the existing render exactly).
-u_advance = pillow_advance(ARIAL_UNICODE, 'Մ')
+u_advance = pillow_advance(NOTO_ARMENIAN_BOLD, 'Մ')
 r_advance = pillow_advance(SEGOE_UI_BOLD, 'R')
-l_advance = pillow_advance(ARIAL_UNICODE, 'Լ')
+l_advance = pillow_advance(NOTO_ARMENIAN_BOLD, 'Լ')
 
 # Step 2: layout — same math as render_icon_pillow.py.
 total_width = u_advance + r_advance + l_advance + 2 * SPACING
@@ -75,9 +75,9 @@ r_x_centre = origin_x + u_advance + SPACING + r_advance / 2
 l_x_centre = origin_x + u_advance + SPACING + r_advance + SPACING + l_advance / 2
 
 # Step 3: glyph paths and visual midpoints (em units).
-u_path, u_scale, u_em_bbox = glyph_path_and_bbox(ARIAL_UNICODE, 'Մ')
+u_path, u_scale, u_em_bbox = glyph_path_and_bbox(NOTO_ARMENIAN_BOLD, 'Մ')
 r_path, r_scale, r_em_bbox = glyph_path_and_bbox(SEGOE_UI_BOLD, 'R')
-l_path, l_scale, l_em_bbox = glyph_path_and_bbox(ARIAL_UNICODE, 'Լ')
+l_path, l_scale, l_em_bbox = glyph_path_and_bbox(NOTO_ARMENIAN_BOLD, 'Լ')
 
 u_em_mid = (u_em_bbox[0] + u_em_bbox[2]) / 2
 r_em_mid = (r_em_bbox[0] + r_em_bbox[2]) / 2
