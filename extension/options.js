@@ -652,7 +652,11 @@ async function checkPrivateBrowsingAccess() {
   const { dismissedPrivateWarning } = await browser.storage.local.get('dismissedPrivateWarning');
   applyPrivateWarningVisibility(!!dismissedPrivateWarning);
   const cb = document.getElementById('show-private-warning');
-  if (cb) cb.checked = !dismissedPrivateWarning;
+  if (cb) {
+    cb.checked = !dismissedPrivateWarning;
+    cb.disabled = privateAccessAllowed;
+    if (privateAccessAllowed) cb.title = 'Extension is allowed in private windows — warning is never shown';
+  }
 }
 
 // Visibility = not granted AND not dismissed. The user can toggle visibility
