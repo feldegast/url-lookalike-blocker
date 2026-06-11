@@ -1,5 +1,11 @@
 # TODO / Future Features
 
+## Pending before v1.1 submission
+
+- [ ] **Badge screenshots** — extension icon changed in v1.1; recapture `badge-0-white.png`, `badge-1-white.png`, `badge-0-black.png`, `badge-1-black.png` in Photoshop (Windows laptop). Remove and re-add extension in Firefox first so toolbar shows the new icon. Strip Photoshop metadata with `dev/strip-png-metadata.py` before copying to `extension/img/`.
+- [ ] Commit updated badge images and push
+- [ ] Run full pre-submission checklist in `RELEASE.md`
+
 ## Firefox for Android compatibility
 
 **Goal:** Make the extension installable and usable on Firefox for Android, so the homograph protection extends to mobile browsing.
