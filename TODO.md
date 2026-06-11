@@ -7,6 +7,34 @@
 - [ ] Run the full pre-submission checklist in `RELEASE.md`.
 - [ ] Submit to Mozilla AMO. Once accepted, tag the commit (`git tag -a v1.1 <commit> -m "..."` then `git push --tags`).
 
+## Expand "always-permitted Latin languages" reference
+
+**Goal:** Make it clearer that permitting Latin by default means URLs written in *every* Latin-script language load normally — not just the ~26 languages currently named at the bottom of the options page. Move the comprehensive list into `help.html` and leave a brief pointer on the options page.
+
+**Framing for the help section** (the wording matters — the extension doesn't "protect languages", it just permits URLs in those languages): *"Latin is permitted by default, so URLs written in any Latin-script language load normally — the extension doesn't block them or warn you about them. The list below covers which languages that includes, beyond the common ones in the options panel."*
+
+**What's involved:**
+
+- **`extension/help.html`** — add a new section "Latin-script languages — always permitted" with `id="latin-languages"` as an anchor target. Group the languages by region (European / African / Asian and Pacific / multi-script edge cases). Lead with the framing above.
+- **`extension/options.js`** — append a small hyperlink after the existing always-on list: *"See Help for additional Latin-script languages also permitted by default."* Use `browser.runtime.getURL('help.html#latin-languages')` so it deep-links to the new anchor.
+- **`extension/options.html`** — minor CSS for the new note element so it visually matches the existing `.latin-only-list` styling.
+
+**Languages to add to the help-file list (beyond the 26 already in `options.js`):**
+
+*Major European:* Croatian, Slovenian, Lithuanian, Latvian, Estonian, Albanian, Icelandic, Irish (Gaeilge), Welsh, Scottish Gaelic, Maltese, Luxembourgish, Faroese.
+
+*Widely-spoken non-European:* Swahili, Somali, Hausa, Yoruba, Igbo, Zulu, Xhosa, Maori, Samoan, Hawaiian, Cebuano.
+
+*Multi-script edge cases — list with explanatory notes:*
+- **Bosnian** — Latin and Cyrillic both in use depending on author preference.
+- **Azerbaijani** — Latin since 1991; Cyrillic still used in some contexts.
+- **Uzbek** — Latin officially since 1995, but Cyrillic remains common in print.
+- **Turkmen** — Latin officially.
+- **Kazakh** — transitioning Cyrillic → Latin, target completion 2031.
+- **Kurdish** — Kurmanji (Turkey/Syria) is Latin; Sorani (Iraq/Iran) uses an Arabic-derived script and falls under separate script-permission rules.
+
+**Estimated effort:** 15-20 minutes plus a visual check in Firefox.
+
 ## Firefox for Android compatibility
 
 **Goal:** Make the extension installable and usable on Firefox for Android, so the homograph protection extends to mobile browsing.
