@@ -32,9 +32,9 @@ NOTO_ARMENIAN_BOLD = '/usr/share/fonts/truetype/noto/NotoSansArmenian-Bold.ttf'
 SEGOE_UI_BOLD      = '/home/aussiefeld/.local/share/fonts/segoeuib.ttf'
 
 SIZE = 128
-FONT_SIZE = 54
+FONT_SIZE = 64
 SPACING = -9
-BASELINE_Y = 82
+BASELINE_Y = 86
 
 
 def pillow_advance(font_path, char):
@@ -92,11 +92,17 @@ u_tx = u_x_centre - u_em_mid * u_scale
 r_tx = r_x_centre - r_em_mid * r_scale
 l_tx = l_x_centre - l_em_mid * l_scale
 
-# Step 5: circle and diagonal slash (same constants as the Pillow render).
-circle_colour = '#b71c1c'
+# Step 5: 30° diagonal strikethrough line and shield badge.
+# Left side is higher (upper-left → lower-right) at 30° from horizontal.
+line_colour = '#b71c1c'
 stroke_width = 11
-cx, cy, circle_r = 64, 64, 50
-d = circle_r / math.sqrt(2)
+cx, cy = 64, 64
+half_w = 60  # horizontal half-extent from centre
+angle = math.radians(10)
+x1 = cx - half_w
+y1 = cy - half_w * math.tan(angle)
+x2 = cx + half_w
+y2 = cy + half_w * math.tan(angle)
 
 svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {SIZE} {SIZE}" width="{SIZE}" height="{SIZE}">
   <g transform="translate({u_tx:.4f} {BASELINE_Y}) scale({u_scale:.6f} {-u_scale:.6f})">
@@ -108,8 +114,10 @@ svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {SIZE} {SIZE}" wi
   <g transform="translate({l_tx:.4f} {BASELINE_Y}) scale({l_scale:.6f} {-l_scale:.6f})">
     <path fill="#d32f2f" d="{l_path}"/>
   </g>
-  <circle cx="{cx}" cy="{cy}" r="{circle_r}" fill="none" stroke="{circle_colour}" stroke-width="{stroke_width}"/>
-  <path d="M {cx-d:.4f} {cy-d:.4f} L {cx+d:.4f} {cy+d:.4f}" stroke="{circle_colour}" stroke-width="{stroke_width}" stroke-linecap="round"/>
+  <line x1="{x1:.4f}" y1="{y1:.4f}" x2="{x2:.4f}" y2="{y2:.4f}" stroke="{line_colour}" stroke-width="{stroke_width}" stroke-linecap="round"/>
+  <path d="M 90 83 L 126 83 L 126 105 C 126 117 108 123 108 123 C 108 123 90 117 90 105 Z" fill="#ffc107" stroke="#000000" stroke-width="3" stroke-linejoin="round"/>
+  <line x1="108" y1="91" x2="108" y2="108" stroke="#000000" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="108" cy="115" r="3" fill="#000000"/>
 </svg>
 '''
 

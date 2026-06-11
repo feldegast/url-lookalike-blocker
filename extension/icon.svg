@@ -1,13 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-  <g transform="translate(19.6029 82) scale(0.054000 -0.054000)">
+  <g transform="translate(9.7079 86) scale(0.064000 -0.064000)">
     <path fill="#d32f2f" d="M370 -10Q275 -10 212.0 24.5Q149 59 117.5 118.0Q86 177 86 252V714H227V276Q227 189 260.5 148.5Q294 108 366 108Q436 108 472.0 145.5Q508 183 508 274V714H793V596H649V254Q649 133 577.0 61.5Q505 -10 370 -10Z"/>
   </g>
-  <g transform="translate(53.7300 82) scale(0.026367 -0.026367)">
+  <g transform="translate(51.8203 86) scale(0.031250 -0.031250)">
     <path fill="#000000" d="M1367 0H996L773 369Q748 411 725.0 444.0Q702 477 678.5 500.5Q655 524 629.5 536.5Q604 549 574 549H487V0H164V1434H676Q1198 1434 1198 1044Q1198 969 1175.0 905.5Q1152 842 1110.0 791.0Q1068 740 1008.5 703.0Q949 666 876 645V641Q908 631 938.0 608.5Q968 586 996.0 556.0Q1024 526 1049.5 491.5Q1075 457 1096 424ZM487 1192V793H627Q731 793 794 853Q858 914 858 1004Q858 1192 633 1192Z"/>
   </g>
-  <g transform="translate(80.7271 82) scale(0.054000 -0.054000)">
+  <g transform="translate(85.4903 86) scale(0.064000 -0.064000)">
     <path fill="#d32f2f" d="M91 0V714H232V118H422V0Z"/>
   </g>
-  <circle cx="64" cy="64" r="50" fill="none" stroke="#b71c1c" stroke-width="11"/>
-  <path d="M 28.6447 28.6447 L 99.3553 99.3553" stroke="#b71c1c" stroke-width="11" stroke-linecap="round"/>
+  <line x1="4.0000" y1="53.4204" x2="124.0000" y2="74.5796" stroke="#b71c1c" stroke-width="11" stroke-linecap="round"/>
+  <path d="M 90 83 L 126 83 L 126 105 C 126 117 108 123 108 123 C 108 123 90 117 90 105 Z" fill="#ffc107" stroke="#000000" stroke-width="3" stroke-linejoin="round"/>
+  <line x1="108" y1="91" x2="108" y2="108" stroke="#000000" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="108" cy="115" r="3" fill="#000000"/>
 </svg>

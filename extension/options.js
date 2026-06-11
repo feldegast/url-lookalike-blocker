@@ -285,11 +285,8 @@ async function applyToStorage() {
     additionalLangScripts: langScripts,
     enabledLanguages: [...enabledLanguages]
   });
-  await browser.runtime.sendMessage({
-    type: 'applySettings',
-    additionalScripts: scripts,
-    additionalLangScripts: langScripts
-  });
+  // Background state is synced via storage.onChanged in background.js.
+  // Do NOT send applySettings here — that message closes the options tab.
 }
 
 function checkDirty() {

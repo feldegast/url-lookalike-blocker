@@ -6,8 +6,8 @@ size = 128
 img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
 draw = ImageDraw.Draw(img)
 
-font_arm = ImageFont.truetype('/usr/share/fonts/truetype/noto/NotoSansArmenian-Bold.ttf', 54)  # Armenian Մ and Լ
-font_r   = ImageFont.truetype('/home/aussiefeld/.local/share/fonts/segoeuib.ttf', 54)          # Latin R
+font_arm = ImageFont.truetype('/usr/share/fonts/truetype/noto/NotoSansArmenian-Bold.ttf', 64)  # Armenian Մ and Լ
+font_r   = ImageFont.truetype('/home/aussiefeld/.local/share/fonts/segoeuib.ttf', 64)          # Latin R
 
 text_u = 'Մ'  # Armenian Մ (U+0544) — homograph for Latin U
 text_r = 'R'  # Latin R kept (no Armenian homograph for R, and the red diagonal slash crosses it)
@@ -25,7 +25,7 @@ u_x = origin_x + u_width / 2
 r_x = origin_x + u_width + spacing + r_width / 2
 l_x = origin_x + u_width + spacing + r_width + spacing + l_width / 2
 
-y = 82
+y = 86
 
 # Draw text first so the circle and slash render on top.
 # Both Armenian letters are red to mark them as the non-Latin substitutes.
@@ -33,23 +33,24 @@ draw.text((u_x, y), text_u, font=font_arm, fill=(211, 47, 47, 255), anchor='ms')
 draw.text((r_x, y), text_r, font=font_r,   fill=(0, 0, 0, 255),     anchor='ms')
 draw.text((l_x, y), text_l, font=font_arm, fill=(211, 47, 47, 255), anchor='ms')
 
-# Circle and slash drawn on top.
-# Ellipse bbox is computed from circle_r so the stroke centre stays at radius 50
-# regardless of stroke_width. Slash endpoints are at radius 50 along the 45° diagonal
-# so round caps meet the circle stroke.
-circle_color = (183, 28, 28, 255)
+# Warning shield badge — bottom right corner, drawn before circle/slash
+# so the slash renders on top of the shield where they overlap.
+shield_pts = [(90, 83), (126, 83), (126, 105), (108, 123), (90, 105)]
+draw.polygon(shield_pts, fill=(255, 193, 7, 255), outline=(0, 0, 0, 255), width=3)
+draw.line([(108, 91), (108, 108)], fill=(0, 0, 0, 255), width=5)
+draw.ellipse([105, 112, 111, 118], fill=(0, 0, 0, 255))
+
+# 30° diagonal strikethrough line — left side higher (upper-left → lower-right).
+line_color = (183, 28, 28, 255)
 stroke_width = 11
-cx, cy, circle_r = 64, 64, 50
-
-half_sw = stroke_width / 2
-draw.ellipse(
-    [cx - circle_r - half_sw, cy - circle_r - half_sw,
-     cx + circle_r + half_sw, cy + circle_r + half_sw],
-    outline=circle_color, width=stroke_width
-)
-
-d = circle_r / math.sqrt(2)
-draw.line((cx - d, cy - d, cx + d, cy + d), fill=circle_color, width=stroke_width)
+cx, cy = 64, 64
+half_w = 60
+angle = math.radians(10)
+x1 = cx - half_w
+y1 = cy - half_w * math.tan(angle)
+x2 = cx + half_w
+y2 = cy + half_w * math.tan(angle)
+draw.line((x1, y1, x2, y2), fill=line_color, width=stroke_width)
 
 # Output path is anchored to this script's location so the renderer works
 # regardless of the current working directory at invocation. The extension
