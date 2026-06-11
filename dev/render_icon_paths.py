@@ -92,8 +92,13 @@ u_tx = u_x_centre - u_em_mid * u_scale
 r_tx = r_x_centre - r_em_mid * r_scale
 l_tx = l_x_centre - l_em_mid * l_scale
 
-# Step 5: 30° diagonal strikethrough line and shield badge.
-# Left side is higher (upper-left → lower-right) at 30° from horizontal.
+# Step 5: underline, diagonal strikethrough line, and shield badge.
+# Underline: 4px at 128px = 1px at 32px.
+underline_x1 = origin_x
+underline_x2 = origin_x + total_width
+underline_y = BASELINE_Y + 7
+
+# Diagonal: left side higher (upper-left → lower-right) at 10° from horizontal.
 line_colour = '#b71c1c'
 stroke_width = 11
 cx, cy = 64, 64
@@ -105,6 +110,7 @@ x2 = cx + half_w
 y2 = cy + half_w * math.tan(angle)
 
 svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {SIZE} {SIZE}" width="{SIZE}" height="{SIZE}">
+  <line x1="{underline_x1:.4f}" y1="{underline_y}" x2="{underline_x2:.4f}" y2="{underline_y}" stroke="#000000" stroke-width="4" stroke-linecap="square"/>
   <g transform="translate({u_tx:.4f} {BASELINE_Y}) scale({u_scale:.6f} {-u_scale:.6f})">
     <path fill="#d32f2f" d="{u_path}"/>
   </g>

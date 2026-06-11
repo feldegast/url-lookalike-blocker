@@ -27,10 +27,15 @@ l_x = origin_x + u_width + spacing + r_width + spacing + l_width / 2
 
 y = 86
 
+# Underline spans the full text row — 4px at 128px = 1px at 32px.
+underline_y = y + 7
+draw.line([(origin_x, underline_y), (origin_x + total_width, underline_y)],
+          fill=(0, 0, 0, 255), width=4)
+
 # Draw text first so the circle and slash render on top.
 # Both Armenian letters are red to mark them as the non-Latin substitutes.
 draw.text((u_x, y), text_u, font=font_arm, fill=(211, 47, 47, 255), anchor='ms')
-draw.text((r_x, y), text_r, font=font_r,   fill=(0, 0, 0, 255),     anchor='ms')
+draw.text((r_x, y), text_r, font=font_r,   fill=(0, 0, 0, 255), anchor='ms')
 draw.text((l_x, y), text_l, font=font_arm, fill=(211, 47, 47, 255), anchor='ms')
 
 # Warning shield badge — bottom right corner, drawn before circle/slash
