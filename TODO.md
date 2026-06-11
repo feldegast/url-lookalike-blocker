@@ -25,27 +25,33 @@
 
 ## Internationalisation (i18n)
 
-**Goal:** Render the extension UI in the user's Firefox display language. The languages worth covering are the ones already listed on the options page as permitted scripts — Russian, Greek, Armenian, Serbian, Hebrew, Arabic, and so on.
+**Goal:** Render the extension UI in the user's Firefox **display language** (the one Firefox itself uses for its UI, returned by `browser.i18n.getUILanguage()` — distinct from the page-content language preferences). Firefox supports ~100 display languages, so the target is a curated subset; see staging below. Optionally add an in-extension language override (a dropdown in Options) so the user can pick a different language for the extension specifically, defaulting to Firefox's display language.
 
 **What's involved:**
 
 - Refactor all hardcoded strings in `options.html`, `help.html`, `blocked.html`, `warning.html`, and their supporting `.js` files to use the WebExtensions `i18n` API (`browser.i18n.getMessage('key')` in code, `__MSG_key__` placeholders in manifest and HTML).
 - Add `"default_locale": "en"` to `manifest.json`.
 - Create `_locales/en/messages.json` as the canonical English source.
-- Per-language translations live in `_locales/<lang>/messages.json` and are picked up automatically by Firefox based on the user's display language.
+- Per-language translations live in `_locales/<lang>/messages.json` and are auto-selected by Firefox; if no file exists for the user's display language, Firefox falls back to `default_locale`.
+- The optional in-extension override needs a workaround — MV3 doesn't expose locale switching directly, so the override would store the user's choice and load the chosen `messages.json` manually via `browser.runtime.getURL()`.
 
 **Scope of strings:**
-- Options page: labels, buttons, language names, whitelist headers, interface options.
+- Options page: labels, buttons, language names (for script permissions), whitelist headers, interface options.
 - Block/warning pages: titles, action buttons, character-table headers, the "Looks like" annotation.
 - Help page: substantial body copy — by far the biggest translation burden.
 
 **Concerns to address:**
-- Some technical terms (Cyrillic, homograph, mixed-script) may not have natural translations in every language; may need to coin or borrow.
-- Right-to-left support (Hebrew, Arabic) — the CSS uses left-to-right layout implicitly in many places; would need `[dir="rtl"]` overrides.
+- Some technical terms (Cyrillic, homograph, mixed-script, punycode) may not have natural translations in every language; may need to coin or borrow.
+- Right-to-left support (Hebrew, Arabic, Persian) — the CSS uses left-to-right layout implicitly in many places; would need `[dir="rtl"]` overrides.
 - Pluralisation is minimal in WebExtensions i18n — usually handled by separate keys (`oneTab` / `manyTabs`).
 - Translation maintenance burden when strings change — every locale file needs an update.
 
-**Estimated effort:** A few hours for the i18n scaffolding (the string-extraction refactor), plus roughly 1–2 hours per language for the translations themselves (more for the help-page text). Could land in stages — scaffolding + English-only first as a no-op refactor, then add languages incrementally as translations come in. Community translation via AMO's translation flow is an option once scaffolded.
+**Staging:**
+- **Tier 1** — English (canonical), French, German, Spanish, Italian, Portuguese, Dutch. Cover the bulk of Firefox's European user base; AI translation quality is high enough to ship without mandatory native review.
+- **Tier 2** — Russian, Polish, Japanese, Simplified Chinese, Korean. Worth shipping, but flag on the AMO listing as "translations AI-assisted, native corrections welcome" so users know to push back on awkward phrasing.
+- **Tier 3** — anything else. Scaffolding makes these possible without us writing the translations — Firefox falls back to English, and AMO's community translation flow lets native speakers fill them in over time.
+
+**Estimated effort:** A few hours for the i18n scaffolding (string-extraction refactor) plus Tier 1 translations. Tier 2 is another half-day. The optional in-extension override is half a day on top. Land in stages: scaffolding + English-only first as a no-op refactor, then Tier 1 as a single follow-up, then Tier 2 once the scaffolding has had real-world testing.
 
 ## Domain Age Check (RDAP)
 
