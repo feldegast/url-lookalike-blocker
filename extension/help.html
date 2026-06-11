@@ -114,14 +114,6 @@
       margin: 0;
       flex: 0 0 auto;
     }
-    .badge-dark { display: none; }
-    .badge-light { display: flex; gap: 24px; justify-content: center; }
-    @media (prefers-color-scheme: dark) {
-      html:not([data-theme="light"]) .badge-light { display: none; }
-      html:not([data-theme="light"]) .badge-dark  { display: flex; gap: 24px; justify-content: center; }
-    }
-    html[data-theme="dark"] .badge-light { display: none; }
-    html[data-theme="dark"] .badge-dark  { display: flex; gap: 24px; justify-content: center; }
     .img-dark { display: none; }
     @media (prefers-color-scheme: dark) {
       html:not([data-theme="light"]) .img-light { display: none; }
@@ -267,26 +259,14 @@
     <p>If the Options page is already open, clicking the icon switches to the Options page rather than opening a second copy.</p>
     <p>When one or more blocked or warning pages are open, the icon shows a <strong>red number badge</strong> indicating how many there are. The badge clears automatically once all blocked and warning tabs have been resolved or closed.</p>
     <div class="badge-pair">
-      <div class="badge-light">
-        <figure>
-          <img src="img/badge-0-white.png" alt="Extension icon, no badge, light theme">
-          <figcaption>No blocked tabs</figcaption>
-        </figure>
-        <figure>
-          <img src="img/badge-1-white.png" alt="Extension icon, badge showing 1, light theme">
-          <figcaption>One blocked or warning tab</figcaption>
-        </figure>
-      </div>
-      <div class="badge-dark">
-        <figure>
-          <img src="img/badge-0-black.png" alt="Extension icon, no badge, dark theme">
-          <figcaption>No blocked tabs</figcaption>
-        </figure>
-        <figure>
-          <img src="img/badge-1-black.png" alt="Extension icon, badge showing 1, dark theme">
-          <figcaption>One blocked or warning tab</figcaption>
-        </figure>
-      </div>
+      <figure>
+        <img src="img/badge-0.svg" alt="Extension icon, no badge">
+        <figcaption>No blocked tabs</figcaption>
+      </figure>
+      <figure>
+        <img src="img/badge-1.svg" alt="Extension icon, badge showing 1">
+        <figcaption>One blocked or warning tab</figcaption>
+      </figure>
     </div>
   </div>
 

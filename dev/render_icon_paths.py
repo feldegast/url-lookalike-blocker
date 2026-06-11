@@ -28,8 +28,30 @@ from fontTools.ttLib import TTFont
 from fontTools.pens.svgPathPen import SVGPathPen
 from fontTools.pens.boundsPen import BoundsPen
 
-NOTO_ARMENIAN_BOLD = '/usr/share/fonts/truetype/noto/NotoSansArmenian-Bold.ttf'
-SEGOE_UI_BOLD      = '/home/aussiefeld/.local/share/fonts/segoeuib.ttf'
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+NOTO_ARMENIAN_BOLD = os.path.join(_SCRIPT_DIR, 'NotoSansArmenian-Bold.ttf')
+
+
+def _find_segoe_ui_bold():
+    # Segoe UI Bold is Microsoft proprietary and isn't redistributed via this
+    # repo. Each developer installs it locally:
+    #   Windows: ships with the OS at C:\Windows\Fonts\segoeuib.ttf
+    #   Linux:   drop segoeuib.ttf into ~/.local/share/fonts/ then fc-cache -f
+    candidates = [
+        os.path.expanduser('~/.local/share/fonts/segoeuib.ttf'),
+        '/usr/share/fonts/truetype/segoeuib.ttf',
+        r'C:\Windows\Fonts\segoeuib.ttf',
+    ]
+    for p in candidates:
+        if os.path.exists(p):
+            return p
+    raise FileNotFoundError(
+        'Segoe UI Bold (segoeuib.ttf) not found. Tried:\n  ' +
+        '\n  '.join(candidates)
+    )
+
+
+SEGOE_UI_BOLD = _find_segoe_ui_bold()
 
 SIZE = 128
 FONT_SIZE = 64
@@ -110,18 +132,18 @@ x2 = cx + half_w
 y2 = cy + half_w * math.tan(angle)
 
 svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {SIZE} {SIZE}" width="{SIZE}" height="{SIZE}">
-  <line x1="{underline_x1:.4f}" y1="{underline_y}" x2="{underline_x2:.4f}" y2="{underline_y}" stroke="#000000" stroke-width="4" stroke-linecap="square"/>
+  <line x1="{underline_x1:.4f}" y1="{underline_y}" x2="{underline_x2:.4f}" y2="{underline_y}" stroke="#1976d2" stroke-width="4" stroke-linecap="square"/>
   <g transform="translate({u_tx:.4f} {BASELINE_Y}) scale({u_scale:.6f} {-u_scale:.6f})">
     <path fill="#d32f2f" d="{u_path}"/>
   </g>
   <g transform="translate({r_tx:.4f} {BASELINE_Y}) scale({r_scale:.6f} {-r_scale:.6f})">
-    <path fill="#000000" d="{r_path}"/>
+    <path fill="#1976d2" d="{r_path}"/>
   </g>
   <g transform="translate({l_tx:.4f} {BASELINE_Y}) scale({l_scale:.6f} {-l_scale:.6f})">
     <path fill="#d32f2f" d="{l_path}"/>
   </g>
   <line x1="{x1:.4f}" y1="{y1:.4f}" x2="{x2:.4f}" y2="{y2:.4f}" stroke="{line_colour}" stroke-width="{stroke_width}" stroke-linecap="round"/>
-  <path d="M 90 83 L 126 83 L 126 105 C 126 117 108 123 108 123 C 108 123 90 117 90 105 Z" fill="#ffc107" stroke="#000000" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M 90 83 L 126 83 L 126 105 C 126 117 108 123 108 123 C 108 123 90 117 90 105 Z" fill="#ffc107" stroke="#1976d2" stroke-width="3" stroke-linejoin="round"/>
   <line x1="108" y1="91" x2="108" y2="108" stroke="#000000" stroke-width="5" stroke-linecap="round"/>
   <circle cx="108" cy="115" r="3" fill="#000000"/>
 </svg>

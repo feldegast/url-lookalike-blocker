@@ -13,4 +13,7 @@
   <path d="M 90 83 L 126 83 L 126 105 C 126 117 108 123 108 123 C 108 123 90 117 90 105 Z" fill="#ffc107" stroke="#1976d2" stroke-width="3" stroke-linejoin="round"/>
   <line x1="108" y1="91" x2="108" y2="108" stroke="#000000" stroke-width="5" stroke-linecap="round"/>
   <circle cx="108" cy="115" r="3" fill="#000000"/>
+  <rect x="80" y="4" width="44" height="44" rx="4" ry="4" fill="#d32f2f"/>
+  <text x="102" y="26" font-family="sans-serif" font-size="34" font-weight="bold"
+        fill="#ffffff" text-anchor="middle" dominant-baseline="central">1</text>
 </svg>
