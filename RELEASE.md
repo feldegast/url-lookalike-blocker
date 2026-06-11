@@ -107,18 +107,16 @@ Stage `extension/manifest.json`, `CHANGELOG.md`, and any code or asset changes f
 
 ## Post-submission
 
-### When AMO accepts
+### After submission
 
-Mozilla sends an email once the version is published — typically 1–7 days. Then:
-
-1. **Tag the released commit:**
+1. **Tag the submitted commit immediately** — the version number is fixed at the point you zip and submit, not when Mozilla approves it:
 
    ```
    git tag -a v<version> <commit> -m "v<version> — submitted to AMO YYYY-MM-DD"
    git push --tags
    ```
 
-2. **Draft a GitHub Release** on the new tag:
+2. **Draft a GitHub Release** on the new tag once AMO accepts it:
    - Title: `v<version>`
    - Body: paste the `## [<version>]` section of `CHANGELOG.md`
    - Attach `dev/review-bundle.zip` as the release asset (consider renaming the file to `url-lookalike-blocker-<version>.zip` first)
