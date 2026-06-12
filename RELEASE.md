@@ -35,7 +35,7 @@ The dev screenshot capture tool lives in dedicated `*-dev.js` files. **Remove ev
 
 Quick audit: `grep -r "\-dev\.js" dev/review-staging/` should return nothing before you zip.
 
-The staging copy is a throwaway so these edits do not touch the working files. After submission, the working tree is already the correct dev-ready state for the next cycle.
+The staging copy is a throwaway — the working files in `extension/` are never modified, so the full dev infrastructure (both `*-dev.js` files, the `downloads` permission, and the `pages-dev.js` script tags) remains intact and ready for the next development cycle.
 
 ### 4. Regenerate icons if the source changed
 
