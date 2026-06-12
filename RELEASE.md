@@ -63,12 +63,15 @@ $staging = "dev/review-staging"
 if (Test-Path $staging) { Remove-Item -Recurse -Force $staging }
 Copy-Item -Recurse extension $staging
 Remove-Item -Recurse -Force "$staging/img/working files" -ErrorAction SilentlyContinue
-if (Test-Path "dev/review-bundle.zip") { Remove-Item "dev/review-bundle.zip" }
-Compress-Archive -Path "$staging/*" -DestinationPath "dev/review-bundle.zip"
+$version = (Get-Content "$staging/manifest.json" | ConvertFrom-Json).version
+$date = Get-Date -Format "yyyy-MM-dd"
+$zipName = "dev/url-lookalike-blocker-$version-$date.zip"
+if (Test-Path $zipName) { Remove-Item $zipName }
+Compress-Archive -Path "$staging/*" -DestinationPath $zipName
 Remove-Item -Recurse -Force $staging
 ```
 
-The `dev/review-bundle.zip` filename is conventional; rename if you want a version-stamped artifact for the GitHub release later.
+The zip is named `url-lookalike-blocker-<version>-<date>.zip` — the version and date prevent accidental overwrites and make the file self-describing for the GitHub release attachment.
 
 ### 7. Validate locally
 
