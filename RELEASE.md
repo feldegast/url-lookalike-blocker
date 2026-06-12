@@ -137,7 +137,7 @@ Stage `extension/manifest.json`, `CHANGELOG.md`, and any code or asset changes f
 |---|---|
 | Manifest version | `1.0` |
 | Submission date | 2026-06-10 |
-| Submitted commit | `47d0ade` |
+| Submitted commit | `37832e9` |
 | Tag | `v1.0` |
 | Min Firefox | 126 |
 | Permissions | `webRequest`, `webRequestBlocking`, `storage`, `menus`, `<all_urls>` |
