@@ -2,7 +2,7 @@
 
 ## Pending before v1.1 submission
 
-- [ ] Bump `extension/manifest.json` version from `"1.0"` to `"1.1"`.
+- [x] Bump `extension/manifest.json` version from `"1.0"` to `"1.1"`.
 - [ ] Rename `## [Unreleased]` in `CHANGELOG.md` to `## [1.1] — YYYY-MM-DD` (the submission date).
 - [ ] Run the full pre-submission checklist in `RELEASE.md`.
 - [ ] Submit to Mozilla AMO. Once accepted, tag the commit (`git tag -a v1.1 <commit> -m "..."` then `git push --tags`).
