@@ -1,6 +1,6 @@
 # Release Process
 
-This document describes how to ship a new version of URL Lookalike Blocker to Mozilla AMO and tag it in this repo. The same flow was used for v1.0 (submitted 2026-06-10, tagged at commit `47d0ade`) and should apply to every subsequent version.
+This document describes how to ship a new version of URL Lookalike Blocker to Mozilla AMO and tag it in this repo. The same flow was used for v1.0 (submitted 2026-06-10, tagged at commit `37832e9`) and should apply to every subsequent version.
 
 ## Versioning
 
