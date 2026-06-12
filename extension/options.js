@@ -761,9 +761,11 @@ function setupEventListeners() {
   });
 }
 
+// DEV-BEGIN
 // Bridge for pages-dev.js — exposes options internals that are not on window.
 window._devHooks = {
   getWhitelist:    () => whitelist,
   setWhitelist:    v  => { whitelist = v; },
   renderWhitelist: () => renderWhitelist(),
 };
+// DEV-END

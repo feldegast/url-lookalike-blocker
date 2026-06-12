@@ -68,6 +68,8 @@ async function devCaptureFullPage(tabId, windowId) {
   const ctx = canvas.getContext('2d');
   ctx.fillStyle = d.bodyBg;
   ctx.fillRect(0, 0, pw, ph);
+  const maxScrollY = Math.max(0, d.scrollHeight - d.viewportHeight);
+  console.log('[devCapture] scrollHeight:', d.scrollHeight, 'viewportHeight:', d.viewportHeight, 'maxScrollY:', maxScrollY, 'dpr:', d.dpr, 'canvas:', pw, '×', ph);
   let cssY = 0;
   while (cssY < d.scrollHeight) {
     await browser.tabs.sendMessage(tabId, { type: 'devScrollTo', y: cssY });
@@ -75,10 +77,13 @@ async function devCaptureFullPage(tabId, windowId) {
     const bm = await createImageBitmap(await (await fetch(
       await browser.tabs.captureVisibleTab(windowId, { format: 'png' })
     )).blob());
+    const actualScrollY = Math.min(cssY, maxScrollY);
+    const srcY       = Math.round((cssY - actualScrollY) * d.dpr);
     const cssStripH  = Math.min(d.viewportHeight, d.scrollHeight - cssY);
     const physStripH = Math.round(cssStripH * d.dpr);
     const srcX       = Math.round(d.contentLeft * d.dpr);
-    ctx.drawImage(bm, srcX, 0, pw, physStripH, 0, Math.round(cssY * d.dpr), pw, physStripH);
+    console.log('[devCapture] strip cssY:', cssY, 'actualScrollY:', actualScrollY, 'srcY:', srcY, 'cssStripH:', cssStripH, 'bm:', bm.width, '×', bm.height);
+    ctx.drawImage(bm, srcX, srcY, pw, physStripH, 0, Math.round(cssY * d.dpr), pw, physStripH);
     cssY += d.viewportHeight;
   }
   await browser.tabs.sendMessage(tabId, { type: 'devScrollTo', y: 0 });
@@ -86,26 +91,46 @@ async function devCaptureFullPage(tabId, windowId) {
 }
 
 async function devDownload(blob, filename) {
+  console.log('[devDownload] start:', filename, 'blob size:', blob ? blob.size : 'NULL');
   const url = URL.createObjectURL(blob);
-  const id = await browser.downloads.download({
-    url,
-    filename: `url-lookalike-blocker-screenshots/${filename}`,
-    saveAs: false,
-    conflictAction: 'overwrite',
-  });
-  // Wait for the download to finish before revoking — download() resolves when
-  // the download starts, not when Firefox has finished reading the blob URL.
-  await new Promise(resolve => {
+  console.log('[devDownload] blob URL created:', filename);
+  let id;
+  try {
+    id = await browser.downloads.download({
+      url,
+      filename: `url-lookalike-blocker-screenshots/${filename}`,
+      saveAs: false,
+      conflictAction: 'overwrite',
+    });
+  } catch (e) {
+    console.error('[devDownload] download() threw:', filename, e);
+    URL.revokeObjectURL(url);
+    return;
+  }
+  console.log('[devDownload] download started id:', id, filename);
+  await new Promise(async resolve => {
+    let resolved = false;
+    function done() { if (!resolved) { resolved = true; resolve(); } }
     function onChanged(delta) {
-      if (delta.id === id && delta.state &&
-          (delta.state.current === 'complete' || delta.state.current === 'interrupted')) {
-        browser.downloads.onChanged.removeListener(onChanged);
-        resolve();
+      if (delta.id === id && delta.state) {
+        console.log('[devDownload] state change:', filename, delta.state.current);
+        if (delta.state.current === 'complete' || delta.state.current === 'interrupted') {
+          browser.downloads.onChanged.removeListener(onChanged);
+          done();
+        }
       }
     }
     browser.downloads.onChanged.addListener(onChanged);
+    // Guard against the race where the download completed before the listener was added
+    const [item] = await browser.downloads.search({ id });
+    if (item && (item.state === 'complete' || item.state === 'interrupted')) {
+      console.log('[devDownload] already complete at poll:', filename, item.state);
+      browser.downloads.onChanged.removeListener(onChanged);
+      done();
+    }
   });
   URL.revokeObjectURL(url);
+  console.log('[devDownload] done:', filename);
 }
 
 async function devCapture(windowId) {
@@ -199,14 +224,21 @@ async function devCapture(windowId) {
       await browser.tabs.sendMessage(optTab.id, { type: 'devHideApplyBar' });
       await devDelay(100);
 
+      await browser.tabs.sendMessage(optTab.id, { type: 'devHidePrivateWarning' });
+      await browser.tabs.sendMessage(optTab.id, { type: 'devHideFooter' });
+      await devDelay(100);
       queue.push({ filename: `options-${suffix}.png`,
         blob: await devCaptureFullPage(optTab.id, windowId) });
+      await browser.tabs.sendMessage(optTab.id, { type: 'devShowFooter' });
     }
 
     // Phase 4: download all captures
+    console.log('[devCapture] Phase 4: downloading', queue.length, 'files:', queue.map(q => q.filename).join(', '));
     for (const { blob, filename } of queue) {
+      console.log('[devCapture] queuing download:', filename);
       await devDownload(blob, filename);
     }
+    console.log('[devCapture] Phase 4 complete');
 
   } finally {
     additionalScripts     = savedScripts;

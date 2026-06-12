@@ -26,6 +26,74 @@
     <li><a href="https://xn--test-34d.com/" target="_blank">xn--test-34d.com</a><span class="tag">WARNING (mixed-script) — testж.com (Latin+Cyrillic; requires Cyrillic enabled, Serbian disabled)</span></li>
   </ul>
 
+  <h2>Test #0 — Locale detection on first run and reset</h2>
+  <p style="font-size:0.85rem;color:#444;margin:0.25rem 0 0.5rem">Add Japanese to Firefox before starting. Must pass on fresh install; must block after removing Japanese from options.</p>
+  <ul>
+    <li><a href="https://xn--zckzah.com/" target="_blank">xn--zckzah.com</a><span class="tag">Japanese (Katakana) — テスト.com</span></li>
+  </ul>
+
+  <h2 class="allowed">Test #1 — Latin pass-through</h2>
+  <p style="font-size:0.85rem;color:#444;margin:0.25rem 0 0.5rem">Must NEVER be blocked regardless of settings.</p>
+  <ul>
+    <li><a class="allowed" href="https://www.example.com/" target="_blank">www.example.com</a><span class="tag allowed">must pass through</span></li>
+    <li><a class="allowed" href="https://www.google.com/" target="_blank">www.google.com</a><span class="tag allowed">must pass through</span></li>
+  </ul>
+
+  <h2>Test #2 — Default blocking — representative sample</h2>
+  <p style="font-size:0.85rem;color:#444;margin:0.25rem 0 0.5rem">All ten must show the block page with factory settings (Latin only). One per script family.</p>
+  <ul>
+    <li><a href="https://www.xn--80ak6aa92e.com/" target="_blank">www.xn--80ak6aa92e.com</a><span class="tag">Cyrillic</span></li>
+    <li><a href="https://xn--ggle-0nda.com/" target="_blank">xn--ggle-0nda.com</a><span class="tag">Greek</span></li>
+    <li><a href="https://xn--zckzah.com/" target="_blank">xn--zckzah.com</a><span class="tag">Japanese (Katakana)</span></li>
+    <li><a href="https://xn--4db7d.com/" target="_blank">xn--4db7d.com</a><span class="tag">Hebrew</span></li>
+    <li><a href="https://xn--3e0b707e.com/" target="_blank">xn--3e0b707e.com</a><span class="tag">Korean</span></li>
+    <li><a href="https://xn--o3cw4h.com/" target="_blank">xn--o3cw4h.com</a><span class="tag">Thai</span></li>
+    <li><a href="https://xn--h2brj9c.com/" target="_blank">xn--h2brj9c.com</a><span class="tag">Devanagari (Hindi)</span></li>
+    <li><a href="https://xn--node.com/" target="_blank">xn--node.com</a><span class="tag">Georgian</span></li>
+    <li><a href="https://xn--y9a3aq.com/" target="_blank">xn--y9a3aq.com</a><span class="tag">Armenian</span></li>
+    <li><a href="https://xn--fiqs8s.com/" target="_blank">xn--fiqs8s.com</a><span class="tag">Chinese (Han)</span></li>
+  </ul>
+
+  <h2>Test #4 — Homograph attacks (always blocked)</h2>
+  <p style="font-size:0.85rem;color:#444;margin:0.25rem 0 0.5rem">Must show block/warning page with default settings AND remain blocked/warned even when the relevant script is enabled.</p>
+  <ul>
+    <li><a href="https://xn--pple-43d.com/" target="_blank">xn--pple-43d.com</a><span class="tag">аpple.com — Cyrillic 'а'</span></li>
+    <li><a href="https://xn--googl-3we.com/" target="_blank">xn--googl-3we.com</a><span class="tag">googlе.com — Cyrillic 'е'</span></li>
+    <li><a href="https://xn--aypal-uye.com/" target="_blank">xn--aypal-uye.com</a><span class="tag">рaypal.com — Cyrillic 'р'</span></li>
+    <li><a href="https://xn--microsft-sbh.com/" target="_blank">xn--microsft-sbh.com</a><span class="tag">microsоft.com — Cyrillic 'о'</span></li>
+    <li><a href="https://xn--mazon-3ve.com/" target="_blank">xn--mazon-3ve.com</a><span class="tag">аmazon.com — Cyrillic 'а'</span></li>
+    <li><a href="https://xn--yah-czca.com/" target="_blank">xn--yah-czca.com</a><span class="tag">yahοο.com — Greek 'ο'</span></li>
+    <li><a href="https://xn--vidia-ece.com/" target="_blank">xn--vidia-ece.com</a><span class="tag">νvidia.com — Greek 'ν'</span></li>
+  </ul>
+
+  <h2>Test #5 — Script toggle tests</h2>
+  <p style="font-size:0.85rem;color:#444;margin:0.25rem 0 0.5rem">Part A: enable all 10, each must pass. Part B: disable all 10, each must block.</p>
+  <ul>
+    <li><a href="https://xn--y9a3aq.com/" target="_blank">xn--y9a3aq.com</a><span class="tag">Armenian — հայ.com</span></li>
+    <li><a href="https://xn--fiqs8s.com/" target="_blank">xn--fiqs8s.com</a><span class="tag">Chinese — 中国.com</span></li>
+    <li><a href="https://xn--node.com/" target="_blank">xn--node.com</a><span class="tag">Georgian — გე.com</span></li>
+    <li><a href="https://xn--qxa2abc.com/" target="_blank">xn--qxa2abc.com</a><span class="tag">Greek — τεστ.com</span></li>
+    <li><a href="https://xn--4db7d.com/" target="_blank">xn--4db7d.com</a><span class="tag">Hebrew</span></li>
+    <li><a href="https://xn--h2brj9c.com/" target="_blank">xn--h2brj9c.com</a><span class="tag">Hindi — भारत.com</span></li>
+    <li><a href="https://xn--zckzah.com/" target="_blank">xn--zckzah.com</a><span class="tag">Japanese — テスト.com</span></li>
+    <li><a href="https://xn--3e0b707e.com/" target="_blank">xn--3e0b707e.com</a><span class="tag">Korean — 한국.com</span></li>
+    <li><a href="https://www.xn--80ak6aa92e.com/" target="_blank">www.xn--80ak6aa92e.com</a><span class="tag">Russian — "apple.com" in Cyrillic</span></li>
+    <li><a href="https://xn--o3cw4h.com/" target="_blank">xn--o3cw4h.com</a><span class="tag">Thai — ไทย.com</span></li>
+  </ul>
+
+  <h2>Test #5D — Language permission distinction</h2>
+  <p style="font-size:0.85rem;color:#444;margin:0.25rem 0 0.5rem">Enable Russian, then Serbian, testing each URL after each change.</p>
+  <ul>
+    <li><a href="https://www.xn--80ak6aa92e.com/" target="_blank">www.xn--80ak6aa92e.com</a><span class="tag">pure Cyrillic — passes with Russian enabled</span></li>
+    <li><a href="https://xn--test-34d.com/" target="_blank">xn--test-34d.com</a><span class="tag">testж.com — Latin+Cyrillic mix</span></li>
+  </ul>
+
+  <h2 class="allowed">Test #7 — Latin pass-through recheck</h2>
+  <ul>
+    <li><a class="allowed" href="https://www.example.com/" target="_blank">www.example.com</a><span class="tag allowed">must still pass after all the above tests</span></li>
+    <li><a class="allowed" href="https://www.google.com/" target="_blank">www.google.com</a><span class="tag allowed">must still pass after all the above tests</span></li>
+  </ul>
+
   <h2>Cyrillic</h2>
   <ul>
     <li><a href="https://www.xn--80ak6aa92e.com/" target="_blank">www.xn--80ak6aa92e.com</a><span class="tag">"apple.com" in Cyrillic [DETECTION ONLY]</span></li>

@@ -7,6 +7,113 @@
 - [ ] Run the full pre-submission checklist in `RELEASE.md`.
 - [ ] Submit to Mozilla AMO. Once accepted, tag the commit (`git tag -a v1.1 <commit> -m "..."` then `git push --tags`).
 
+## Fix automated capture cutting off bottom of options page
+
+The `devCaptureFullPage` function in `background-dev.js` measures the page height before capturing strips. If the private-browsing warning is shown/hidden mid-loop it changes the page height between measurement and stitching, causing the bottom to be cut off. Fix: send `devHidePrivateWarning` immediately before calling `devCaptureFullPage` (and `devShowPrivateWarning` after if needed), so the page height is stable for the entire capture.
+
+---
+
+## Split warning page help section into separate sections
+
+**Goal:** Replace the single "Warning page" section in `help.html` (which currently has confusable and mixed-script as sub-types) with two separate top-level sections — "Confusable warning" and "Mixed-script warning" — so each matches its screenshot name and the navigation is self-explanatory.
+
+**Prerequisite:** The warning pages themselves (`warning.html`) currently contain no text that identifies them as "warning" pages. Add a visible "Warning" label or heading to both warning page types in the UI before updating the help page, otherwise the help section headings will not match what the user sees on screen.
+
+**Estimated effort:** Small once the UI change is in place.
+
+---
+
+## Script-coloured tags and single-script language auto-tick
+
+**Goal:** Make the options page accurately reflect what the extension actually permits. When Japanese is enabled, Han is permitted — but Chinese (Han-only) shows as unchecked, giving the user a false picture. This feature fixes that with visual script colouring and a cascade-aware auto-tick system.
+
+### Visual behaviour
+
+Each language row's script tags are coloured live as the user ticks and unticks languages:
+- **Green** — script is currently in the permitted set
+- **Grey** — script is not currently permitted (not red — a default install would show a wall of red tags which reads as alarming; grey is neutral. Red/green is also the worst colourblind pairing)
+
+Pair the colour with a second cue — a ✓ in the tag or a border-style difference — so the distinction works without colour alone. Add dark-theme variants for both classes.
+
+The colouring updates immediately on every checkbox change, before the user clicks Apply, so the user can see the effect of a change in real time.
+
+**Colour source:** compute from the same permitted-set function Apply uses — explicit languages' scripts ∪ locale-seeded scripts ∪ always-Latin — not just a walk over ticked checkboxes. Otherwise a locale-seeded script with no corresponding ticked row renders grey while the background is actually permitting it, recreating the exact display-lies-about-effective-state bug this feature exists to fix.
+
+### Auto-tick rule (single-script languages only)
+
+After recolouring, every **single-script language** whose sole script is green is automatically ticked. Multi-script languages (e.g. Japanese: Hiragana + Katakana + Han) are **never** auto-ticked regardless of how many of their scripts are green — because ticking a multi-script language also blesses those scripts appearing together in a single domain label (mixed-script logic), which must remain an explicit user choice.
+
+Auto-ticked checkboxes are **not disabled** — the user can untick them directly (see cascade below). However they must be **visually distinct** from explicit ticks (dimmed checkbox, or a small "via Japanese" annotation) because their untick behaviour differs and the user needs to see the provenance.
+
+**Example — Japanese ticked:**
+1. Permitted scripts: {Hiragana, Katakana, Han} ∪ locale scripts ∪ Latin
+2. Hiragana tag → green (Japanese row)
+3. Katakana tag → green (Japanese row)
+4. Han tag → green (Japanese row, Chinese row, Korean row)
+5. Chinese is single-script (Han only) — no mixed-script logic applies — Han is green → Chinese auto-ticks (shown dimmed)
+6. Korean is multi-script (Hangul + Han) — Han is green but Hangul is grey, and Korean would not auto-tick even if both were green → Korean stays unticked
+7. Hebrew is single-script (Hebrew script only) — Hebrew script is grey → Hebrew stays unticked
+
+**Latin-only languages must not appear in the language table** — Latin is always permitted, so they would be permanently auto-ticked and their veto would be undefined. The existing `LANGUAGE_SCRIPTS` table already excludes Latin-only languages for unrelated reasons; the auto-tick rule makes this load-bearing.
+
+### Bookkeeping — two sets, not one
+
+Keep derived ticks out of `enabledLanguages`, storage, and dirty-tracking. Use two separate sets:
+
+- **`explicitLanguages`** — what `enabledLanguages` is today. Stored, dirty-tracked, fed to `computeLangScripts`. Never contains auto-ticked languages.
+- **`derivedTicked`** — computed at render time only. Never persisted. Never compared in `checkDirty`.
+
+If auto-ticks leak into `explicitLanguages`, Apply persists them, the next page load can't distinguish explicit from derived, dirty dots fire on rows the user never touched, and Reset-to-locale-defaults comparisons go murky. A single-script language contributes no new script and no new mixed-script blessing, so a derived tick is purely informational — nothing about blocking behaviour changes whether it is stored or not.
+
+### Cascade on untick — operational pipeline
+
+**Rule:** untick always means "I don't want these scripts" — the same rule for explicit and auto-ticked languages, no provenance tracking needed. The permitted set only ever shrinks on an untick.
+
+**Pipeline (order matters):**
+1. Remove the unticked language from `explicitLanguages` (or from `derivedTicked` if auto-ticked)
+2. Recompute permitted scripts from surviving `explicitLanguages`
+3. Any currently-ticked language whose scripts are no longer fully covered → cascade-untick it (remove from `explicitLanguages`), repeat from step 2 until stable
+4. Run `refreshState()` on the surviving set — recolour tags, re-derive auto-ticks
+
+The cascade must complete **before** `refreshState()` runs. If `refreshState()` runs first it sees Japanese still providing Han and re-ticks Chinese, producing a re-tick loop. After the cascade the permitted set has only shrunk, so nothing can newly qualify for auto-tick.
+
+**Invariant to encode as a test assertion:** after any single untick event, the count of ticked languages (explicit + derived) strictly decreases — never stays equal via a re-tick, never grows.
+
+**Example — Japanese and Korean both explicitly ticked, Chinese auto-ticked. User unticks Chinese:**
+1. Chinese removed from `derivedTicked`; recompute scripts from {Japanese, Korean} → Han still green (both provide it)
+2. Han is still green — but Chinese's untick is a veto on Han itself, so Han is removed from the permitted set
+3. Han tag → grey on all rows (Chinese, Japanese, Korean)
+4. Japanese requires Han — Han is grey → Japanese cascade-unticks (removed from `explicitLanguages`)
+5. Korean requires Han — Han is grey → Korean cascade-unticks (removed from `explicitLanguages`)
+6. `explicitLanguages` now empty; recompute: Hiragana, Katakana, Hangul all grey
+7. `refreshState()` runs: all tags grey, no auto-ticks qualify, all languages unticked
+
+**Example — user unticks Japanese directly (Korean still explicit):**
+1. Japanese removed from `explicitLanguages`; recompute from {Korean} → Han green (Korean provides it), Hangul green
+2. Hiragana: no remaining provider → grey. Katakana: no remaining provider → grey
+3. No cascade needed — Korean still has all its scripts
+4. `refreshState()` runs: Han green on Chinese and Korean rows, Hangul green on Korean row, Chinese auto-ticks (dimmed), Korean stays explicit-ticked
+
+**Make the cascade legible:** dirty dots will appear on cascaded rows (explicit state changed), and the live colour flip is visible. Eyeball the Japanese→Korean case during testing to confirm a user would notice multiple rows changed from one click.
+
+### Key test cases
+
+- **CJK cluster:** Japanese + Korean explicit, Chinese auto-ticked. Untick Chinese → all off. Untick Japanese (Korean explicit) → Korean and Chinese survive, Hiragana/Katakana go grey.
+- **Cyrillic cluster:** Russian, Ukrainian, Bulgarian, Serbian — all single-script Cyrillic (Serbian also has Latin). Ticking Russian auto-ticks Ukrainian, Bulgarian; ticking Serbian enables Latin+Cyrillic blessing. Unticking any one Cyrillic language cascades through the others if it is the last Cyrillic provider.
+- **Locale-seeded scripts show green** even with no explicit tick — verify the colour source is the real permitted set, not just the checkbox walk.
+- **Strict-decrease assertion:** write a test that after any untick, `explicitLanguages.size + derivedTicked.size` is strictly less than before.
+
+### What's involved
+
+- **`options.js`** — two sets (`explicitLanguages`, `derivedTicked`); a `runCascade(vetoedLanguage)` function that mutates `explicitLanguages` until stable; a `refreshState()` that recolours tags (grey/green + secondary cue) and re-derives `derivedTicked` from the surviving explicit set. Checkbox change handler: run cascade first, then `refreshState()`. `checkDirty` compares `explicitLanguages` only.
+- **`options.html` / CSS** — `.script-green` and `.script-grey` tag styles with a secondary visual cue; dimmed style for auto-ticked checkboxes; dark-theme variants for both.
+- **Screenshots** — options page screenshots need recapturing after the tag colours are in place.
+- **Testing** — full options page re-test against the key test cases above, plus the strict-decrease assertion.
+
+**Estimated effort:** Medium-large — the cascade logic and two-set bookkeeping are the main complexity; `refreshState()` itself is straightforward once the sets are clean.
+
+---
+
 ## Expand "always-permitted Latin languages" reference
 
 **Goal:** Make it clearer that permitting Latin by default means URLs written in *every* Latin-script language load normally — not just the ~26 languages currently named at the bottom of the options page. Move the comprehensive list into `help.html` and leave a brief pointer on the options page.

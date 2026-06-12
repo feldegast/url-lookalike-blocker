@@ -1,20 +1,29 @@
-URL Lookalike Blocker — FINAL pre-AMO confirmation pass
+URL Lookalike Blocker — v1.1 pre-AMO code review
 
-Attached: review-bundle.zip — the exact contents I intend to upload to Mozilla AMO. manifest.json is at the root. The Photoshop working files (badge-images.psd) are deliberately excluded.
+Attached: review-bundle.zip — the exact contents I intend to upload to Mozilla AMO. manifest.json is at the root.
 
-This is a SECOND review pass. You (or a prior model) already reviewed this codebase and flagged two pre-flight items:
-  1. Strip Adobe XMP metadata from the PNGs.
-  2. Optional: rename bootstrap.js to something less reminiscent of legacy-addon entry points.
+This is a review of v1.1, which builds on the v1.0 release (submitted 2026-06-10). A prior model reviewed v1.0 and flagged two issues, both of which were fixed before submission:
+  1. Strip Adobe XMP metadata from PNGs — done (all PNGs re-saved via Pillow).
+  2. Rename bootstrap.js to something less reminiscent of legacy-addon entry points — done (renamed to apply-theme-early.js).
 
-Both have been actioned in this build:
-  - All 22 PNGs in img/ were re-saved via Pillow with empty info and optimize=True. Net saving ≈ 59 KB. No XMP, no Photoshop fingerprints, no edit-history timestamps.
-  - bootstrap.js renamed to apply-theme-early.js. All four <script src=> references and four code-comment references updated. Functionality unchanged.
+## What is new in v1.1
 
-Manifest version is intentionally 1.0 — this is a first AMO submission with no prior release to bump from.
+- **Warning page** — a second page type (in addition to the block page) that handles mixed-script domains. Two flavours: confusable character (Cyrillic 'а' mimicking Latin 'a', highlighted red with "Looks like" annotation) and mixed-script label (scripts mixed in a way not blessed by any enabled language, highlighted amber with a hint about which language setting would permit it).
+- **Multi-tab coloured square system** — each blocked/warning tab gets a unique coloured square. The squares appear in the Options page header for one-click switching between blocked tabs. The toolbar icon shows a red badge counting open blocked/warning tabs.
+- **Options page: interface options section** — two instant-apply preferences: Show shadows and Show private-browsing warning.
+- **Options page: private-browsing warning banner** — shown when the extension is not allowed to run in private windows, with instructions to enable it via about:addons and a dismiss option.
+- **Options page: About / copyright footer** — MPL-2.0 OR GPL-3.0 dual-licence summary and GitHub link.
+- **Help page** — full documentation with screenshots of every feature. Sticky header, theme toggle, light/dark screenshot pairs throughout.
+- **Icon** — now SVG-only (manifest uses "any": "icon.svg"); theme-neutral colours (blue Latin R, red Armenian letters, dark red slash).
+- **Dark/light/auto theme** — all extension pages respect prefers-color-scheme with a per-page toggle. apply-theme-early.js applies the preference synchronously on load to prevent flash of incorrect theme.
 
-Please re-scan the bundle for:
-  1. Anything broken or regressed by the rename or the PNG re-save.
-  2. Any concern from the previous review that did not get fully addressed.
-  3. Any new issue you can spot that the previous pass missed — security, MV3 compliance, permission justification, CSP, detection logic, state handling, AMO automated-scanner triggers.
+## Please review for
 
-If everything passes, this same zip will be the AMO submission. So please be strict — flag anything that smells off even if you cannot immediately prove it is a bug. File path and line number on every concern.
+1. Security issues: XSS, permission over-reach, data leakage, content-script injection vectors, unsafe innerHTML usage.
+2. MV3 compliance: anything that would cause Mozilla's automated scanner to flag the extension.
+3. Permission justification: `webRequest`, `webRequestBlocking`, `storage`, `menus`, `<all_urls>` — are all still justified? Any that could be dropped?
+4. Detection logic correctness (unicode-scripts.js): are there cases where legitimate domains would be blocked, or homograph attacks that would slip through?
+5. State management: the Apply/Discard workflow in options.js, the tab-tracking and badge logic in background.js, the coloured-square system — any race conditions or edge cases?
+6. Any new concern not covered above — flag anything that smells off even if you cannot immediately prove it is a bug.
+
+File path and line number on every concern. Be strict — this zip will be the AMO submission.

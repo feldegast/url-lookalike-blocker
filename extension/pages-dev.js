@@ -57,6 +57,16 @@ browser.runtime.onMessage.addListener((message) => {
     if (el) el.style.display = 'none';
     return;
   }
+  if (message.type === 'devHideFooter') {
+    const el = document.querySelector('footer.page-footer');
+    if (el) el.style.display = 'none';
+    return;
+  }
+  if (message.type === 'devShowFooter') {
+    const el = document.querySelector('footer.page-footer');
+    if (el) el.style.display = '';
+    return;
+  }
   if (message.type === 'devShowApplyBar') {
     const el = document.getElementById('sticky-apply-bar');
     if (el) { el.style.display = 'flex'; document.body.classList.add('has-sticky-bar'); }

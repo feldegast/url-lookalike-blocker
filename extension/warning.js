@@ -78,9 +78,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // --- Page title and URL display ---
+  const warningKind = isConfusableWarning ? 'Confusable Character Domain' : 'Mixed Script Domain';
   if (unicodeDomain) {
-    document.title = `URL Lookalike Blocker — Mixed Script Domain — ${unicodeDomain}`;
+    document.title = `URL Lookalike Blocker — ${warningKind} — ${unicodeDomain}`;
   }
+  document.getElementById('warning-page-title').textContent = `URL Lookalike Blocker — ${warningKind}`;
+  document.getElementById('warning-intro').textContent = isConfusableWarning
+    ? 'This domain contains characters that closely resemble characters from a different script. This is a common technique used to impersonate trusted websites.'
+    : 'This domain contains characters from multiple different scripts. Mixed-script domains are sometimes used in homograph attacks to make a URL look like a trusted site.';
 
   if (blockedUrl) {
     try {
@@ -203,7 +208,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const hintEl = document.getElementById('script-hint');
 
   if (isConfusableWarning) {
-    descEl.textContent = 'This domain contains characters that closely resemble different characters. This is a common technique used to impersonate trusted websites.';
+    descEl.style.display = 'none';
     hintEl.style.display = 'none';
   } else {
     const scriptList = mixedScripts.join(' and ');

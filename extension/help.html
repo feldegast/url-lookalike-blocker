@@ -51,6 +51,13 @@
       align-items: center;
       justify-content: space-between;
       margin-bottom: 20px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background-color: #e8e8e8;
+      padding: 8px 0;
+      margin-top: -8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.10);
     }
     .page-header h1 { margin: 0; font-size: 1.4em; }
     .header-buttons {
@@ -157,6 +164,7 @@
       html:not([data-theme="light"]) figure.img-light img,
       html:not([data-theme="light"]) figure.img-dark img { border-color: #444; }
       html:not([data-theme="light"]) .img-placeholder { border-color: #444; background: #222; color: #666; }
+      html:not([data-theme="light"]) .page-header { background-color: #1a1a1a; box-shadow: 0 2px 6px rgba(0,0,0,0.35); }
     }
     html[data-theme="dark"] body { background-color: #1a1a1a; color: #e0e0e0; }
     html[data-theme="dark"] h2 { color: #e0e0e0; border-bottom-color: #388e3c; }
@@ -170,6 +178,7 @@
     html[data-theme="dark"] figure.img-light img,
     html[data-theme="dark"] figure.img-dark img { border-color: #444; }
     html[data-theme="dark"] .img-placeholder { border-color: #444; background: #222; color: #666; }
+    html[data-theme="dark"] .page-header { background-color: #1a1a1a; box-shadow: 0 2px 6px rgba(0,0,0,0.35); }
 
     /* Interface option: when "Show shadows" is disabled, suppress all drop shadows. */
     html.no-shadows .section,
@@ -250,16 +259,6 @@
   <div class="section">
     <h2>Extension icon (toolbar)</h2>
     <p>Left-clicking the extension icon in the toolbar opens the Options page. Right-clicking gives a small menu with <strong>Open Options</strong> and <strong>Help</strong>.</p>
-    <figure class="img-light">
-      <img src="img/menu-white.png" alt="Right-click menu, light theme">
-      <figcaption>The right-click context menu on the extension icon.</figcaption>
-    </figure>
-    <figure class="img-dark">
-      <img src="img/menu-black.png" alt="Right-click menu, dark theme">
-      <figcaption>The right-click context menu on the extension icon.</figcaption>
-    </figure>
-    <p>If the Options page is already open, clicking the icon switches to the Options page rather than opening a second copy.</p>
-    <p>When one or more blocked or warning pages are open, the icon shows a <strong>red number badge</strong> indicating how many there are. The badge clears automatically once all blocked and warning tabs have been resolved or closed.</p>
     <div class="badge-pair">
       <figure>
         <img src="img/badge-0.svg" alt="Extension icon, no badge">
@@ -270,6 +269,16 @@
         <figcaption>One blocked or warning tab</figcaption>
       </figure>
     </div>
+    <p>If the Options page (shown in the next section) is already open, clicking the icon switches to the Options page rather than opening a second copy.</p>
+    <p>When one or more blocked or warning pages are open, the icon shows a <strong>red number badge</strong> indicating how many there are. The badge clears automatically once all blocked and warning tabs have been resolved or closed.</p>
+    <figure class="img-light">
+      <img src="img/menu-white.png" alt="Right-click menu, light theme">
+      <figcaption>The right-click context menu on the extension icon.</figcaption>
+    </figure>
+    <figure class="img-dark">
+      <img src="img/menu-black.png" alt="Right-click menu, dark theme">
+      <figcaption>The right-click context menu on the extension icon.</figcaption>
+    </figure>
   </div>
 
   <div class="section">
@@ -282,25 +291,7 @@
       <img src="img/options-black.png" alt="Options page, dark theme">
       <figcaption>The options page showing coloured tabs, interface options, whitelisted domains and permitted languages.</figcaption>
     </figure>
-    <p>The Options page is where you configure which scripts are permitted, manage your whitelist, and adjust interface options. The sections below appear on the page in the order shown here.</p>
-  </div>
-
-  <div class="section">
-    <h2>Private browsing protection</h2>
-    <p>By default, Firefox does not run extensions in private windows. If you use private browsing and want this extension to protect those windows too, you need to enable it manually.</p>
-    <p>When the extension is not allowed to run in private windows, the Options page shows a warning banner at the top:</p>
-    <figure class="img-light">
-      <img src="img/options-private-warning-white.png" alt="Private browsing warning banner, light theme">
-      <figcaption>The private-browsing warning banner shown in Options.</figcaption>
-    </figure>
-    <figure class="img-dark">
-      <img src="img/options-private-warning-black.png" alt="Private browsing warning banner, dark theme">
-      <figcaption>The private-browsing warning banner shown in Options.</figcaption>
-    </figure>
-    <h3>Enabling protection in private windows</h3>
-    <p>Open the Firefox menu (≡) → <em>Extensions and Themes</em>, find this extension, and set <em>Run in Private Windows</em> to <em>Allow</em>. Alternatively, type <code>about:addons</code> into a new tab's address bar.</p>
-    <h3>Dismissing the warning</h3>
-    <p>If you cannot grant private-window access — for example in a managed Firefox setup where the option is disabled by policy — click <strong>Dismiss this warning</strong> on the banner, or untick <strong>Show private-browsing warning when access is not granted</strong> in the <em>Interface options</em> section. The protection itself remains off; dismissing only hides the banner.</p>
+    <p>The Options page is where you can use a coloured square to return to a block or warning page, modify interface options, edit whitelisted domains and change which languages are permitted. The sections below appear in the order shown above.</p>
   </div>
 
   <div class="section">
@@ -320,6 +311,24 @@
       <img src="img/options-coloured-squares-black.png" alt="Coloured squares in options, dark theme">
       <figcaption>The options page with three blocked tabs, each identified by a unique coloured square.</figcaption>
     </figure>
+  </div>
+
+  <div class="section">
+    <h2>Private browsing protection</h2>
+    <p>By default, Firefox does not run extensions in private windows. If you use private browsing and want this extension to protect those windows too, you need to enable it manually.</p>
+    <p>When the extension is not allowed to run in private windows, the Options page shows a warning banner at the top:</p>
+    <figure class="img-light">
+      <img src="img/options-private-warning-white.png" alt="Private browsing warning banner, light theme">
+      <figcaption>The private-browsing warning banner shown in Options.</figcaption>
+    </figure>
+    <figure class="img-dark">
+      <img src="img/options-private-warning-black.png" alt="Private browsing warning banner, dark theme">
+      <figcaption>The private-browsing warning banner shown in Options.</figcaption>
+    </figure>
+    <h3>Enabling protection in private windows</h3>
+    <p>Open the Firefox menu (≡) → <em>Extensions and Themes</em>, find this extension, and set <em>Run in Private Windows</em> to <em>Allow</em>. Alternatively, type <code>about:addons</code> into a new tab's address bar.</p>
+    <h3>Dismissing the warning</h3>
+    <p>If you cannot grant private-window access — for example in a managed Firefox setup where the option is disabled by policy — click <strong>Dismiss this warning</strong> on the banner, or untick <strong>Show private-browsing warning when access is not granted</strong> in the <em>Interface options</em> section. The protection itself remains off; dismissing only hides the banner.</p>
   </div>
 
   <div class="section">

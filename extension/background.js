@@ -190,8 +190,8 @@ browser.tabs.onUpdated.addListener((tabId, changeInfo) => {
 
 // Storage change listener keeps background state in sync after a browser
 // restart (when the options page may not be open to send an applySettings
-// message). This is the recovery path; the primary update path during normal
-// use is the applySettings message below.
+// message) and for direct storage writes (e.g. Reset to Locale Defaults).
+// The applySettings message below handles the normal apply-and-close flow.
 browser.storage.onChanged.addListener((changes) => {
   if (changes.whitelist) {
     whitelist = new Set(changes.whitelist.newValue || []);
