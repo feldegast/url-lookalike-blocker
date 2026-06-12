@@ -6,12 +6,12 @@ Use `test-urls.html` for all links — open it in Firefox and click the links fr
 
 ## 0. Locale detection on first run and reset
 
-Add a non-Latin language to Firefox (Settings → General → Language) before testing.
+Add **Japanese** to Firefox (Settings → General → Language) before testing. Japanese is unambiguous — its scripts (Hiragana, Katakana, Han) have no Latin crossover, so there is no risk of accidentally permitting Latin+Cyrillic combinations during this section.
 
-- [ ] Fresh install: open options — the language matching your Firefox locale is already checked
-- [ ] A domain using that script passes through without the user manually enabling anything
-- [ ] Remove that language from the options page and apply — the domain is now blocked
-- [ ] Click "Reset to Locale Defaults" — the language is re-checked and the domain passes again
+- [ ] Fresh install: open options — Japanese is already checked
+- [ ] `xn--zckzah.com` (Katakana) passes through without manually enabling anything
+- [ ] Remove Japanese from the options page and apply — `xn--zckzah.com` is now blocked
+- [ ] Click "Reset to Locale Defaults" — Japanese is re-checked and `xn--zckzah.com` passes again
 
 ---
 
