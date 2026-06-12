@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.1] — 2026-06-13
+
 ### Added
 
 - **Copyright and licence visible inside the extension UI.** The Help page now has an "About" section with the copyright line, the MPL-2.0 OR GPL-3.0 dual-licence summary, and a link to the GitHub repo where the full licence text lives. The Options page has a small footer line with the same information plus a Help link that opens the Help page in a new tab so unsaved Options edits are preserved.
