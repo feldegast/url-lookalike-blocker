@@ -64,7 +64,7 @@ if (Test-Path $staging) { Remove-Item -Recurse -Force $staging }
 Copy-Item -Recurse extension $staging
 Remove-Item -Recurse -Force "$staging/img/working files" -ErrorAction SilentlyContinue
 $version = (Get-Content "$staging/manifest.json" | ConvertFrom-Json).version
-$date = Get-Date -Format "dd-MM-yyyy"
+$date = Get-Date -Format "yyyy-MM-dd"
 $zipName = "dev/url-lookalike-blocker-$version-$date.zip"
 if (Test-Path $zipName) { Remove-Item $zipName }
 Compress-Archive -Path "$staging/*" -DestinationPath $zipName
@@ -95,7 +95,7 @@ Stage `extension/manifest.json`, `CHANGELOG.md`, and any code or asset changes f
 
 ## Submission
 
-1. Upload `dev/url-lookalike-blocker-<version>-<dd-mm-yyyy>.zip` via the AMO **Edit this version** flow on the existing listing (or **Submit a new add-on** flow for the very first release).
+1. Upload `dev/url-lookalike-blocker-<version>-<yyyy-mm-dd>.zip` via the AMO **Edit this version** flow on the existing listing (or **Submit a new add-on** flow for the very first release).
 2. Paste reviewer notes from `dev/amo-submission.txt`.
 3. Answer the **source-code** question **No** — there is no minification, bundling, or codegen step. AI assistance does not count as "code generation" in Mozilla's sense, as discussed in `CONTRIBUTING.md`.
 4. Answer the **data-collection** question **No** — the manifest declares `data_collection_permissions: { "required": ["none"] }`.
