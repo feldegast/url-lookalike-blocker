@@ -87,17 +87,25 @@ async function devCaptureFullPage(tabId, windowId) {
 
 async function devDownload(blob, filename) {
   const url = URL.createObjectURL(blob);
-  try {
-    await browser.downloads.download({
-      url,
-      filename: `url-lookalike-blocker-screenshots/${filename}`,
-      saveAs: false,
-      conflictAction: 'overwrite',
-    });
-  } finally {
-    URL.revokeObjectURL(url);
-  }
-  await devDelay(50);
+  const id = await browser.downloads.download({
+    url,
+    filename: `url-lookalike-blocker-screenshots/${filename}`,
+    saveAs: false,
+    conflictAction: 'overwrite',
+  });
+  // Wait for the download to finish before revoking — download() resolves when
+  // the download starts, not when Firefox has finished reading the blob URL.
+  await new Promise(resolve => {
+    function onChanged(delta) {
+      if (delta.id === id && delta.state &&
+          (delta.state.current === 'complete' || delta.state.current === 'interrupted')) {
+        browser.downloads.onChanged.removeListener(onChanged);
+        resolve();
+      }
+    }
+    browser.downloads.onChanged.addListener(onChanged);
+  });
+  URL.revokeObjectURL(url);
 }
 
 async function devCapture(windowId) {
