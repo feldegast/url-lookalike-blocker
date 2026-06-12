@@ -44,10 +44,9 @@ If `dev/render_icon_paths.py` or `dev/render_icon_pillow.py` was modified since 
 ```
 python dev/render_icon_paths.py
 python dev/render_icon_pillow.py
-python dev/render_listing_icons.py
 ```
 
-The three commands produce `extension/icon.svg`, `extension/icon.png`, and `dev/listing-icons/icon-{32,64,128}.png` respectively. Only the first two are bundled into the AMO zip; the listing icons are uploaded separately on the AMO listing page if you want crisp small-size renders.
+The first command produces `extension/icon.svg` (bundled in the AMO zip). The second produces `dev/listing-icons/icon-{32,64,128}.png` — these are uploaded separately on the AMO listing page and are not bundled with the extension. The extension is SVG-only; there is no `icon.png` to regenerate.
 
 ### 5. Strip PNG metadata if screenshots were updated
 
