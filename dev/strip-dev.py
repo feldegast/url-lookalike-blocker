@@ -12,6 +12,13 @@ print("manifest.json: removed background-dev.js and downloads")
 print("  scripts:", m["background"]["scripts"])
 print("  permissions:", m["permissions"])
 
+# Remove dev-only JS files entirely
+for dev_file in ("background-dev.js", "pages-dev.js"):
+    p = staging / dev_file
+    if p.exists():
+        p.unlink()
+        print(f"{dev_file}: removed")
+
 # Strip pages-dev.js script tag from HTML files
 tag = re.compile(r'\s*<script src="pages-dev\.js"></script>')
 for name in ("blocked.html", "warning.html", "options.html"):

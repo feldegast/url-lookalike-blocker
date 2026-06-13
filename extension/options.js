@@ -508,8 +508,10 @@ function onLanguageToggle(language, checked) {
 // Unticking always means "I don't want these scripts" — the same rule whether the
 // language was explicitly enabled or auto-ticked. Removes the language's scripts
 // and cascades to any other enabled language that needed them.
-// Locale-seeded scripts are skipped: the background always permits them regardless
-// of additionalScripts, so a veto would be ineffective and cause a re-tick loop.
+// Locale-seeded scripts are skipped: they live in additionalScripts (seeded at first
+// run, persisted to storage). Removing them would stop the background permitting them
+// while refreshState (which unions getLocaleScripts() for display) would still show
+// them green — a permanent display mismatch and re-tick loop.
 function untickLanguage(language) {
   enabledLanguages.delete(language);
   const localeScripts = getLocaleScripts();
