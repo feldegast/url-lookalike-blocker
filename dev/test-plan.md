@@ -127,6 +127,16 @@ Enabling a **language** both permits its scripts and allows all scripts from tha
 - [x] Enable Serbian → click `xn--test-34d.com` — passes through (Serbian blesses Latin+Cyrillic together)
 - [x] Disable Serbian → click `xn--test-34d.com` — warning page appears again
 
+**Part E — v1.1 Script-coloured tags, auto-tick, and cascade**
+
+Reset to locale defaults before starting. These checks exercise the largest auto-tick fan-out in the table (the Cyrillic cluster) and confirm the cascade unwinds correctly.
+
+- [ ] **v1.1** Enable Russian → Han, Hiragana, Katakana tags turn green; all other script tags remain grey
+- [ ] **v1.1** Enable Japanese → the nine other single-script Cyrillic languages (Belarusian, Bulgarian, Kazakh, Kyrgyz, Macedonian, Mongolian, Tajik, Ukrainian, Uzbek) tick automatically with a dimmed label; Serbian does not auto-tick (it also requires Latin — which is always permitted — but auto-tick requires the raw script list to have exactly one entry)
+- [ ] **v1.1** Untick Russian → all nine auto-ticked Cyrillic languages untick in the cascade; Cyrillic tag turns grey on all rows; Serbian (never ticked) is unaffected
+- [ ] **v1.1** Enable Japanese → Han, Hiragana, Katakana turn green; Chinese (Simplified) and Chinese (Traditional) auto-tick (Han only); Korean does not auto-tick (also requires Hangul)
+- [ ] **v1.1** Untick Japanese → Chinese (Simplified) and Chinese (Traditional) cascade-untick; Han, Hiragana, Katakana turn grey; Korean is unaffected
+
 ---
 
 ## 6. Whitelist cycle
