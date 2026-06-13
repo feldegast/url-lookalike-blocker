@@ -193,15 +193,15 @@ Repeat step 1 after all the above to confirm nothing broke pass-through for norm
 
 ## 8. Help page
 
-- [ ] Right-click the toolbar icon — context menu shows "Open Options" and "Help"
-- [ ] Click "Help" in the context menu — help page opens in a new tab
-- [ ] Click the "Help" button on the options page — help page opens in a new tab
-- [ ] Click "Open Options" on the help page — options page opens (or switches to it if already open)
-- [ ] Help page respects dark/light mode and the theme toggle works
-- [ ] All sections are present: What does this extension do, Block page, Warning page, Extension icon (toolbar), Options page, Coloured squares, Private browsing protection, Interface options, Whitelisted domains, Permitted languages, Reset to locale defaults, Apply changes / Discard changes, About
-- [ ] Right-click the toolbar icon → Developer: Capture screenshots — regenerates all 18 help-page screenshots
-- [ ] Copy screenshots from the browser's Downloads folder to `extension/img/`
-- [ ] Run `python3 dev/normalise_screenshots.py`
+- [x] Right-click the toolbar icon — context menu shows "Open Options" and "Help"
+- [x] Click "Help" in the context menu — help page opens in a new tab
+- [x] Click the "Help" button on the options page — help page opens in a new tab
+- [x] Click "Open Options" on the help page — options page opens (or switches to it if already open)
+- [x] Help page respects dark/light mode and the theme toggle works
+- [x] All sections are present: What does this extension do, Block page, Warning page, Extension icon (toolbar), Options page, Coloured squares, Private browsing protection, Interface options, Whitelisted domains, Permitted languages, Reset to locale defaults, Apply changes / Discard changes, About
+- [x] Right-click the toolbar icon → Developer: Capture screenshots — regenerates all 18 help-page screenshots
+- [x] Copy screenshots from the browser's Downloads folder to `extension/img/`
+- [x] Run `python3 dev/normalise_screenshots.py`
 
 ---
 
