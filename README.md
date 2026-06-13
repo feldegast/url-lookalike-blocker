@@ -51,7 +51,7 @@ Changes are **not saved automatically**. Click [Apply changes] to save. Closing 
 
 ## Known limitations
 
-The extension detects single characters that visually resemble a different character (for example, a Cyrillic letter at U+0430 that mimics Latin `a`). It does not currently detect multi-character sequences that resemble a single character (e.g. `rn` → `m`, `vv` → `w`, `cl` → `d`). Detecting these without a list of known legitimate domains to compare against would produce too many false positives.
+The extension detects single characters that visually resemble a different character (for example, Cyrillic `а` U+0430 that mimics Latin `a`). It does not currently detect multi-character sequences that resemble a single character (e.g. `rn` → `m`, `vv` → `w`, `cl` → `d`). Detecting these without a list of known legitimate domains to compare against would produce too many false positives.
 
 ## License
 
