@@ -14,8 +14,8 @@ New in this version:
   (such as Korean or Serbian) are never auto-ticked and must be enabled explicitly.
 
 • Cascade on untick. Unticking a language removes its scripts from the permitted set. Any
-  other enabled language that relied solely on those scripts is also unticked automatically.
-  This ensures no orphaned scripts remain permitted after a language is disabled.
+  other enabled language that required one of those scripts is also unticked automatically,
+  and its own scripts removed in turn.
 
 • Copyright and licence now visible in the UI. The Help page has a new About section with
   the copyright line, licence summary, and a link to the source repository.
