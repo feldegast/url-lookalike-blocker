@@ -1,0 +1,32 @@
+Release notes — v1.1
+
+New in this version:
+
+• Script-coloured tags on the language table. Each script tag next to a language name is
+  now coloured: green means that script is currently permitted, grey means it is not. The
+  colour reflects what the blocker actually uses, so you can see at a glance what will and
+  will not be blocked.
+
+• Single-script language auto-tick. When a script turns green, any language whose only
+  required script is that one is ticked automatically (shown with a dimmed label). For
+  example, enabling Japanese enables the Han script, which causes Chinese (Simplified) and
+  Chinese (Traditional) to tick themselves. Languages that require more than one script
+  (such as Korean or Serbian) are never auto-ticked and must be enabled explicitly.
+
+• Cascade on untick. Unticking a language removes its scripts from the permitted set. Any
+  other enabled language that relied solely on those scripts is also unticked automatically.
+  This ensures no orphaned scripts remain permitted after a language is disabled.
+
+• Copyright and licence now visible in the UI. The Help page has a new About section with
+  the copyright line, licence summary, and a link to the source repository.
+
+• Language table tidied. The indented per-script sub-rows that appeared below multi-script
+  languages have been removed — the script tags on the same row make them redundant.
+
+• Toolbar icon updated. The icon now uses two Armenian letters (Մ and Լ) alongside the
+  Latin R, making the homograph theme more visible. It has also been recoloured so it stays
+  legible against all toolbar background colours, including pure-black themes.
+
+• Help page updated throughout. The Permitted languages section now fully documents the
+  script-colouring, auto-tick, and cascade behaviour with new screenshots. The page header
+  is now sticky so the theme toggle stays visible while scrolling.
