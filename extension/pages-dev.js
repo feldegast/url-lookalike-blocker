@@ -3,6 +3,7 @@
 // Excluded from AMO submissions — see RELEASE.md step 3.
 
 let devOriginalWhitelist = null;
+let devOriginalLanguages = null;
 
 browser.runtime.onMessage.addListener((message) => {
   if (message.type === 'devSetDotColor') {
@@ -16,12 +17,17 @@ browser.runtime.onMessage.addListener((message) => {
     if (!el) return Promise.resolve(null);
     const pos = window.getComputedStyle(el).position;
     const isFixed = pos === 'fixed' || pos === 'sticky';
-    if (!isFixed) el.scrollIntoView({ block: 'center', behavior: 'instant' });
-    const bgSource = document.querySelector('.container') || el;
+    if (!isFixed) el.scrollIntoView({ block: message.block || 'center', behavior: 'instant' });
+    const bgSource = document.querySelector('.container') || document.body;
     const bg = window.getComputedStyle(bgSource).backgroundColor;
     document.body.style.backgroundColor = bg;
     const r = el.getBoundingClientRect();
-    return Promise.resolve({ bounds: { x: r.x, y: r.y, width: r.width, height: r.height }, dpr: window.devicePixelRatio, bg });
+    let bounds = { x: r.x, y: r.y, width: r.width, height: r.height };
+    if (message.clamp) {
+      bounds.y = Math.max(0, bounds.y);
+      bounds.height = Math.min(bounds.height, window.innerHeight - bounds.y);
+    }
+    return Promise.resolve({ bounds, dpr: window.devicePixelRatio, bg });
   }
 
   if (message.type === 'devCaptureRestore') {
@@ -90,6 +96,47 @@ browser.runtime.onMessage.addListener((message) => {
       window._devHooks.setWhitelist(devOriginalWhitelist);
       devOriginalWhitelist = null;
       window._devHooks.renderWhitelist();
+    }
+    return;
+  }
+  if (message.type === 'devGetElementBounds') {
+    const el = document.querySelector(message.selector);
+    if (!el) return Promise.resolve(null);
+    const r = el.getBoundingClientRect();
+    return Promise.resolve({
+      docX:   r.x + window.scrollX,
+      docY:   r.y + window.scrollY,
+      width:  r.width,
+      height: r.height,
+      dpr:    window.devicePixelRatio,
+      bodyBg: window.getComputedStyle(document.body).backgroundColor,
+    });
+  }
+  if (message.type === 'devSetTheme') {
+    document.documentElement.dataset.theme = message.theme; // 'light' or 'dark'
+    return;
+  }
+  if (message.type === 'devHideLatinSection') {
+    const el = document.getElementById('latin-section');
+    if (el) el.style.display = 'none';
+    return;
+  }
+  if (message.type === 'devShowLatinSection') {
+    const el = document.getElementById('latin-section');
+    if (el) el.style.display = '';
+    return;
+  }
+  if (message.type === 'devSetLanguages') {
+    if (window._devHooks) {
+      devOriginalLanguages = window._devHooks.getLanguages();
+      window._devHooks.setLanguages({ scripts: message.scripts, languages: message.languages });
+    }
+    return;
+  }
+  if (message.type === 'devRestoreLanguages') {
+    if (window._devHooks && devOriginalLanguages !== null) {
+      window._devHooks.setLanguages(devOriginalLanguages);
+      devOriginalLanguages = null;
     }
     return;
   }

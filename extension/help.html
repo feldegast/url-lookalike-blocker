@@ -364,7 +364,17 @@
   <div class="section">
     <h2>Permitted languages</h2>
     <p>Tick the languages whose scripts (character sets) you want to allow in domain names. Your browser's locale is used as the starting point — so if your Firefox language is set to Japanese, then Japanese is already permitted and the Han, Hiragana, and Katakana scripts are allowed. In addition, Latin is universally permitted regardless of locale, since disabling Latin would block a significant portion of the internet.</p>
-    <p>Enabling a language does two things: it allows that language's scripts in domain names, and it permits mixing those scripts within a single label (useful for languages like Serbian that legitimately combine Latin and Cyrillic).</p>
+    <p>Each language row shows its scripts as small tags. A <strong>green tag</strong> means that script is currently permitted; a <strong>grey tag</strong> means it is not. The tag colour reflects the real permitted set, so you can see at a glance which scripts are active.</p>
+    <p>Languages that use only a single non-Latin script are ticked automatically when that script turns green — for example, enabling Japanese enables the Han script, and Chinese (Simplified and Traditional) tick themselves automatically because Han is their only required script (shown with a dimmed label). Korean is not automatically ticked because it also requires the Hangul script, which is not yet permitted. Languages with more than one script are never ticked automatically — enable those explicitly if you need them.</p>
+    <p>Unticking a language removes its scripts from the permitted set. If any other enabled language relied on those same scripts, it is unticked too, and its scripts are removed in turn. This cascade continues until the permitted set is stable.</p>
+    <figure class="img-light">
+      <img src="img/options-languages-white.png" alt="Permitted languages section, light theme">
+      <figcaption>Japanese enabled — Han, Hiragana and Katakana turn green; Chinese (Simplified and Traditional) tick automatically because Han is their only script. Korean stays unticked because it also requires Hangul, which is not yet permitted.</figcaption>
+    </figure>
+    <figure class="img-dark">
+      <img src="img/options-languages-black.png" alt="Permitted languages section, dark theme">
+      <figcaption>Japanese enabled — Han, Hiragana and Katakana turn green; Chinese (Simplified and Traditional) tick automatically because Han is their only script. Korean stays unticked because it also requires Hangul, which is not yet permitted.</figcaption>
+    </figure>
   </div>
 
   <div class="section">

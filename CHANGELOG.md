@@ -6,14 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
-## [1.1] — 2026-06-12
+## [1.1] — 2026-06-13
 
 ### Added
 
+- **Script-coloured tags on the Options language table.** Each script tag next to a language name is now coloured: green means that script is currently permitted (because the user or locale has enabled it), grey means it is not. The colour reflects the real permitted set used by the background blocker, so the display honestly shows what will and will not be blocked.
+- **Single-script language auto-tick.** Languages whose only non-Latin script is already permitted are ticked automatically with a dimmed label — for example, enabling Japanese enables the Han script, which causes Chinese (Simplified) and Chinese (Traditional) to tick themselves. Languages with more than one script (Japanese, Korean, Serbian) are never auto-ticked; they must be enabled explicitly.
+- **Cascade on untick.** Unticking a language removes its scripts from the permitted set. Any other enabled language that relied solely on those scripts is also unticked, and its scripts are removed in turn. This ensures no orphaned scripts remain permitted after a language is disabled.
 - **Copyright and licence visible inside the extension UI.** The Help page now has an "About" section with the copyright line, the MPL-2.0 OR GPL-3.0 dual-licence summary, and a link to the GitHub repo where the full licence text lives. The Options page has a small footer line with the same information plus a Help link that opens the Help page in a new tab so unsaved Options edits are preserved.
 
 ### Changed
 
+- **Language table no longer shows per-script sub-rows.** Multi-script languages such as Japanese previously showed an indented sub-row for each script below the main language row; these were redundant with the script tags already visible on the same row and added unnecessary scrolling. They have been removed.
+- **Help page: Permitted languages section updated.** The section now documents the script-colouring and auto-tick behaviour, with new screenshots (`options-languages-white/black.png`) showing Japanese enabled — Han, Hiragana, and Katakana green, Chinese auto-ticked, Korean not.
+- **Screenshot capture tool improvements.** Full-element stitching (`devCaptureElementFull`) captures elements taller than the viewport correctly. A `devSetTheme` message forces the options page to switch theme immediately without relying on a storage listener. New `devSetLanguages`/`devRestoreLanguages` hooks temporarily set the language state for screenshot purposes.
 - **Icon homograph theme expanded.** The toolbar icon and AMO listing icon now read as Armenian Մ + Latin R + Armenian Լ — two of the three "URL" letters are non-Latin homograph substitutions instead of one, both rendered in red. The diagonal slash crosses the Latin R, the only letter that remains as itself.
 - **Icon SVG is now font-independent.** `extension/icon.svg` embeds the Մ, R, and Լ glyph contours as `<path>` elements instead of `<text>` elements with font references. The toolbar icon renders identically on every system regardless of which fonts are installed (previously the SVG depended on Arial Unicode MS being present, with sans-serif fallbacks each producing slightly different glyphs). A new `dev/render_icon_paths.py` regenerates the SVG from the source fonts using `fonttools`; `dev/render_icon_pillow.py` continues to produce the PNG from the same source fonts at build time so both formats remain visually identical.
 - **Icon recoloured for theme neutrality.** The Latin R, the underline beneath the text, and the warning-shield border are now Material blue (`#1976d2`) instead of black, so the toolbar icon stays legible against the full range of possible toolbar background colours including pure-black themes. The Armenian Մ and Լ (`#d32f2f`) and the diagonal strikethrough (`#b71c1c`) are unchanged, preserving the intentional visual hierarchy of "threat letters" with the slash sitting on top.

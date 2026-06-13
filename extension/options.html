@@ -155,6 +155,14 @@
       background: #fafafa;
       border-color: #e0e0e0;
     }
+    .script-tag.script-permitted {
+      color: #2a7a2a;
+      background: #e8f5e8;
+      border-color: #a8d5a8;
+    }
+    .lang-label.lang-derived {
+      opacity: 0.6;
+    }
     .script-sub-row td:first-child {
       padding-left: 39px;
     }
@@ -345,6 +353,7 @@
       html:not([data-theme="light"]) .script-table tbody tr:hover td { background: #333; }
       html:not([data-theme="light"]) .script-tag { color: #bbb; background: #333; border-color: #555; }
       html:not([data-theme="light"]) .script-tag.always-permitted { color: #666; background: #2a2a2a; border-color: #444; }
+      html:not([data-theme="light"]) .script-tag.script-permitted { color: #81c784; background: #1b3a1b; border-color: #4a7c4a; }
       html:not([data-theme="light"]) .script-sub-label { color: #999; }
       html:not([data-theme="light"]) .latin-only-separator { background: #333; color: #e0e0e0; }
       html:not([data-theme="light"]) .latin-only-list { color: #aaa; }
@@ -373,6 +382,7 @@
     html[data-theme="dark"] .script-table tbody tr:hover td { background: #333; }
     html[data-theme="dark"] .script-tag { color: #bbb; background: #333; border-color: #555; }
     html[data-theme="dark"] .script-tag.always-permitted { color: #666; background: #2a2a2a; border-color: #444; }
+    html[data-theme="dark"] .script-tag.script-permitted { color: #81c784; background: #1b3a1b; border-color: #4a7c4a; }
     html[data-theme="dark"] .script-sub-label { color: #999; }
     html[data-theme="dark"] .latin-only-separator { background: #333; color: #e0e0e0; }
     html[data-theme="dark"] .latin-only-list { color: #aaa; }
@@ -428,7 +438,7 @@
     <div id="whitelist"></div>
   </div>
 
-  <div class="section">
+  <div class="section" id="section-languages">
     <h2>Permitted languages</h2>
     <p>Select which languages are permitted beyond your locale defaults. Enabling a language allows its scripts in domain names and permits mixing those scripts within a single domain label.</p>
 

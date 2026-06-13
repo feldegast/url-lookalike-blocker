@@ -4,6 +4,7 @@
 
 let additionalScripts = new Set(); // Set of enabled script names, e.g. 'Cyrillic', 'Han'
 let enabledLanguages = new Set(); // Explicitly enabled language names — source of truth for langScriptSets
+let derivedTicked = new Set();    // Single-script languages auto-ticked because their script is permitted; never stored
 let whitelist = [];
 
 // Snapshot of language state as loaded from storage, used to detect unsaved changes.
@@ -196,7 +197,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await initShadows();
   await loadSettings();
   buildLanguageTable();
-  updateTableState();
+  refreshState();
   setupEventListeners();
   await initTabSelector();
   await checkPrivateBrowsingAccess();
@@ -469,29 +470,13 @@ function buildLanguageTable() {
     allScripts.forEach(script => {
       const tag = document.createElement('span');
       tag.className = 'script-tag';
+      tag.dataset.script = script;
       tag.textContent = script.replace(/_/g, ' ');
       scriptsTd.appendChild(tag);
     });
     tr.appendChild(scriptsTd);
     tbody.appendChild(tr);
 
-    // Per-script sub-rows — read-only labels showing each script for any language
-    // with 2+ total scripts. Language checkboxes are the only control; individual
-    // scripts are not toggled separately.
-    if (allScripts.length > 1) {
-      allScripts.forEach(script => {
-        const subTr = document.createElement('tr');
-        subTr.className = 'script-sub-row';
-        const subTd = document.createElement('td');
-        const note = document.createElement('span');
-        note.className = 'lang-label script-sub-label';
-        note.textContent = script.replace(/_/g, ' ');
-        subTd.appendChild(note);
-        subTr.appendChild(subTd);
-        subTr.appendChild(document.createElement('td'));
-        tbody.appendChild(subTr);
-      });
-    }
   });
 
   table.appendChild(tbody);
@@ -507,46 +492,70 @@ function buildLanguageTable() {
   latinContainer.appendChild(latinList);
 }
 
-// Toggling a language parent checks or unchecks all languages with the same full
-// script set together. This keeps identical-script languages (e.g. Russian and
-// Belarusian, both ['Cyrillic']) in sync so the checkbox state honestly reflects
-// which scripts are permitted. Languages with a different set (e.g. Serbian
-// ['Cyrillic','Latin']) are unaffected and stay in their own group.
 function onLanguageToggle(language, checked) {
-  const scripts = LANGUAGE_SCRIPTS[language] || [];
-
-  // Find all languages whose full script set is identical to this one.
-  const group = Object.keys(LANGUAGE_SCRIPTS).filter(lang => {
-    const ls = LANGUAGE_SCRIPTS[lang];
-    return ls.length === scripts.length && scripts.every(s => ls.includes(s));
-  });
-
-  for (const lang of group) {
-    if (checked) enabledLanguages.add(lang);
-    else enabledLanguages.delete(lang);
-  }
-
-  const nonPermitted = scripts.filter(s => !ALWAYS_PERMITTED.has(s));
-  for (const s of nonPermitted) {
-    if (checked) {
+  if (checked) {
+    enabledLanguages.add(language);
+    for (const s of (LANGUAGE_SCRIPTS[language] || []).filter(s => !ALWAYS_PERMITTED.has(s))) {
       additionalScripts.add(s);
-    } else {
-      // Only remove this script if no other enabled language still needs it.
-      const stillNeeded = [...enabledLanguages].some(lang => (LANGUAGE_SCRIPTS[lang] || []).includes(s));
-      if (!stillNeeded) additionalScripts.delete(s);
     }
+  } else {
+    untickLanguage(language);
   }
-  updateTableState();
+  refreshState();
   checkDirty();
 }
 
-// Reflects the current state in all language checkboxes.
-// Checked if in enabledLanguages; same-script languages are toggled as a group
-// so Serbian stays unchecked when Russian is enabled (different script set).
-function updateTableState() {
+// Unticking always means "I don't want these scripts" — the same rule whether the
+// language was explicitly enabled or auto-ticked. Removes the language's scripts
+// and cascades to any other enabled language that needed them.
+// Locale-seeded scripts are skipped: the background always permits them regardless
+// of additionalScripts, so a veto would be ineffective and cause a re-tick loop.
+function untickLanguage(language) {
+  enabledLanguages.delete(language);
+  const localeScripts = getLocaleScripts();
+  const scripts = (LANGUAGE_SCRIPTS[language] || []).filter(s => !ALWAYS_PERMITTED.has(s));
+  for (const s of scripts) {
+    if (localeScripts.has(s)) continue; // cannot veto a locale-seeded script
+    additionalScripts.delete(s);
+    const casualties = [...enabledLanguages].filter(
+      lang => (LANGUAGE_SCRIPTS[lang] || []).includes(s)
+    );
+    for (const lang of casualties) untickLanguage(lang);
+  }
+}
+
+// Recolours script tags, re-derives auto-ticked single-script languages, and
+// updates all checkboxes. Called after every explicit checkbox change.
+// Permitted set = explicit additionalScripts ∪ locale scripts ∪ always-permitted,
+// matching the set the background uses — so the display always reflects reality.
+function refreshState() {
+  const permittedScripts = new Set([
+    ...additionalScripts,
+    ...getLocaleScripts(),
+    ...ALWAYS_PERMITTED,
+  ]);
+
+  document.querySelectorAll('.script-tag[data-script]').forEach(tag => {
+    tag.classList.toggle('script-permitted', permittedScripts.has(tag.dataset.script));
+  });
+
+  derivedTicked = new Set();
+  for (const [lang, scripts] of Object.entries(LANGUAGE_SCRIPTS)) {
+    if (enabledLanguages.has(lang)) continue;
+    const nonAlways = scripts.filter(s => !ALWAYS_PERMITTED.has(s));
+    if (scripts.length === 1 && nonAlways.length === 1 && permittedScripts.has(nonAlways[0])) {
+      derivedTicked.add(lang);
+    }
+  }
+
   document.querySelectorAll('input[data-language]').forEach(cb => {
-    cb.checked = enabledLanguages.has(cb.dataset.language);
+    const lang = cb.dataset.language;
+    const isExplicit = enabledLanguages.has(lang);
+    const isDerived  = derivedTicked.has(lang);
+    cb.checked = isExplicit || isDerived;
     cb.indeterminate = false;
+    const label = cb.closest('label');
+    if (label) label.classList.toggle('lang-derived', isDerived && !isExplicit);
   });
 }
 
@@ -718,7 +727,7 @@ function setupEventListeners() {
     enabledLanguages = new Set(getLocaleLanguages());
     await applyToStorage();
     initialLanguages = new Set(enabledLanguages);
-    updateTableState();
+    refreshState();
     checkDirty();
   });
 
@@ -764,8 +773,14 @@ function setupEventListeners() {
 // DEV-BEGIN
 // Bridge for pages-dev.js — exposes options internals that are not on window.
 window._devHooks = {
-  getWhitelist:    () => whitelist,
-  setWhitelist:    v  => { whitelist = v; },
-  renderWhitelist: () => renderWhitelist(),
+  getWhitelist:      () => whitelist,
+  setWhitelist:      v  => { whitelist = v; },
+  renderWhitelist:   () => renderWhitelist(),
+  getLanguages:      () => ({ scripts: new Set(additionalScripts), languages: new Set(enabledLanguages) }),
+  setLanguages:      ({ scripts, languages }) => {
+    additionalScripts = new Set(scripts);
+    enabledLanguages  = new Set(languages);
+    refreshState();
+  },
 };
 // DEV-END

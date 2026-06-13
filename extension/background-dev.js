@@ -47,10 +47,10 @@ async function devCropToBounds(dataUrl, bounds, dpr, bg) {
   return canvas.convertToBlob({ type: 'image/png' });
 }
 
-async function devCaptureElement(tabId, windowId, selector) {
+async function devCaptureElement(tabId, windowId, selector, opts = {}) {
   await browser.tabs.update(tabId, { active: true });
   await devDelay(200);
-  const r = await browser.tabs.sendMessage(tabId, { type: 'devCapturePrepare', selector });
+  const r = await browser.tabs.sendMessage(tabId, { type: 'devCapturePrepare', selector, ...opts });
   if (!r) throw new Error(`devCapturePrepare: element not found for "${selector}"`);
   await devDelay(100);
   const dataUrl = await browser.tabs.captureVisibleTab(windowId, { format: 'png' });
@@ -85,6 +85,39 @@ async function devCaptureFullPage(tabId, windowId) {
     console.log('[devCapture] strip cssY:', cssY, 'actualScrollY:', actualScrollY, 'srcY:', srcY, 'cssStripH:', cssStripH, 'bm:', bm.width, '×', bm.height);
     ctx.drawImage(bm, srcX, srcY, pw, physStripH, 0, Math.round(cssY * d.dpr), pw, physStripH);
     cssY += d.viewportHeight;
+  }
+  await browser.tabs.sendMessage(tabId, { type: 'devScrollTo', y: 0 });
+  return canvas.convertToBlob({ type: 'image/png' });
+}
+
+async function devCaptureElementFull(tabId, windowId, selector) {
+  await browser.tabs.update(tabId, { active: true });
+  await devDelay(200);
+  const info = await browser.tabs.sendMessage(tabId, { type: 'devGetElementBounds', selector });
+  if (!info) throw new Error(`devCaptureElementFull: element not found for "${selector}"`);
+  const d = await browser.tabs.sendMessage(tabId, { type: 'devGetPageDimensions' });
+  const maxScrollY = Math.max(0, d.scrollHeight - d.viewportHeight);
+  const pw = Math.round(info.width  * info.dpr);
+  const ph = Math.round(info.height * info.dpr);
+  const canvas = new OffscreenCanvas(Math.max(pw, 1), Math.max(ph, 1));
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = info.bodyBg;
+  ctx.fillRect(0, 0, pw, ph);
+  const srcX = Math.round(info.docX * info.dpr);
+  let cssStrip = 0;
+  while (cssStrip < info.height) {
+    const actualScrollY = Math.min(info.docY + cssStrip, maxScrollY);
+    await browser.tabs.sendMessage(tabId, { type: 'devScrollTo', y: actualScrollY });
+    await devDelay(150);
+    const bm = await createImageBitmap(await (await fetch(
+      await browser.tabs.captureVisibleTab(windowId, { format: 'png' })
+    )).blob());
+    const stripViewportY = info.docY - actualScrollY + cssStrip;
+    const stripH = Math.min(d.viewportHeight - stripViewportY, info.height - cssStrip);
+    ctx.drawImage(bm,
+      srcX, Math.round(stripViewportY * info.dpr), pw, Math.round(stripH * info.dpr),
+      0,    Math.round(cssStrip       * info.dpr), pw, Math.round(stripH * info.dpr));
+    cssStrip += stripH;
   }
   await browser.tabs.sendMessage(tabId, { type: 'devScrollTo', y: 0 });
   return canvas.convertToBlob({ type: 'image/png' });
@@ -195,6 +228,7 @@ async function devCapture(windowId) {
 
     for (const [theme, suffix] of [['light', 'white'], ['dark', 'black']]) {
       await browser.storage.local.set({ theme });
+      await browser.tabs.sendMessage(optTab.id, { type: 'devSetTheme', theme });
       await devDelay(250);
 
       queue.push({ filename: `options-coloured-squares-${suffix}.png`,
@@ -215,6 +249,14 @@ async function devCapture(windowId) {
       queue.push({ filename: `whitelist-${suffix}.png`,
         blob: await devCaptureElement(optTab.id, windowId, '#section-whitelist') });
       await browser.tabs.sendMessage(optTab.id, { type: 'devRestoreWhitelist' });
+      await devDelay(100);
+
+      await browser.tabs.sendMessage(optTab.id, { type: 'devSetLanguages',
+        scripts: ['Han', 'Hiragana', 'Katakana'], languages: ['Japanese'] });
+      await devDelay(200);
+      queue.push({ filename: `options-languages-${suffix}.png`,
+        blob: await devCaptureElementFull(optTab.id, windowId, '#script-tree') });
+      await browser.tabs.sendMessage(optTab.id, { type: 'devRestoreLanguages' });
       await devDelay(100);
 
       await browser.tabs.sendMessage(optTab.id, { type: 'devShowApplyBar' });
