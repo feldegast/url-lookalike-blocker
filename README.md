@@ -43,9 +43,9 @@ The options page has two sections:
 
 **Whitelisted Domains** — lists domains you have explicitly allowed. Each entry shows the Unicode domain (with suspicious characters highlighted), the punycode form, and the characters that triggered the original block. Entries can be removed here.
 
-**Permitted Scripts** — a table of languages and their Unicode scripts. Check a language to permit all its scripts, or check individual scripts in the same row. Languages that use only the Latin script are listed separately at the bottom and cannot be changed.
+**Permitted Languages** — a table of languages and their Unicode scripts. Each script is shown as a small tag: green means that script is currently permitted, grey means it is not. Tick a language to permit all its scripts. Languages whose only required script is already permitted are ticked automatically with a dimmed label — for example, enabling Japanese enables Han, which causes Chinese (Simplified and Traditional) to tick themselves. Unticking a language removes its scripts and cascades to any other enabled language that depended on them. Languages that use only the Latin script are listed separately at the bottom and are always permitted.
 
-Changes are **not saved automatically**. Click **Apply Changes** (or **Apply & Retry** when opened from a blocked page) to save. Closing the tab with unsaved changes will prompt a browser warning. Click **Discard Changes** to reload the page and abandon any changes.
+Changes are **not saved automatically**. Click **Apply Changes** to save. Closing the tab with unsaved changes will prompt a browser warning. Click **Discard Changes** to reload the page and abandon any changes.
 
 ## Known limitations
 
