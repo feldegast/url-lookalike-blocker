@@ -54,7 +54,7 @@ const LANGUAGE_SCRIPTS = {
   'Kyrgyz': ['Cyrillic'],
   'Tajik': ['Cyrillic'],
   'Uzbek': ['Cyrillic'],
-  'Mongolian (Cyrillic)': ['Cyrillic'],
+  'Mongolian': ['Cyrillic'],
   'Greek': ['Greek'],
   'Arabic': ['Arabic'],
   'Urdu': ['Arabic'],
@@ -93,7 +93,7 @@ const ALWAYS_PERMITTED = new Set(['Latin', 'Common', 'Inherited']);
 const LOCALE_TO_LANGUAGE = {
   'ru': 'Russian', 'uk': 'Ukrainian', 'bg': 'Bulgarian', 'sr': 'Serbian',
   'mk': 'Macedonian', 'be': 'Belarusian', 'kk': 'Kazakh', 'ky': 'Kyrgyz',
-  'tg': 'Tajik', 'uz': 'Uzbek', 'mn': 'Mongolian (Cyrillic)', 'el': 'Greek',
+  'tg': 'Tajik', 'uz': 'Uzbek', 'mn': 'Mongolian', 'el': 'Greek',
   'ar': 'Arabic', 'ur': 'Urdu', 'fa': 'Persian', 'ps': 'Pashto', 'he': 'Hebrew',
   'ja': 'Japanese', 'ko': 'Korean', 'hi': 'Hindi', 'mr': 'Marathi', 'sa': 'Sanskrit',
   'bn': 'Bengali', 'pa': 'Punjabi (Gurmukhi)', 'gu': 'Gujarati', 'or': 'Odia',
@@ -490,6 +490,16 @@ function buildLanguageTable() {
   latinList.className = 'latin-only-list';
   latinList.textContent = alwaysOn.join(', ');
   latinContainer.appendChild(latinList);
+
+  const helpNote = document.createElement('div');
+  helpNote.className = 'latin-help-link';
+  const helpA = document.createElement('a');
+  helpA.href = browser.runtime.getURL('help.html#latin-languages');
+  helpA.textContent = 'See Help for additional Latin-script languages also permitted by default.';
+  helpA.target = '_blank';
+  helpA.rel = 'noopener';
+  helpNote.appendChild(helpA);
+  latinContainer.appendChild(helpNote);
 }
 
 function onLanguageToggle(language, checked) {

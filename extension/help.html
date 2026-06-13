@@ -221,31 +221,37 @@
   </div>
 
   <div class="section">
-    <h2><span class="pill pill-warn">Warning</span> Warning page</h2>
-    <p>A warning page appears when the domain mixes scripts in a way that suggests a homograph attack. Warning pages can appear even if you have the relevant scripts enabled, because legitimate sites do not normally mix scripts within a single domain label. There are two flavours depending on what the extension detected.</p>
-
-    <h3>Confusable character in a mixed-script label</h3>
-    <p>This appears when a domain contains a character that visually resembles a Latin letter — for example the Cyrillic <code>р</code> mimicking <code>p</code> in <code>рaypal.com</code>. The confusable character is highlighted in <strong>red</strong> and the lookalike is shown (e.g. "Looks like: p").</p>
+    <h2><span class="pill pill-warn">Warning</span> Confusable Character Domain Warning</h2>
+    <p>This page appears when a domain contains a character that visually resembles a Latin letter — for example the Cyrillic <code>р</code> mimicking <code>p</code> in <code>рaypal.com</code>. This is a targeted attack technique. The confusable character is highlighted in <strong>red</strong> and the lookalike is shown (e.g. "Looks like: p"). This warning can appear even if you have the relevant script enabled, because legitimate sites do not normally use characters that resemble letters from a different script.</p>
     <figure class="img-light">
-      <img src="img/warning-confusable-white.png" alt="Confusable warning page, light theme">
-      <figcaption>Confusable warning — the Cyrillic 'р' in рaypal.com is highlighted red.</figcaption>
+      <img src="img/warning-confusable-white.png" alt="Confusable character domain warning page, light theme">
+      <figcaption>Confusable character warning — the Cyrillic 'р' in рaypal.com is highlighted red.</figcaption>
     </figure>
     <figure class="img-dark">
-      <img src="img/warning-confusable-black.png" alt="Confusable warning page, dark theme">
-      <figcaption>Confusable warning — the Cyrillic 'р' in рaypal.com is highlighted red.</figcaption>
+      <img src="img/warning-confusable-black.png" alt="Confusable character domain warning page, dark theme">
+      <figcaption>Confusable character warning — the Cyrillic 'р' in рaypal.com is highlighted red.</figcaption>
     </figure>
+    <h3>What you can do</h3>
+    <ul>
+      <li><strong>Allow this domain</strong> — permanently whitelists the domain if you know it is safe.</li>
+      <li><strong>Continue anyway</strong> — proceeds to the domain for this browser session only.</li>
+      <li><strong>Open extension options</strong> — opens the Options page.</li>
+      <li><strong>Try again</strong> — re-attempts the URL after applying new settings.</li>
+      <li><strong>Go back</strong> — returns to the previous page.</li>
+    </ul>
+  </div>
 
-    <h3>Mixed-script label</h3>
-    <p>This appears when a domain label mixes characters from two or more scripts that are not commonly combined — for example Latin and Cyrillic together in <code>testж.com</code>. The non-Latin characters are highlighted in <strong>amber</strong>. If enabling a specific language would permit this combination, that hint is shown (e.g. "enable Serbian in Extension Settings").</p>
+  <div class="section">
+    <h2><span class="pill pill-warn">Warning</span> Mixed Script Domain Warning</h2>
+    <p>This page appears when a domain label mixes characters from two or more scripts that are not commonly combined — for example Latin and Cyrillic together in <code>testж.com</code>. The non-Latin characters are highlighted in <strong>amber</strong>. This warning can appear even if you have the relevant scripts enabled, because legitimate sites do not normally mix scripts within a single domain label. If enabling a specific language would permit this combination, a hint is shown (e.g. "enable Serbian in Extension Settings").</p>
     <figure class="img-light">
-      <img src="img/warning-mixed-white.png" alt="Mixed-script warning page, light theme">
+      <img src="img/warning-mixed-white.png" alt="Mixed script domain warning page, light theme">
       <figcaption>Mixed-script warning — Latin combined with Cyrillic in testж.com.</figcaption>
     </figure>
     <figure class="img-dark">
-      <img src="img/warning-mixed-black.png" alt="Mixed-script warning page, dark theme">
+      <img src="img/warning-mixed-black.png" alt="Mixed script domain warning page, dark theme">
       <figcaption>Mixed-script warning — Latin combined with Cyrillic in testж.com.</figcaption>
     </figure>
-
     <h3>What you can do</h3>
     <ul>
       <li><strong>Allow this domain</strong> — permanently whitelists the domain if you know it is safe.</li>
@@ -376,6 +382,28 @@
       <img src="img/options-languages-black.png" alt="Permitted languages section, dark theme">
       <figcaption>Languages table showing Japanese enabled as well as all languages that become enabled due to shared scripts.</figcaption>
     </figure>
+  </div>
+
+  <div class="section" id="latin-languages">
+    <h2>Latin-script languages — always permitted</h2>
+    <p>Latin is permitted by default, so URLs written in any Latin-script language load normally — the extension doesn't block them or warn you about them. The languages shown in the options panel are the most widely-used ones, but many more Latin-script languages exist and are equally unaffected by this extension.</p>
+
+    <h3>European</h3>
+    <p>Croatian, Slovenian, Lithuanian, Latvian, Estonian, Albanian, Icelandic, Irish (Gaeilge), Welsh, Scottish Gaelic, Maltese, Luxembourgish, Faroese — plus all languages already shown in the options panel.</p>
+
+    <h3>Africa, Oceania and the Americas</h3>
+    <p>Swahili, Somali, Hausa, Yoruba, Igbo, Zulu, Xhosa, Māori, Samoan, Hawaiian, Cebuano.</p>
+
+    <h3>Multi-script languages</h3>
+    <p>Some languages are officially written in Latin but also have significant Cyrillic or other-script usage. Their Latin-script URLs always load normally; URLs using a different script depend on whether that script is enabled in settings.</p>
+    <ul>
+      <li><strong>Bosnian</strong> — Latin and Cyrillic both in use depending on the author's preference.</li>
+      <li><strong>Azerbaijani</strong> — Latin since 1991; Cyrillic still used in some contexts.</li>
+      <li><strong>Uzbek</strong> — Latin officially since 1995, but Cyrillic remains common in print.</li>
+      <li><strong>Turkmen</strong> — Latin officially.</li>
+      <li><strong>Kazakh</strong> — transitioning from Cyrillic to Latin, target completion 2031.</li>
+      <li><strong>Kurdish (Kurmanji)</strong> — Latin in Turkey and Syria; Sorani (Iraq/Iran) uses an Arabic-derived script and falls under separate script-permission rules.</li>
+    </ul>
   </div>
 
   <div class="section">

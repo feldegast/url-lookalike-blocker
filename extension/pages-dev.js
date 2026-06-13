@@ -114,6 +114,11 @@ browser.runtime.onMessage.addListener((message) => {
   }
   if (message.type === 'devSetTheme') {
     document.documentElement.dataset.theme = message.theme; // 'light' or 'dark'
+    const themeBtn = document.getElementById('theme-toggle');
+    if (themeBtn) {
+      const labels = { auto: 'Auto', opposite: 'Opposite', dark: 'Dark', light: 'Light' };
+      themeBtn.textContent = labels[message.theme] ?? message.theme;
+    }
     return;
   }
   if (message.type === 'devHideLatinSection') {

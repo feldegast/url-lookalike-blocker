@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // --- Page title and URL display ---
-  const warningKind = isConfusableWarning ? 'Confusable Character Domain' : 'Mixed Script Domain';
+  const warningKind = isConfusableWarning ? 'Confusable Character Domain Warning' : 'Mixed Script Domain Warning';
   if (unicodeDomain) {
     document.title = `URL Lookalike Blocker — ${warningKind} — ${unicodeDomain}`;
   }

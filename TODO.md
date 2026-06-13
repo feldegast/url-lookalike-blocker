@@ -1,38 +1,5 @@
 # TODO / Future Features
 
-## Pending before v1.1 submission
-
-- [x] Bump `extension/manifest.json` version from `"1.0"` to `"1.1"`.
-- [x] Rename `## [Unreleased]` in `CHANGELOG.md` to `## [1.1] — YYYY-MM-DD` (the submission date).
-- [x] Implement script-coloured tags and single-script language auto-tick.
-- [x] Recapture options page screenshots.
-- [ ] Run the full pre-submission checklist in `RELEASE.md`.
-- [ ] Submit to Mozilla AMO. Once accepted, tag the commit (`git tag -a v1.1 <commit> -m "..."` then `git push --tags`).
-
-## Remove script qualifier from Mongolian language name
-
-The language is currently listed as "Mongolian (Cyrillic)" in the options page language table. Now that every language row shows its scripts as coloured tags, the "(Cyrillic)" qualifier in the name is redundant — the tag makes it self-evident. Rename it to plain "Mongolian" in `options.js` and recapture the options-languages screenshots.
-
----
-
-## Fix automated capture cutting off bottom of options page
-
-The `devCaptureFullPage` function in `background-dev.js` measures the page height before capturing strips. If the private-browsing warning is shown/hidden mid-loop it changes the page height between measurement and stitching, causing the bottom to be cut off. Fix: send `devHidePrivateWarning` immediately before calling `devCaptureFullPage` (and `devShowPrivateWarning` after if needed), so the page height is stable for the entire capture.
-
----
-
-## Split warning page help section into separate sections
-
-**Goal:** Replace the single "Warning page" section in `help.html` (which currently has confusable and mixed-script as sub-types) with two separate top-level sections — "Confusable warning" and "Mixed-script warning" — so each matches its screenshot name and the navigation is self-explanatory.
-
-**Prerequisite:** The warning pages themselves (`warning.html`) currently contain no text that identifies them as "warning" pages. Add a visible "Warning" label or heading to both warning page types in the UI before updating the help page, otherwise the help section headings will not match what the user sees on screen.
-
-**Estimated effort:** Small once the UI change is in place.
-
----
-
----
-
 ## Animate script-tag colour transitions on the options page
 
 **Goal:** When the user ticks or unticks a language, script tags change colour (grey ↔ green) with a staggered delay so the change visibly propagates top-to-bottom, left-to-right — making the cascade feel tangible rather than instantaneous.
@@ -47,79 +14,52 @@ The `devCaptureFullPage` function in `background-dev.js` measures the page heigh
 
 ---
 
-## Expand "always-permitted Latin languages" reference
-
-**Goal:** Make it clearer that permitting Latin by default means URLs written in *every* Latin-script language load normally — not just the ~26 languages currently named at the bottom of the options page. Move the comprehensive list into `help.html` and leave a brief pointer on the options page.
-
-**Framing for the help section** (the wording matters — the extension doesn't "protect languages", it just permits URLs in those languages): *"Latin is permitted by default, so URLs written in any Latin-script language load normally — the extension doesn't block them or warn you about them. The list below covers which languages that includes, beyond the common ones in the options panel."*
-
-**What's involved:**
-
-- **`extension/help.html`** — add a new section "Latin-script languages — always permitted" with `id="latin-languages"` as an anchor target. Group the languages by region (European / African / Asian and Pacific / multi-script edge cases). Lead with the framing above.
-- **`extension/options.js`** — append a small hyperlink after the existing always-on list: *"See Help for additional Latin-script languages also permitted by default."* Use `browser.runtime.getURL('help.html#latin-languages')` so it deep-links to the new anchor.
-- **`extension/options.html`** — minor CSS for the new note element so it visually matches the existing `.latin-only-list` styling.
-
-**Languages to add to the help-file list (beyond the 26 already in `options.js`):**
-
-*Major European:* Croatian, Slovenian, Lithuanian, Latvian, Estonian, Albanian, Icelandic, Irish (Gaeilge), Welsh, Scottish Gaelic, Maltese, Luxembourgish, Faroese.
-
-*Widely-spoken non-European:* Swahili, Somali, Hausa, Yoruba, Igbo, Zulu, Xhosa, Maori, Samoan, Hawaiian, Cebuano.
-
-*Multi-script edge cases — list with explanatory notes:*
-- **Bosnian** — Latin and Cyrillic both in use depending on author preference.
-- **Azerbaijani** — Latin since 1991; Cyrillic still used in some contexts.
-- **Uzbek** — Latin officially since 1995, but Cyrillic remains common in print.
-- **Turkmen** — Latin officially.
-- **Kazakh** — transitioning Cyrillic → Latin, target completion 2031.
-- **Kurdish** — Kurmanji (Turkey/Syria) is Latin; Sorani (Iraq/Iran) uses an Arabic-derived script and falls under separate script-permission rules.
-
-**Estimated effort:** 15-20 minutes plus a visual check in Firefox.
-
 ## Firefox for Android compatibility
 
-**Goal:** Make the extension installable and usable on Firefox for Android, so the homograph protection extends to mobile browsing.
+**Goal:** Make the extension installable and usable on Firefox for Android tablets as the first step, with phone support to follow as a refinement once the tablet version is working. The existing UI is desktop-first but survives largely intact on a tablet viewport — the language table, coloured squares, and button rows need touch-friendly adjustments rather than a full redesign. Phone support will need more substantial layout rethinking and can be tackled separately.
 
 **What ports for free:** The detection logic itself is platform-agnostic. `webRequest`, `storage`, and the Unicode-script work in `background.js` and `unicode-scripts.js` would behave identically on Android, so the core security value carries over without code changes.
 
-**What needs attention:**
+**What needs attention (tablet-first):**
 
-- **Responsive CSS** across `options.html`, `blocked.html`, `warning.html`, and `help.html`. The options page's wide language table, the multi-button rows on the block/warning pages, and the dense whitelist/coloured-squares layouts are all desktop-first and will overflow or wrap badly on narrow screens. Add `@media (max-width: …)` rules to stack buttons vertically, narrow the language table, and reduce padding.
+- **`gecko_android` declaration** in `browser_specific_settings.gecko_android` so Firefox for Android treats the extension as supported (currently only `gecko` is declared, which is desktop-only).
+- **Touch-friendly CSS** across `options.html`, `blocked.html`, `warning.html`, and `help.html` — increase touch target sizes, add padding to buttons, and ensure the language table is comfortably usable with a finger. Tablet viewports are wide enough that the overall layout can remain intact.
 - **`menus` API on Android** — Firefox for Android has no traditional right-click, so the "Open Options" / "Help" context menu items either won't surface or will behave differently. Verify whether the menus declarations are silently ignored or cause errors; either way the toolbar-icon flow and in-page links should remain the primary entry points.
 - **Toolbar icon UX** — on Android the extension icon lives inside the browser menu rather than the toolbar, so the icon-click → options flow still works but the badge may not appear (Android doesn't show toolbar badges). Confirm and adjust expectations in the help docs if needed.
-- **`gecko_android` declaration** in `browser_specific_settings.gecko_android` so Firefox for Android treats the extension as supported (currently only `gecko` is declared, which is desktop-only).
-- **Testing** on an Android device or emulator before submission — manifest-only changes are risky to ship blind.
+- **Testing** on a real Android 16 tablet (available) before submission.
 
-**Estimated effort:** Half a day for an acceptable port (mostly CSS + manifest), more for a polished one with Android-specific UX tweaks. Reasonable as a 1.1 follow-up after gathering any feedback from the 1.0 desktop submission.
+**Phone support (follow-up):** The options page layout — wide language table, coloured squares, multiple stacked sections — will need more significant rethinking for narrow phone screens. Treat this as a separate pass once the tablet version is shipping. A real Android 16 phone is available for testing.
+
+**Estimated effort:** Tablet version — a few hours (mostly manifest + CSS tweaks). Phone version — a separate, more substantial effort.
 
 ## Internationalisation (i18n)
 
-**Goal:** Render the extension UI in the user's Firefox **display language** (the one Firefox itself uses for its UI, returned by `browser.i18n.getUILanguage()` — distinct from the page-content language preferences). Firefox supports ~100 display languages, so the target is a curated subset; see staging below. Optionally add an in-extension language override (a dropdown in Options) so the user can pick a different language for the extension specifically, defaulting to Firefox's display language.
+**Goal:** Render the extension UI in the user's Firefox **display language** (the one Firefox itself uses for its UI, returned by `browser.i18n.getUILanguage()` — distinct from the page-content language preferences).
+
+**Help page approach — per-language files:** Rather than extracting the help page's body text into `messages.json` (which would mean hundreds of JS-injected string substitutions and be a maintenance nightmare), each language gets its own `help.<lang>.html` file. A small redirect script checks `browser.i18n.getUILanguage()` on load and serves the appropriate file, falling back to `help.html` (English GB) if no translation exists. This keeps help pages as normal readable HTML. The downside is that translated help files can drift if the English version changes, but this is acceptable given how infrequently translations would be updated.
+
+**UI strings — standard i18n API:** All short strings in `options.html/js`, `blocked.html/js`, and `warning.html/js` (buttons, labels, table headers, status messages, the "Looks like" annotation) use the standard WebExtensions `i18n` API — `browser.i18n.getMessage('key')` in JS, `__MSG_key__` in the manifest.
 
 **What's involved:**
 
-- Refactor all hardcoded strings in `options.html`, `help.html`, `blocked.html`, `warning.html`, and their supporting `.js` files to use the WebExtensions `i18n` API (`browser.i18n.getMessage('key')` in code, `__MSG_key__` placeholders in manifest and HTML).
-- Add `"default_locale": "en"` to `manifest.json`.
-- Create `_locales/en/messages.json` as the canonical English source.
-- Per-language translations live in `_locales/<lang>/messages.json` and are auto-selected by Firefox; if no file exists for the user's display language, Firefox falls back to `default_locale`.
-- The optional in-extension override needs a workaround — MV3 doesn't expose locale switching directly, so the override would store the user's choice and load the chosen `messages.json` manually via `browser.runtime.getURL()`.
-
-**Scope of strings:**
-- Options page: labels, buttons, language names (for script permissions), whitelist headers, interface options.
-- Block/warning pages: titles, action buttons, character-table headers, the "Looks like" annotation.
-- Help page: substantial body copy — by far the biggest translation burden.
+- Add `"default_locale": "en_GB"` to `manifest.json`.
+- Create `_locales/en_GB/messages.json` with all UI strings — this is the canonical English (GB) source.
+- Replace hardcoded UI strings in `options.js`, `blocked.html/js`, and `warning.html/js` with `browser.i18n.getMessage()` calls.
+- Add a locale-redirect script so `help.html` is the en_GB fallback and `help.<lang>.html` files are served when available.
+- Per-language UI translations live in `_locales/<lang>/messages.json`; Firefox falls back to `en_GB` automatically if none exists.
 
 **Concerns to address:**
 - Some technical terms (Cyrillic, homograph, mixed-script, punycode) may not have natural translations in every language; may need to coin or borrow.
 - Right-to-left support (Hebrew, Arabic, Persian) — the CSS uses left-to-right layout implicitly in many places; would need `[dir="rtl"]` overrides.
 - Pluralisation is minimal in WebExtensions i18n — usually handled by separate keys (`oneTab` / `manyTabs`).
-- Translation maintenance burden when strings change — every locale file needs an update.
 
 **Staging:**
-- **Tier 1** — English (canonical), French, German, Spanish, Italian, Portuguese, Dutch. Cover the bulk of Firefox's European user base; AI translation quality is high enough to ship without mandatory native review.
-- **Tier 2** — Russian, Polish, Japanese, Simplified Chinese, Korean. Worth shipping, but flag on the AMO listing as "translations AI-assisted, native corrections welcome" so users know to push back on awkward phrasing.
-- **Tier 3** — anything else. Scaffolding makes these possible without us writing the translations — Firefox falls back to English, and AMO's community translation flow lets native speakers fill them in over time.
+- **Phase 1** — Scaffolding only: `en_GB` messages.json + string extraction refactor + help redirect mechanism. No user-visible change, but the infrastructure is in place.
+- **Phase 2** — Tier 1 languages: French, German, Spanish, Italian, Portuguese, Dutch. AI translation quality is high enough to ship without mandatory native review.
+- **Phase 3** — Tier 2 languages: Russian, Polish, Japanese, Simplified Chinese, Korean. Flag on the AMO listing as "translations AI-assisted, native corrections welcome."
+- **Phase 4** — anything else. The scaffolding makes community contributions possible; Firefox falls back to English GB for any unsupported locale.
 
-**Estimated effort:** A few hours for the i18n scaffolding (string-extraction refactor) plus Tier 1 translations. Tier 2 is another half-day. The optional in-extension override is half a day on top. Land in stages: scaffolding + English-only first as a no-op refactor, then Tier 1 as a single follow-up, then Tier 2 once the scaffolding has had real-world testing.
+**Estimated effort:** Phase 1 — a few hours (refactor only, no new content). Phase 2 — half a day. Phase 3 — another half-day. Help page translations are additional effort per language on top.
 
 ## Domain Age Check (RDAP)
 
