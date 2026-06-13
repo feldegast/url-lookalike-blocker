@@ -21,19 +21,21 @@ When a URL is blocked, a details page is shown with:
 - A table of every non-compliant character, its Unicode codepoint, and the script it belongs to
 
 From the blocked page you can:
-- **Allow This Domain** — adds the domain to the whitelist so it is never blocked again, then navigates to the URL
-- **Go Back** — returns to the previous page
-- **Open Extension Settings** — opens the options page in a new tab; if you enable the required scripts and click Apply, the blocked tab automatically navigates back to the URL
+- [Allow this domain] — adds the domain to the whitelist so it is never blocked again, then navigates to the URL
+- [Try again] — retries the URL; if settings now cover it the page loads, otherwise the block page reappears
+- [Go back] — returns to the previous page
+- [Open extension options] — opens the options page in a new tab; if you enable the required scripts and click Apply, the blocked tab automatically navigates back to the URL
 
 ## Warning page
 
 When a URL passes the script check but contains confusable characters or mixes scripts, a warning page is shown with the same domain details plus a **Looks like** column identifying what each suspicious character resembles.
 
 From the warning page you can:
-- **Allow This Domain** — permanently whitelists the domain
-- **Continue Anyway** — allows the domain for this browser session only (cleared on restart)
-- **Go Back** — returns to the previous page
-- **Open Extension Settings** — opens the options page in a new tab
+- [Allow this domain] — permanently whitelists the domain
+- [Continue anyway] — allows the domain for this browser session only (cleared on restart)
+- [Try again] — retries the URL after a settings change
+- [Go back] — returns to the previous page
+- [Open extension options] — opens the options page in a new tab
 
 ## Options page
 
@@ -45,7 +47,7 @@ The options page has two sections:
 
 **Permitted Languages** — a table of languages and their Unicode scripts. Each script is shown as a small tag: green means that script is currently permitted, grey means it is not. Tick a language to permit all its scripts. Languages whose only required script is already permitted are ticked automatically with a dimmed label — for example, enabling Japanese enables Han, which causes Chinese (Simplified and Traditional) to tick themselves. Unticking a language removes its scripts and cascades to any other enabled language that depended on them. Languages that use only the Latin script are listed separately at the bottom and are always permitted.
 
-Changes are **not saved automatically**. Click **Apply Changes** to save. Closing the tab with unsaved changes will prompt a browser warning. Click **Discard Changes** to reload the page and abandon any changes.
+Changes are **not saved automatically**. Click [Apply changes] to save. Closing the tab with unsaved changes will prompt a browser warning. Click [Discard changes] to reload the page and abandon any changes.
 
 ## Known limitations
 
