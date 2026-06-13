@@ -13,39 +13,36 @@ SUMMARY  (max 250 characters, no HTML)
 Protects against IDN homograph attacks by blocking or warning when a domain contains characters from scripts you have not permitted, or characters that visually resemble a different character.
 
 
-DESCRIPTION  (HTML is supported)
+DESCRIPTION  (plain text)
 -----------
-<p>Protects against IDN homograph attacks — attempts by attackers to register domain names that look identical to legitimate sites by substituting visually similar characters from other Unicode scripts (for example, Cyrillic <b>а</b> in place of Latin <b>a</b>).</p>
+Protects against IDN homograph attacks — attempts by attackers to register domain names that look identical to legitimate sites by substituting visually similar characters from other Unicode scripts (for example, Cyrillic а in place of Latin a).
 
-<p>When you navigate to a URL, the extension decodes the hostname from punycode and checks every character. Three things can happen:</p>
-<ul>
-  <li><b>Blocked</b> — a character belongs to a script that is not in your permitted set.</li>
-  <li><b>Warning</b> — all characters are permitted, but either (a) the label contains a known confusable character that mimics a Latin letter in a mixed-script context (highlighted red with "Looks like: …"), or (b) the label mixes characters from two or more scripts in a way that is not common for any single language (highlighted amber, with a hint suggesting which language to enable if the combination is legitimate).</li>
-  <li><b>Allowed</b> — everything checks out.</li>
-</ul>
+When you navigate to a URL, the extension decodes the hostname from punycode and checks every character. Three things can happen:
 
-<p><b>Blocked and warning pages</b> show the punycode and Unicode forms of the domain, and a table of every suspicious character with its Unicode codepoint, script, and what it visually resembles.</p>
+• Blocked — a character belongs to a script that is not in your permitted set.
+• Warning — all characters are permitted, but either (a) the label contains a known confusable character that mimics a Latin letter in a mixed-script context (highlighted red with "Looks like: …"), or (b) the label mixes characters from two or more scripts in a way that is not common for any single language (highlighted amber, with a hint suggesting which language to enable if the combination is legitimate).
+• Allowed — everything checks out.
 
-<p><b>From a blocked page</b> you can allow the domain permanently, go back, or open settings to enable the required language. If you open settings from a blocked page, clicking Apply automatically retries the blocked URL.</p>
+Blocked and warning pages show the punycode and Unicode forms of the domain, and a table of every suspicious character with its Unicode codepoint, script, and what it visually resembles.
 
-<p><b>From a warning page</b> you can allow the domain permanently, continue for this browser session only, go back, or open settings.</p>
+From a blocked page you can allow the domain permanently, go back, or open settings to enable the required language. If you open settings from a blocked page, clicking Apply automatically retries the blocked URL.
 
-<p><b>Options page</b> (opened from the toolbar icon) lets you enable additional permitted languages, manage your whitelist of trusted domains, and adjust interface options. Language and whitelist changes are held in memory until you click Apply — there is no auto-save for security-relevant settings. Interface options (Show shadows, Show private-browsing warning) take effect instantly.</p>
+From a warning page you can allow the domain permanently, continue for this browser session only, go back, or open settings.
 
-<p><b>Multiple blocked or warning tabs at once</b> are tracked with a numeric badge on the toolbar icon and coloured rounded squares in the Options page, so you can switch between them and resolve each one. Resolved or closed tabs clear from the badge automatically.</p>
+Options page (opened from the toolbar icon) lets you enable additional permitted languages, manage your whitelist of trusted domains, and adjust interface options. Language and whitelist changes are held in memory until you click Apply — there is no auto-save for security-relevant settings. Interface options (Show shadows, Show private-browsing warning) take effect instantly.
 
-<p><b>Help page</b> with screenshots and explanations of every feature is available from the toolbar icon's right-click menu.</p>
+Multiple blocked or warning tabs at once are tracked with a numeric badge on the toolbar icon and coloured rounded squares in the Options page, so you can switch between them and resolve each one. Resolved or closed tabs clear from the badge automatically.
 
-<p><b>Themes:</b> light, dark, or follow-system, with a toggle on every extension page.</p>
+Help page with screenshots and explanations of every feature is available from the toolbar icon's right-click menu.
 
-<p><b>Known limitations:</b></p>
-<ul>
-  <li>The extension detects single characters that look like a different character. It does not detect multi-character sequences that resemble one character (e.g. rn → m, vv → w, cl → d), as doing so without a list of known legitimate domains would cause too many false positives.</li>
-  <li>It does not detect lookalike domains constructed entirely from one script (e.g. a Latin-only domain designed to visually mimic another Latin domain). Protection is specifically against cross-script substitution attacks (IDN homographs).</li>
-  <li>It does not detect subdomain-style phishing where a legitimate-looking name appears as a subdomain of an attacker-controlled domain (e.g. apple.com.attacker.com). That domain is Latin-only and passes all script checks correctly.</li>
-</ul>
+Themes: light, dark, or follow-system, with a toggle on every extension page.
 
-<p>Firefox only — Chrome's Manifest V3 removes the blocking webRequest API required for this extension to work.</p>
+Known limitations:
+• The extension detects single characters that look like a different character. It does not detect multi-character sequences that resemble one character (e.g. rn → m, vv → w, cl → d), as doing so without a list of known legitimate domains would cause too many false positives.
+• It does not detect lookalike domains constructed entirely from one script (e.g. a Latin-only domain designed to visually mimic another Latin domain). Protection is specifically against cross-script substitution attacks (IDN homographs).
+• It does not detect subdomain-style phishing where a legitimate-looking name appears as a subdomain of an attacker-controlled domain (e.g. apple.com.attacker.com). That domain is Latin-only and passes all script checks correctly.
+
+Firefox only — Chrome's Manifest V3 removes the blocking webRequest API required for this extension to work.
 
 
 CATEGORIES
