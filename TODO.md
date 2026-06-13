@@ -9,6 +9,12 @@
 - [ ] Run the full pre-submission checklist in `RELEASE.md`.
 - [ ] Submit to Mozilla AMO. Once accepted, tag the commit (`git tag -a v1.1 <commit> -m "..."` then `git push --tags`).
 
+## Remove script qualifier from Mongolian language name
+
+The language is currently listed as "Mongolian (Cyrillic)" in the options page language table. Now that every language row shows its scripts as coloured tags, the "(Cyrillic)" qualifier in the name is redundant — the tag makes it self-evident. Rename it to plain "Mongolian" in `options.js` and recapture the options-languages screenshots.
+
+---
+
 ## Fix automated capture cutting off bottom of options page
 
 The `devCaptureFullPage` function in `background-dev.js` measures the page height before capturing strips. If the private-browsing warning is shown/hidden mid-loop it changes the page height between measurement and stitching, causing the bottom to be cut off. Fix: send `devHidePrivateWarning` immediately before calling `devCaptureFullPage` (and `devShowPrivateWarning` after if needed), so the page height is stable for the entire capture.
