@@ -1,5 +1,23 @@
 # TODO / Future Features
 
+## Simple mode for the Options page
+
+**Goal:** Add a "Simple mode" toggle in the Interface options section that hides the language table entirely, leaving just the whitelist and interface options visible. Aimed at users who want homograph protection without needing to understand scripts and locales — particularly useful on mobile (tablet and phone) and for Latin-script language users who will rarely if ever need to adjust language settings.
+
+**Behaviour:**
+- When simple mode is on, the permitted languages section and the Reset to locale defaults / Apply / Discard controls are hidden.
+- The whitelist section and interface options remain fully functional.
+- The locale-derived permitted scripts still apply in the background — simple mode is purely a UI simplification, not a change to the detection logic.
+- The toggle itself lives in Interface options and takes effect immediately (no Apply step required, same as the other interface options).
+
+**Why it helps:**
+- Makes the extension approachable for casual users who just want the protection.
+- Dramatically simplifies the options page for phone and tablet layouts where the language table is the hardest element to adapt to a narrow screen.
+
+**Estimated effort:** Small — mostly CSS show/hide with a storage flag, matching the existing pattern for the shadows and private-warning interface options.
+
+---
+
 ## Animate script-tag colour transitions on the options page
 
 **Goal:** When the user ticks or unticks a language, script tags change colour (grey ↔ green) with a staggered delay so the change visibly propagates top-to-bottom, left-to-right — making the cascade feel tangible rather than instantaneous.
@@ -15,6 +33,8 @@
 ---
 
 ## Firefox for Android compatibility
+
+**Prerequisite:** Implement Simple mode (see above) first — it dramatically simplifies the options page layout and makes the Android UI work much more achievable.
 
 **Goal:** Make the extension installable and usable on Firefox for Android tablets as the first step, with phone support to follow as a refinement once the tablet version is working. The existing UI is desktop-first but survives largely intact on a tablet viewport — the language table, coloured squares, and button rows need touch-friendly adjustments rather than a full redesign. Phone support will need more substantial layout rethinking and can be tackled separately.
 
