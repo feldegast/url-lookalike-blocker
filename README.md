@@ -9,7 +9,7 @@ A Firefox extension that protects against IDN homograph attacks — attempts by 
 When you navigate to a URL, the extension decodes the hostname from punycode and checks every character against the list of permitted Unicode scripts for your locale. Three things can happen:
 
 1. **Blocked** — a character belongs to a script that is not in your permitted set. Navigation stops and a details page is shown.
-2. **Warning** — all characters are from permitted scripts, but the domain contains a known confusable character (a codepoint that visually resembles a different character — for example, Cyrillic `о` U+043E mimicking Latin `o`), or the domain mixes characters from two or more different scripts. A warning page is shown with the option to continue or go back.
+2. **Warning** — all characters are from permitted scripts, but the domain contains a known confusable character (a codepoint that visually resembles a different character — for example, Cyrillic `о` U+043E mimicking Latin `o`), or the domain mixes characters from two or more different scripts that is not approved by language selections or the whitelist. A warning page is shown with the option to continue or go back.
 3. **Allowed** — all characters are from permitted scripts with no confusable or mixed-script concerns.
 
 Latin characters are always permitted — disabling them would block too many legitimate URLs.
