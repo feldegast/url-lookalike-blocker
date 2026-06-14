@@ -183,6 +183,12 @@
     /* Interface option: when "Show shadows" is disabled, suppress all drop shadows. */
     html.no-shadows .section,
     html.no-shadows figure img { box-shadow: none; }
+
+    /* Touch-friendly sizing for coarse-pointer (touch) devices */
+    @media (pointer: coarse) {
+      .options-btn, .theme-toggle { min-height: 44px; padding: 10px 18px; }
+      figure img { max-width: 100%; }
+    }
   </style>
 </head>
 <body>

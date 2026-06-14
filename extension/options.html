@@ -539,6 +539,17 @@
     html[data-theme="dark"] .compact-lang-always { color: #777; }
     html[data-theme="dark"] .compact-whitelist-item { border-color: #444; }
     html[data-theme="dark"] .compact-whitelist-empty { color: #777; }
+
+    /* Touch-friendly sizing for coarse-pointer (touch) devices */
+    @media (pointer: coarse) {
+      button { min-height: 44px; padding: 10px 16px; }
+      .interface-option { min-height: 44px; padding: 4px 0; }
+      .script-table td { padding: 10px 12px; }
+      .lang-label { min-height: 44px; }
+      .compact-lang-item { min-height: 44px; padding: 10px 0; }
+      .compact-whitelist-item { padding: 10px 0; }
+      .whitelist-item { min-height: 44px; }
+    }
   </style>
 </head>
 <body>

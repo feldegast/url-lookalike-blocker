@@ -156,6 +156,13 @@
 
     /* Interface option: when "Show shadows" is disabled, suppress the container drop shadow. */
     html.no-shadows .container { box-shadow: none; }
+
+    /* Touch-friendly sizing for coarse-pointer (touch) devices */
+    @media (pointer: coarse) {
+      button { min-height: 44px; }
+      .buttons { display: flex; flex-direction: column; align-items: stretch; gap: 10px; }
+      .buttons button { margin: 0; }
+    }
 </style>
 </head>
 <body>
