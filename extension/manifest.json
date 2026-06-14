@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "URL Lookalike Blocker",
-  "version": "1.2",
+  "version": "1.2.1",
   "description": "Blocks and warns when a domain uses characters from scripts (languages) outside your locale setting — protection against IDN homograph attacks.",
   "browser_specific_settings": {
     "gecko": {
