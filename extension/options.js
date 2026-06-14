@@ -192,13 +192,54 @@ async function initShadows() {
   } catch (e) { /* unavailable */ }
 }
 
+function updateCompactLanguageList() {
+  const list = document.getElementById('compact-language-list');
+  if (!list) return;
+  list.replaceChildren();
+  for (const lang of [...enabledLanguages].sort()) {
+    const item = document.createElement('div');
+    item.className = 'compact-lang-item';
+    item.textContent = lang;
+    list.appendChild(item);
+  }
+  const latinItem = document.createElement('div');
+  latinItem.className = 'compact-lang-item compact-lang-always';
+  latinItem.textContent = 'Latin languages (always permitted)';
+  list.appendChild(latinItem);
+}
+
+function applyCompactMode(enabled) {
+  document.documentElement.classList.toggle('compact-mode', !!enabled);
+  const cb = document.getElementById('compact-mode');
+  if (cb) cb.checked = !!enabled;
+  if (enabled) updateCompactLanguageList();
+}
+
+function openLanguageModal() {
+  document.documentElement.classList.add('modal-open');
+  document.getElementById('section-languages').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function closeLanguageModal() {
+  document.documentElement.classList.remove('modal-open');
+  updateCompactLanguageList();
+}
+
+async function initCompactMode() {
+  const result = await browser.storage.local.get('compactMode');
+  applyCompactMode(result.compactMode === true);
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   await initTheme();
   await initShadows();
+  await initCompactMode();
   await loadSettings();
   buildLanguageTable();
   refreshState();
   setupEventListeners();
+  const latinLink = document.getElementById('latin-help-link');
+  if (latinLink) latinLink.href = browser.runtime.getURL('help.html#latin-languages');
   await initTabSelector();
   await checkPrivateBrowsingAccess();
 
@@ -419,13 +460,10 @@ function renderWhitelist() {
 function buildLanguageTable() {
   const container = document.getElementById('script-tree');
   container.replaceChildren();
-  const latinContainer = document.getElementById('latin-section');
-  latinContainer.replaceChildren();
 
   const sortedLanguages = Object.keys(LANGUAGE_SCRIPTS).sort();
   const latinOnly = lang => LANGUAGE_SCRIPTS[lang].every(s => ALWAYS_PERMITTED.has(s));
   const toggleable = sortedLanguages.filter(lang => !latinOnly(lang));
-  const alwaysOn   = sortedLanguages.filter(lang =>  latinOnly(lang));
 
   const table = document.createElement('table');
   table.className = 'script-table';
@@ -481,25 +519,6 @@ function buildLanguageTable() {
 
   table.appendChild(tbody);
   container.appendChild(table);
-
-  const separator = document.createElement('div');
-  separator.className = 'latin-only-separator';
-  separator.textContent = 'The following languages use the Latin script exclusively, which is always permitted and so these languages cannot be disabled.';
-  latinContainer.appendChild(separator);
-  const latinList = document.createElement('div');
-  latinList.className = 'latin-only-list';
-  latinList.textContent = alwaysOn.join(', ');
-  latinContainer.appendChild(latinList);
-
-  const helpNote = document.createElement('div');
-  helpNote.className = 'latin-help-link';
-  const helpA = document.createElement('a');
-  helpA.href = browser.runtime.getURL('help.html#latin-languages');
-  helpA.textContent = 'See Help for additional Latin-script languages also permitted by default.';
-  helpA.target = '_blank';
-  helpA.rel = 'noopener';
-  helpNote.appendChild(helpA);
-  latinContainer.appendChild(helpNote);
 }
 
 function onLanguageToggle(language, checked) {
@@ -569,6 +588,10 @@ function refreshState() {
     const label = cb.closest('label');
     if (label) label.classList.toggle('lang-derived', isDerived && !isExplicit);
   });
+
+  if (document.documentElement.classList.contains('compact-mode')) {
+    updateCompactLanguageList();
+  }
 }
 
 // --- Tab selector ---
@@ -714,6 +737,25 @@ function setupEventListeners() {
     applyShadowPref(showShadows);
     try { localStorage.setItem('showShadows', String(showShadows)); } catch (e) { /* unavailable */ }
     await browser.storage.local.set({ showShadows });
+  });
+
+  // Compact mode toggle — instant-apply, same pattern as show-shadows.
+  document.getElementById('compact-mode').addEventListener('change', async (e) => {
+    const enabled = e.target.checked;
+    applyCompactMode(enabled);
+    await browser.storage.local.set({ compactMode: enabled });
+  });
+
+  document.getElementById('edit-languages-btn').addEventListener('click', () => {
+    openLanguageModal();
+  });
+
+  document.getElementById('modal-close-btn').addEventListener('click', () => {
+    closeLanguageModal();
+  });
+
+  document.getElementById('language-modal-backdrop').addEventListener('click', () => {
+    closeLanguageModal();
   });
 
   // Show private-browsing warning toggle. Checkbox checked = show warning =

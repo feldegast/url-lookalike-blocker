@@ -10,7 +10,7 @@
     body {
       font-family: Arial, sans-serif;
       font-size: 16px;
-      max-width: 800px;
+      max-width: 600px;
       margin: 20px auto;
       padding: 20px;
       background-color: #e8e8e8;
@@ -90,9 +90,10 @@
       border: 1px solid #ddd;
       border-radius: 4px;
       background: white;
+      width: fit-content;
     }
     .script-table {
-      width: 100%;
+      width: auto;
       border-collapse: collapse;
     }
     .script-table th {
@@ -169,24 +170,11 @@
     .script-sub-label {
       color: #666;
     }
-    .latin-only-list {
-      padding: 8px 12px;
-      color: #666;
-      font-size: 14px;
-      line-height: 1.8;
-    }
     .latin-help-link {
-      padding: 4px 12px 10px 12px;
+      margin-top: 10px;
       font-size: 13px;
     }
     .latin-help-link a { color: #1976d2; }
-    .latin-only-separator {
-      padding: 8px 12px 10px 12px;
-      background: #f0f0f0;
-      border-bottom: 2px solid #4caf50;
-      font-weight: bold;
-      color: #333;
-    }
     .tab-selector {
       display: flex;
       align-items: center;
@@ -322,11 +310,19 @@
     .private-warning-dismiss:hover { color: #222; }
     .page-header {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
       margin-bottom: 20px;
     }
     .page-header h1 { margin: 0; }
+    .page-header-buttons {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .page-header-buttons > div { display: flex; gap: 8px; }
+    .page-header-subtitle { font-size: 2em; font-weight: bold; }
     .theme-toggle {
       background: none;
       border: 1px solid #bbb;
@@ -360,8 +356,6 @@
       html:not([data-theme="light"]) .script-tag.always-permitted { color: #666; background: #2a2a2a; border-color: #444; }
       html:not([data-theme="light"]) .script-tag.script-permitted { color: #81c784; background: #1b3a1b; border-color: #4a7c4a; }
       html:not([data-theme="light"]) .script-sub-label { color: #999; }
-      html:not([data-theme="light"]) .latin-only-separator { background: #333; color: #e0e0e0; }
-      html:not([data-theme="light"]) .latin-only-list { color: #aaa; }
       html:not([data-theme="light"]) .latin-help-link a { color: #64b5f6; }
       html:not([data-theme="light"]) .tab-selector { background: #2a2a2a; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
       html:not([data-theme="light"]) .tab-selector-label { color: #aaa; }
@@ -375,6 +369,7 @@
       html:not([data-theme="light"]) .sticky-apply-bar { background: #2a2a2a; border-top-color: #388e3c; box-shadow: 0 -4px 12px rgba(0,0,0,0.5); }
       html:not([data-theme="light"]) .page-footer { color: #777; }
       html:not([data-theme="light"]) .page-footer a:hover { color: #ccc; }
+
     }
     html[data-theme="dark"] body { background-color: #1a1a1a; color: #e0e0e0; }
     html[data-theme="dark"] h2 { color: #e0e0e0; border-bottom-color: #388e3c; }
@@ -390,8 +385,6 @@
     html[data-theme="dark"] .script-tag.always-permitted { color: #666; background: #2a2a2a; border-color: #444; }
     html[data-theme="dark"] .script-tag.script-permitted { color: #81c784; background: #1b3a1b; border-color: #4a7c4a; }
     html[data-theme="dark"] .script-sub-label { color: #999; }
-    html[data-theme="dark"] .latin-only-separator { background: #333; color: #e0e0e0; }
-    html[data-theme="dark"] .latin-only-list { color: #aaa; }
     html[data-theme="dark"] .latin-help-link a { color: #64b5f6; }
     html[data-theme="dark"] .tab-selector { background: #2a2a2a; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
     html[data-theme="dark"] .tab-selector-label { color: #aaa; }
@@ -406,17 +399,108 @@
     html[data-theme="dark"] .page-footer { color: #777; }
     html[data-theme="dark"] .page-footer a:hover { color: #ccc; }
 
+
     /* Interface option: when "Show shadows" is disabled, suppress all drop shadows. */
     html.no-shadows .section,
     html.no-shadows .tab-selector,
     html.no-shadows .sticky-apply-bar { box-shadow: none; }
+
+    /* Compact mode — collapsed language list and edit button */
+    .section-languages-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #4caf50;
+      padding-bottom: 10px;
+      margin-bottom: 16px;
+    }
+    .section-languages-header h2 {
+      border-bottom: none;
+      padding-bottom: 0;
+      margin: 0;
+    }
+    #modal-close-btn {
+      display: none;
+      background: #757575;
+      color: white;
+      flex-shrink: 0;
+    }
+    #modal-close-btn:hover { background: #616161; }
+    #compact-language-list { display: none; padding: 4px 0; }
+    .compact-lang-item {
+      padding: 5px 0;
+      border-bottom: 1px solid #eee;
+      font-size: 15px;
+    }
+    .compact-lang-item:last-child { border-bottom: none; }
+    .compact-lang-always { color: #888; font-style: italic; }
+    #edit-languages-btn {
+      display: none;
+      margin-top: 12px;
+      background: #4caf50;
+      color: white;
+    }
+    #edit-languages-btn:hover { background: #388e3c; }
+
+    /* Backdrop for language modal */
+    #language-modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 499;
+    }
+
+    /* Compact mode active — hide full table, show collapsed list */
+    html.compact-mode #script-tree,
+    html.compact-mode .scope-note,
+    html.compact-mode .script-controls,
+    html.compact-mode .lang-description { display: none; }
+    html.compact-mode #compact-language-list,
+    html.compact-mode #edit-languages-btn { display: block; }
+    html.compact-mode .latin-help-link { display: none; }
+    html.compact-mode:not(.modal-open) #sticky-apply-bar { display: none !important; }
+
+    /* Modal open — language section floats as overlay */
+    html.modal-open #language-modal-backdrop { display: block; }
+    html.modal-open #section-languages {
+      position: fixed;
+      top: 5%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(90vw, 400px);
+      max-height: 88vh;
+      overflow-y: auto;
+      z-index: 500;
+      margin: 0;
+    }
+    html.modal-open #modal-close-btn { display: block; }
+    html.compact-mode.modal-open #script-tree,
+    html.compact-mode.modal-open .scope-note,
+    html.compact-mode.modal-open .script-controls,
+    html.compact-mode.modal-open .lang-description { display: block; }
+    html.compact-mode.modal-open #compact-language-list,
+    html.compact-mode.modal-open #edit-languages-btn { display: none; }
+
+    /* Dark mode for new elements */
+    @media (prefers-color-scheme: dark) {
+      html:not([data-theme="light"]) .compact-lang-item { border-color: #444; }
+      html:not([data-theme="light"]) .compact-lang-always { color: #777; }
+    }
+    html[data-theme="dark"] .compact-lang-item { border-color: #444; }
+    html[data-theme="dark"] .compact-lang-always { color: #777; }
   </style>
 </head>
 <body>
   <div class="page-header">
-    <h1><img src="icon.svg" alt="" style="height: 1.25em; vertical-align: middle; margin-right: 0.5em;"> URL Lookalike Blocker Options</h1>
-    <button id="help-btn" class="theme-toggle" title="Open help page">Help</button>
-    <button id="theme-toggle" class="theme-toggle" title="Toggle dark/light mode">☾</button>
+    <h1><img src="icon.svg" alt="" style="height: 1.25em; vertical-align: middle; margin-right: 0.5em;"> URL Lookalike Blocker</h1>
+    <div class="page-header-buttons">
+      <span class="page-header-subtitle">Options</span>
+      <div>
+        <button id="help-btn" class="theme-toggle" title="Open help page">Help</button>
+        <button id="theme-toggle" class="theme-toggle" title="Toggle dark/light mode">☾</button>
+      </div>
+    </div>
   </div>
 
   <div id="private-warning" class="private-warning" style="display:none">
@@ -437,6 +521,7 @@
     <h2>Interface options</h2>
     <label class="interface-option"><input type="checkbox" id="show-shadows" checked> Show shadows</label>
     <label class="interface-option"><input type="checkbox" id="show-private-warning" checked> Show private-browsing warning when access is not granted</label>
+    <label class="interface-option"><input type="checkbox" id="compact-mode"> Compact mode — show permitted languages as a list instead of the full language table</label>
   </div>
 
   <div class="section" id="section-whitelist">
@@ -446,8 +531,14 @@
   </div>
 
   <div class="section" id="section-languages">
-    <h2>Permitted languages</h2>
-    <p>Select which languages are permitted beyond your locale defaults. Enabling a language allows its scripts in domain names and permits mixing those scripts within a single domain label.</p>
+    <div class="section-languages-header">
+      <h2>Permitted languages</h2>
+      <button id="modal-close-btn" class="modal-close-btn">Close</button>
+    </div>
+    <p class="lang-description">Select which languages are permitted beyond your locale defaults. Enabling a language allows its scripts in domain names and permits mixing those scripts within a single domain label.</p>
+
+    <div id="compact-language-list"></div>
+    <button id="edit-languages-btn">Edit permitted languages</button>
 
     <div id="script-tree" class="script-tree">
       <!-- language table populated by JavaScript -->
@@ -459,10 +550,10 @@
       <button id="reset-scripts">Reset to locale defaults</button>
     </div>
 
-    <div id="latin-section" class="script-tree">
-      <!-- Always-permitted Latin languages populated by JavaScript -->
-    </div>
+    <p class="latin-help-link"><a id="latin-help-link" href="#" target="_blank" rel="noopener">Latin-script languages are always permitted — see Help for the full list.</a></p>
   </div>
+
+  <div id="language-modal-backdrop"></div>
 
   <footer class="page-footer">
     © 2026 Lee MacKinnell · MPL-2.0 OR GPL-3.0 · <a href="#" id="help-footer-link">Help</a>

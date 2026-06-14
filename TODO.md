@@ -1,18 +1,18 @@
 # TODO / Future Features
 
-## Simple mode for the Options page
+## Compact mode for the Options page
 
-**Goal:** Add a "Simple mode" toggle in the Interface options section that hides the language table entirely, leaving just the whitelist and interface options visible. Aimed at users who want homograph protection without needing to understand scripts and locales — particularly useful on mobile (tablet and phone) and for Latin-script language users who will rarely if ever need to adjust language settings.
+**Goal:** Add a "Compact mode" toggle in the Interface options section that hides the language table entirely, leaving just the whitelist and interface options visible. Aimed at users who want homograph protection without needing to understand scripts and locales — particularly useful on mobile (tablet and phone) and for Latin-script language users who will rarely if ever need to adjust language settings.
 
 **Behaviour:**
-- When simple mode is on, the full language table is replaced with a read-only list of currently permitted languages (one per line, no checkboxes or script tags) with an [Edit] button that opens a modal/dialogue containing just the language table, Reset to locale defaults, and Apply/Discard. Everything else (whitelist, interface options) remains on the main options page.
-- When simple mode is off, the full language table is shown inline as it is today.
-- The locale-derived permitted scripts still apply in the background — simple mode is purely a UI simplification, not a change to the detection logic.
+- When compact mode is on, the full language table is replaced with a read-only list of currently permitted languages (one per line, no checkboxes or script tags) with an [Edit] button that opens a modal/dialogue containing just the language table, Reset to locale defaults, and Apply/Discard. Everything else (whitelist, interface options) remains on the main options page.
+- When compact mode is off, the full language table is shown inline as it is today.
+- The locale-derived permitted scripts still apply in the background — compact mode is purely a UI simplification, not a change to the detection logic.
 - The toggle itself lives in Interface options and takes effect immediately (no Apply step required, same as the other interface options).
 
 **Default by platform:**
-- **Phone:** simple mode on by default — the full language table is too complex for a small screen.
-- **Tablet and desktop:** simple mode off by default — screen real estate is sufficient for the full table, and power users should not have to drill down unnecessarily.
+- **Phone:** compact mode on by default — the full language table is too complex for a small screen.
+- **Tablet and desktop:** compact mode off by default — screen real estate is sufficient for the full table, and power users should not have to drill down unnecessarily.
 - Platform detection via `navigator.userAgent` or screen width at first run to set the initial default; user can override via the toggle at any time.
 
 **Why it helps:**
@@ -21,13 +21,13 @@
 - The edit dialogue approach means language configuration is still accessible on any device without cluttering the default view.
 
 **Implementation order:**
-1. **Simple mode toggle** — add the storage flag and the Interface options checkbox; no behaviour change yet, just the on/off mechanism.
-2. **Permitted languages read-only list + Edit dialogue** — core of simple mode and most complex piece; tackle while design is fresh.
+1. **Compact mode toggle** — add the storage flag and the Interface options checkbox; no behaviour change yet, just the on/off mechanism.
+2. **Permitted languages read-only list + Edit dialogue** — core of compact mode and most complex piece; tackle while design is fresh.
 3. **Whitelist read-only summary + Edit dialogue** — same pattern as languages, easier second time around.
-4. **Platform default detection** — set simple mode on by default for phones once the feature itself is working.
-5. **Help page update** — document simple mode once the design is finalised, not before.
+4. **Platform default detection** — set compact mode on by default for phones once the feature itself is working.
+5. **Help page update** — document compact mode once the design is finalised, not before.
 
-Coloured squares and private browsing warning require no changes in simple mode.
+Coloured squares and private browsing warning require no changes in compact mode.
 
 **Estimated effort:** Small to medium — the read-only list and modal dialogue are slightly more than a pure CSS show/hide, but the detection logic and storage pattern are straightforward.
 
@@ -49,7 +49,7 @@ Coloured squares and private browsing warning require no changes in simple mode.
 
 ## Firefox for Android compatibility
 
-**Prerequisite:** Implement Simple mode (see above) first — it dramatically simplifies the options page layout and makes the Android UI work much more achievable.
+**Prerequisite:** Implement Compact mode (see above) first — it dramatically simplifies the options page layout and makes the Android UI work much more achievable.
 
 **Goal:** Make the extension installable and usable on Firefox for Android tablets as the first step, with phone support to follow as a refinement once the tablet version is working. The existing UI is desktop-first but survives largely intact on a tablet viewport — the language table, coloured squares, and button rows need touch-friendly adjustments rather than a full redesign. Phone support will need more substantial layout rethinking and can be tackled separately.
 
