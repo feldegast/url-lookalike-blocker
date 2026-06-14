@@ -145,17 +145,21 @@ async function openOptions() {
 // silently discard unsaved changes.
 browser.action.onClicked.addListener(openOptions);
 
-// Right-click context menu on the toolbar icon.
-browser.menus.create({ id: 'open-options', title: 'Open Options', contexts: ['action'] });
-browser.menus.create({ id: 'open-help',    title: 'Help',         contexts: ['action'] });
+// Right-click context menu on the toolbar icon (desktop only — browser.menus is undefined on Android).
+if (browser.menus) {
+  browser.runtime.onInstalled.addListener(() => {
+    browser.menus.create({ id: 'open-options', title: 'Open Options', contexts: ['action'] });
+    browser.menus.create({ id: 'open-help',    title: 'Help',         contexts: ['action'] });
+  });
 
-browser.menus.onClicked.addListener((info) => {
-  if (info.menuItemId === 'open-options') {
-    openOptions();
-  } else if (info.menuItemId === 'open-help') {
-    browser.tabs.create({ url: browser.runtime.getURL('help.html') });
-  }
-});
+  browser.menus.onClicked.addListener((info) => {
+    if (info.menuItemId === 'open-options') {
+      openOptions();
+    } else if (info.menuItemId === 'open-help') {
+      browser.tabs.create({ url: browser.runtime.getURL('help.html') });
+    }
+  });
+}
 
 // Clean up when any tab closes.
 browser.tabs.onRemoved.addListener((tabId) => {

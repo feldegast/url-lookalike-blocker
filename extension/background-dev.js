@@ -13,12 +13,16 @@ const DEV_TEST_CAPTURES = [
   { url: 'https://xn--test-34d.com/',  name: 'warning-mixed',      scripts: ['Cyrillic'] },
 ];
 
-browser.menus.create({ id: 'dev-sep',     type: 'separator',                              contexts: ['action'] });
-browser.menus.create({ id: 'dev-capture', title: 'Developer: Capture screenshots',        contexts: ['action'] });
+if (browser.menus) {
+  browser.runtime.onInstalled.addListener(() => {
+    browser.menus.create({ id: 'dev-sep',     type: 'separator',                              contexts: ['action'] });
+    browser.menus.create({ id: 'dev-capture', title: 'Developer: Capture screenshots',        contexts: ['action'] });
+  });
 
-browser.menus.onClicked.addListener((info, tab) => {
-  if (info.menuItemId === 'dev-capture') devCapture(tab.windowId);
-});
+  browser.menus.onClicked.addListener((info, tab) => {
+    if (info.menuItemId === 'dev-capture') devCapture(tab.windowId);
+  });
+}
 
 function devDelay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
