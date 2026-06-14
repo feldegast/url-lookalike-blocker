@@ -297,7 +297,7 @@
       <img src="img/options-black.png" alt="Options page, dark theme">
       <figcaption>The options page showing coloured tabs, interface options, whitelisted domains and permitted languages.</figcaption>
     </figure>
-    <p>The Options page is where you can use a coloured square to return to a block or warning page, modify interface options, edit whitelisted domains and change which languages are permitted. The sections below appear in the order shown above.</p>
+    <p>The Options page is where you can use a coloured square to return to a block or warning page, modify interface options, edit whitelisted domains and change which languages are permitted. All these features are incorporated into a single adaptive interface — in <strong>Compact mode</strong> (the default on phones), the language and whitelist sections collapse into concise read-only summaries with Edit buttons that open them as overlays when you need to make changes.</p>
   </div>
 
   <div class="section">
@@ -339,49 +339,33 @@
 
   <div class="section">
     <h2>Interface options</h2>
-    <p>Two visual preferences that take effect immediately when changed, with no Apply step required.</p>
+    <p>Three preferences that take effect immediately when changed, with no Apply step required.</p>
     <ul>
       <li><strong>Show shadows</strong> — controls the drop shadows around panels on every extension page. Untick for a flatter look. Default: on.</li>
       <li><strong>Show private-browsing warning when access is not granted</strong> — controls whether the private-browsing banner appears on the Options page. Useful in managed Firefox setups where the underlying permission cannot be granted. See <em>Private browsing protection</em> above for details. Default: on.</li>
+      <li><strong>Compact mode</strong> — replaces the full language table and whitelist editor with concise read-only summaries. Tap <strong>Edit permitted languages</strong> or <strong>Edit whitelist</strong> to open each section as an overlay when you need to make changes. On by default on phones; off by default on tablets and desktops.</li>
     </ul>
-    <figure class="img-light">
-      <img src="img/options-interface-white.png" alt="Interface options section, light theme">
-      <figcaption>The interface options section with both preferences enabled.</figcaption>
-    </figure>
-    <figure class="img-dark">
-      <img src="img/options-interface-black.png" alt="Interface options section, dark theme">
-      <figcaption>The interface options section with both preferences enabled.</figcaption>
-    </figure>
   </div>
 
   <div class="section">
     <h2>Whitelisted domains</h2>
-    <p>Domains you have explicitly allowed (via "Allow this domain" on a block or warning page) are listed here. You can remove them at any time — the domain will be blocked or warned again on the next visit.</p>
-    <figure class="img-light">
-      <img src="img/whitelist-white.png" alt="Whitelist section, light theme">
-      <figcaption>The whitelist showing allowed domains.</figcaption>
-    </figure>
-    <figure class="img-dark">
-      <img src="img/whitelist-black.png" alt="Whitelist section, dark theme">
-      <figcaption>The whitelist showing allowed domains.</figcaption>
-    </figure>
+    <p>Domains you have explicitly allowed (via "Allow this domain" on a block or warning page) are listed here with their offending characters annotated. You can remove any domain at any time — it will be blocked or warned again on the next visit.</p>
+    <p>In Compact mode, the whitelist shows each domain with its offending characters highlighted in red. Click <strong>Edit whitelist</strong> to open the full editor.</p>
   </div>
 
   <div class="section">
     <h2>Permitted languages</h2>
-    <p>Tick the languages whose scripts (character sets) you want to allow in domain names. Your browser's locale is used as the starting point — so if your Firefox language is set to Japanese, then Japanese is already permitted and the Han, Hiragana, and Katakana scripts are allowed. In addition, Latin is universally permitted regardless of locale, since disabling Latin would block a significant portion of the internet.</p>
-    <p>Each language row shows its scripts as small tags. A <strong>green tag</strong> means that script is currently permitted; a <strong>grey tag</strong> means it is not. The tag colour reflects the real permitted set, so you can see at a glance which scripts are active.</p>
-    <p>Languages that use only a single non-Latin script are ticked automatically when that script turns green — for example, enabling Japanese enables the Han script, and Chinese (Simplified and Traditional) tick themselves automatically because Han is their only required script (shown with a dimmed label). Korean is not automatically ticked because it also requires the Hangul script, which is not yet permitted. Languages with more than one script are never ticked automatically — enable those explicitly if you need them, as doing so will permit all scripts belonging to that language to be combined within a single URL.</p>
-    <p>Unticking a language removes its scripts from the list of permitted scripts. If any other enabled language relied on those same scripts, that language is also disabled and its scripts removed in turn. This cascade continues until the permitted set is stable — every enabled language has all its scripts permitted, and every disabled language has at least one script that is not. Note that even if all of a language's scripts happen to be permitted through other languages, the language itself does not automatically become enabled; only single-script languages are ticked automatically, multi-script languages must be enabled explicitly, since doing so also allows their scripts to appear together in a single domain.</p>
-    <p>Enabling Japanese results in the following — the scripts Han, Hiragana and Katakana turn green and then Chinese (Simplified and Traditional) are automatically enabled because Han is their only script so there are no mixed-script issues that need explicit approval. Korean stays unticked because it also requires Hangul, which is not yet permitted.</p>
-    <p>If you prefer a simpler view, enable <strong>Compact mode</strong> in Interface options. The full language table is replaced by a short summary list of your enabled languages (with Latin languages always shown at the bottom as they are always permitted). An <strong>Edit permitted languages</strong> button opens the full table as a dialogue when you want to make changes.</p>
+    <p>Tick the languages whose scripts (character sets) you want to allow in domain names. Your browser's locale is used as the starting point — so if your Firefox language is set to Japanese, then Japanese is already permitted and the Han, Hiragana, and Katakana scripts are allowed. Latin is universally permitted regardless of locale.</p>
+    <p>Each language row shows its scripts as small tags. A <strong>green tag</strong> means that script is currently permitted; a <strong>grey tag</strong> means it is not.</p>
+    <p>Languages that use only a single non-Latin script are ticked automatically when that script turns green — for example, enabling Japanese enables Han, which causes Chinese (Simplified and Traditional) to tick themselves automatically (shown with a dimmed label). Multi-script languages like Korean are never ticked automatically and must be enabled explicitly.</p>
+    <p>Unticking a language removes its scripts from the permitted set. Any other enabled language that relied on those same scripts is also disabled in turn, cascading until the permitted set is stable.</p>
     <figure class="img-light">
       <img src="img/options-languages-white.png" alt="Permitted languages section, light theme">
-      <figcaption>Languages table showing Japanese enabled as well as all languages that become enabled due to shared scripts.</figcaption>
+      <figcaption>The language table with Japanese enabled. Han, Hiragana and Katakana turn green; Chinese (Simplified and Traditional) tick automatically. This is also the view shown when you tap Edit permitted languages in Compact mode.</figcaption>
     </figure>
     <figure class="img-dark">
       <img src="img/options-languages-black.png" alt="Permitted languages section, dark theme">
-      <figcaption>Languages table showing Japanese enabled as well as all languages that become enabled due to shared scripts.</figcaption>
+      <figcaption>The language table with Japanese enabled, dark theme.</figcaption>
     </figure>
   </div>
 
