@@ -202,6 +202,12 @@ function updateCompactLanguageList() {
     item.textContent = lang;
     list.appendChild(item);
   }
+  for (const lang of [...derivedTicked].sort()) {
+    const item = document.createElement('div');
+    item.className = 'compact-lang-item compact-lang-always';
+    item.textContent = lang;
+    list.appendChild(item);
+  }
   const latinItem = document.createElement('div');
   latinItem.className = 'compact-lang-item compact-lang-always';
   latinItem.textContent = 'Latin languages (always permitted)';

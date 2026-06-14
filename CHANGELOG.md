@@ -6,11 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- **Compact mode for the Options page.** A new "Compact mode" toggle in Interface options replaces the full language table with a concise read-only list of enabled languages. Explicitly enabled languages appear in normal text; automatically enabled languages (single-script languages whose script is permitted through another enabled language) appear in italics below them; "Latin languages (always permitted)" is always shown at the bottom. An "Edit permitted languages" button opens the language table as a modal overlay for making changes. Compact mode is intended for users who rarely need to adjust language settings and for smaller screens.
+
 ### Changed
 
 - **"Mongolian (Cyrillic)" renamed to "Mongolian" in the Options language table.** The `(Cyrillic)` qualifier was added when the table had no other way to communicate script information; now that every language row shows its scripts as coloured tags, the qualifier is redundant and has been removed.
 - **Warning pages now identify themselves by type in their heading.** The on-page heading (and browser tab title) now reads "Confusable Character Domain Warning" or "Mixed Script Domain Warning" instead of the previous "Confusable Character Domain" / "Mixed Script Domain", so it is clear to the user which kind of warning they are looking at.
 - **Help page: new "Latin-script languages — always permitted" section.** Documents the broader set of Latin-script languages whose URLs always load normally. Grouped into European, Africa/Oceania/Americas, and multi-script edge cases (Bosnian, Azerbaijani, Uzbek, Turkmen, Kazakh, Kurdish). The always-permitted language list has been removed from the Options page; a link to this Help section appears in its place.
+- **Help page: Permitted languages section updated for Compact mode.** Added a paragraph explaining Compact mode, its summary list, and the Edit button, so the full explanation of the language system is in Help rather than repeated on the Options page.
 - **Help page: warning sections split into two top-level sections.** The single "Warning page" section (which contained confusable and mixed-script as sub-headings) has been replaced with two independent sections — "Confusable Character Domain Warning" and "Mixed Script Domain Warning" — matching the headings now shown on the pages themselves. Each section has its own introduction, screenshots, and "What you can do" list.
 
 ## [1.1] — 2026-06-13
