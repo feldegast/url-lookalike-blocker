@@ -1,5 +1,11 @@
 # TODO / Future Features
 
+## Bug: text overflows container box on block/warning page on Android
+
+On Android tablets, text on at least one of the block or warning pages extends beyond the right edge of the containing box. All text is visible (it does not go off-screen) but it overflows the box boundary. Likely a missing `word-break`, `overflow-wrap`, or `max-width` on the container or one of its text elements — long punycode/unicode domain strings or the character table are the most likely culprits. Needs investigation on device.
+
+---
+
 ## Compact mode for the Options page
 
 **Goal:** Add a "Compact mode" toggle in the Interface options section that hides the language table entirely, leaving just the whitelist and interface options visible. Aimed at users who want homograph protection without needing to understand scripts and locales — particularly useful on mobile (tablet and phone) and for Latin-script language users who will rarely if ever need to adjust language settings.
