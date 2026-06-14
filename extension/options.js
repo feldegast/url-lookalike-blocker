@@ -241,7 +241,13 @@ function closeLanguageModal() {
 
 async function initCompactMode() {
   const result = await browser.storage.local.get('compactMode');
-  applyCompactMode(result.compactMode === true);
+  if (result.compactMode === undefined) {
+    const isPhone = Math.min(screen.width, screen.height) < 600;
+    await browser.storage.local.set({ compactMode: isPhone });
+    applyCompactMode(isPhone);
+  } else {
+    applyCompactMode(result.compactMode === true);
+  }
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
