@@ -49,23 +49,13 @@ Coloured squares and private browsing warning require no changes in compact mode
 
 ## Firefox for Android compatibility
 
-**Prerequisite:** Implement Compact mode (see above) first — it dramatically simplifies the options page layout and makes the Android UI work much more achievable.
+**Status: initial support shipped.** `gecko_android` declared in manifest, touch-friendly CSS added to all pages, blocked/warning buttons stack vertically on narrow screens.
 
-**Goal:** Make the extension installable and usable on Firefox for Android tablets as the first step, with phone support to follow as a refinement once the tablet version is working. The existing UI is desktop-first but survives largely intact on a tablet viewport — the language table, coloured squares, and button rows need touch-friendly adjustments rather than a full redesign. Phone support will need more substantial layout rethinking and can be tackled separately.
+**Remaining:**
 
-**What ports for free:** The detection logic itself is platform-agnostic. `webRequest`, `storage`, and the Unicode-script work in `background.js` and `unicode-scripts.js` would behave identically on Android, so the core security value carries over without code changes.
-
-**What needs attention (tablet-first):**
-
-- **`gecko_android` declaration** in `browser_specific_settings.gecko_android` so Firefox for Android treats the extension as supported (currently only `gecko` is declared, which is desktop-only).
-- **Touch-friendly CSS** across `options.html`, `blocked.html`, `warning.html`, and `help.html` — increase touch target sizes, add padding to buttons, and ensure the language table is comfortably usable with a finger. Tablet viewports are wide enough that the overall layout can remain intact.
-- **`menus` API on Android** — Firefox for Android has no traditional right-click, so the "Open Options" / "Help" context menu items either won't surface or will behave differently. Verify whether the menus declarations are silently ignored or cause errors; either way the toolbar-icon flow and in-page links should remain the primary entry points.
-- **Toolbar icon UX** — on Android the extension icon lives inside the browser menu rather than the toolbar, so the icon-click → options flow still works but the badge may not appear (Android doesn't show toolbar badges). Confirm and adjust expectations in the help docs if needed.
-- **Testing** on a real Android 16 tablet (available) before submission.
-
-**Phone support (follow-up):** The options page layout — wide language table, coloured squares, multiple stacked sections — will need more significant rethinking for narrow phone screens. Treat this as a separate pass once the tablet version is shipping. A real Android 16 phone is available for testing.
-
-**Estimated effort:** Tablet version — a few hours (mostly manifest + CSS tweaks). Phone version — a separate, more substantial effort.
+- **Toolbar badge** — on Android the extension icon lives inside the browser menu rather than the toolbar; confirm whether the numeric badge appears. If not, adjust help docs expectations.
+- **Context menu** — Firefox for Android has no right-click menu. The `menus` declaration is silently ignored. This is acceptable: the extension icon tap opens Options, and the Help button inside Options opens the help page — both entry points work without the context menu.
+- **Testing** on a real Android 16 tablet and phone (both available) before submission.
 
 ## Internationalisation (i18n)
 

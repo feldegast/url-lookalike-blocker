@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Added
 
 - **Compact mode for the Options page.** A new "Compact mode" toggle in Interface options replaces the full language table and whitelist editor with concise read-only summaries. The language summary lists explicitly enabled languages in normal text, automatically enabled languages (single-script languages whose script is already permitted) in italics, and "Latin languages (always permitted)" at the bottom. The whitelist summary lists each whitelisted domain with its offending characters highlighted in red. "Edit" buttons open each section as a modal overlay for making changes. Compact mode defaults to on for phones and off for tablets and desktops, and can be toggled at any time.
+- **Firefox for Android support.** The extension is now declared compatible with Firefox for Android (minimum version 140). Tapping the extension icon opens the Options page; the Help button inside Options opens the help page. The browser right-click context menu is not available on Android but all functionality remains accessible through these two entry points. All extension pages have touch-friendly sizing: buttons have a 44px minimum tap height, and the blocked/warning page action buttons stack vertically on narrow screens. Screenshots and help-page images scale to fit the viewport width.
 
 ### Changed
 
