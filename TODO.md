@@ -5,16 +5,31 @@
 **Goal:** Add a "Simple mode" toggle in the Interface options section that hides the language table entirely, leaving just the whitelist and interface options visible. Aimed at users who want homograph protection without needing to understand scripts and locales — particularly useful on mobile (tablet and phone) and for Latin-script language users who will rarely if ever need to adjust language settings.
 
 **Behaviour:**
-- When simple mode is on, the permitted languages section and the Reset to locale defaults / Apply / Discard controls are hidden.
-- The whitelist section and interface options remain fully functional.
+- When simple mode is on, the full language table is replaced with a read-only list of currently permitted languages (one per line, no checkboxes or script tags) with an [Edit] button that opens a modal/dialogue containing just the language table, Reset to locale defaults, and Apply/Discard. Everything else (whitelist, interface options) remains on the main options page.
+- When simple mode is off, the full language table is shown inline as it is today.
 - The locale-derived permitted scripts still apply in the background — simple mode is purely a UI simplification, not a change to the detection logic.
 - The toggle itself lives in Interface options and takes effect immediately (no Apply step required, same as the other interface options).
 
+**Default by platform:**
+- **Phone:** simple mode on by default — the full language table is too complex for a small screen.
+- **Tablet and desktop:** simple mode off by default — screen real estate is sufficient for the full table, and power users should not have to drill down unnecessarily.
+- Platform detection via `navigator.userAgent` or screen width at first run to set the initial default; user can override via the toggle at any time.
+
 **Why it helps:**
 - Makes the extension approachable for casual users who just want the protection.
-- Dramatically simplifies the options page for phone and tablet layouts where the language table is the hardest element to adapt to a narrow screen.
+- Dramatically simplifies the options page for phone layouts.
+- The edit dialogue approach means language configuration is still accessible on any device without cluttering the default view.
 
-**Estimated effort:** Small — mostly CSS show/hide with a storage flag, matching the existing pattern for the shadows and private-warning interface options.
+**Implementation order:**
+1. **Simple mode toggle** — add the storage flag and the Interface options checkbox; no behaviour change yet, just the on/off mechanism.
+2. **Permitted languages read-only list + Edit dialogue** — core of simple mode and most complex piece; tackle while design is fresh.
+3. **Whitelist read-only summary + Edit dialogue** — same pattern as languages, easier second time around.
+4. **Platform default detection** — set simple mode on by default for phones once the feature itself is working.
+5. **Help page update** — document simple mode once the design is finalised, not before.
+
+Coloured squares and private browsing warning require no changes in simple mode.
+
+**Estimated effort:** Small to medium — the read-only list and modal dialogue are slightly more than a pure CSS show/hide, but the detection logic and storage pattern are straightforward.
 
 ---
 
