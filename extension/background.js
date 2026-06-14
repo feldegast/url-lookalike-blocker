@@ -134,7 +134,7 @@ async function openOptions() {
     }
     browser.tabs.create({
       url: browser.runtime.getURL('options.html'),
-      index: currentTab ? currentTab.index + 1 : undefined
+      ...(currentTab && { index: currentTab.index + 1 })
     }).then(tab => { optionsTabId = tab.id; });
   }
 }
@@ -285,7 +285,7 @@ browser.runtime.onMessage.addListener((message, sender) => {
         const urlSuffix = entryUrl ? `&blockedUrl=${encodeURIComponent(entryUrl)}` : '';
         browser.tabs.create({
           url: browser.runtime.getURL('options.html') + `?blockedTabId=${blockedTabId}${urlSuffix}`,
-          index: currentTab ? currentTab.index + 1 : undefined
+          ...(currentTab && { index: currentTab.index + 1 })
         }).then(tab => { optionsTabId = tab.id; });
       });
     }
