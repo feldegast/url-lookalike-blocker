@@ -102,6 +102,19 @@ Coloured squares and private browsing warning require no changes in compact mode
 
 ---
 
+## Recapture help-page screenshots for v1.2 changes
+
+The following screenshots are out of date and need recapturing before the next release:
+
+- **`options-white.png` / `options-black.png`** — full options page (new header layout, Compact mode toggle now visible in Interface options).
+- **`warning-confusable-white.png` / `warning-confusable-black.png`** — heading now reads "Confusable Character Domain Warning".
+- **`warning-mixed-white.png` / `warning-mixed-black.png`** — heading now reads "Mixed Script Domain Warning".
+- **`options-interface-white.png` / `options-interface-black.png`** — Interface options section now has three checkboxes (Compact mode added). Note: this screenshot was removed from the help page in v1.2 so recapturing is low priority unless it is added back.
+
+Follow the runbook below to recapture.
+
+---
+
 ## Runbook: recapturing help-page screenshots
 
 This isn't a TODO — it's the reference for when underlying UI changes warrant fresh captures. The capture/normalise/upload pipeline is automated; what stays manual is opening Firefox and triggering each page.

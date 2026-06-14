@@ -20,6 +20,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **Help page: Options sections rewritten for compact mode.** The Options page intro now describes the adaptive interface. Interface options gains a Compact mode entry; its screenshot (out of date) has been removed. Whitelisted domains is now text-only. Permitted languages text is trimmed and both screenshots are reframed as also showing the view that appears in the compact mode modal overlay.
 - **Help page: warning sections split into two top-level sections.** The single "Warning page" section (which contained confusable and mixed-script as sub-headings) has been replaced with two independent sections — "Confusable Character Domain Warning" and "Mixed Script Domain Warning" — matching the headings now shown on the pages themselves. Each section has its own introduction, screenshots, and "What you can do" list.
 
+### Fixed
+
+- **Extension non-functional on Firefox for Android.** `browser.menus` is undefined on Android; calling it unconditionally at background-script startup threw a TypeError that halted the script before the `webRequest.onBeforeRequest` blocking listener could register, so no domains were blocked. All `browser.menus` calls are now guarded with `if (browser.menus)`. Menu items are also moved into `browser.runtime.onInstalled` so they are only created once rather than on every event-page wake, removing duplicate-id console noise on desktop.
+- **"Open extension options" button failing on Android block and warning pages.** `browser.tabs.create` was called with `index: undefined` when no current tab could be found. This caused the call to fail silently on Android. The `index` property is now only included when it has a value.
+- **Coloured tab squares stretched on Android.** The touch-friendly `min-height: 44px` rule applied to all buttons, making the 18×18px tab dot squares tall but narrow. Tab dot buttons now have an explicit 32×32px size on touch devices.
+
 ## [1.1] — 2026-06-13
 
 ### Added
