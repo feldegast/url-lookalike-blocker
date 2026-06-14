@@ -69,18 +69,23 @@ def build():
                 dst_path = os.path.join(tmp, rel)
                 os.makedirs(os.path.dirname(dst_path), exist_ok=True)
 
-                with open(src_path, 'r', encoding='utf-8', errors='replace') as f:
-                    content = f.read()
-
                 if filename == 'manifest.json':
-                    content = strip_manifest(content)
+                    with open(src_path, 'r', encoding='utf-8') as f:
+                        content = strip_manifest(f.read())
+                    with open(dst_path, 'w', encoding='utf-8') as f:
+                        f.write(content)
                 elif filename.endswith('.js'):
-                    content = strip_js(content)
+                    with open(src_path, 'r', encoding='utf-8') as f:
+                        content = strip_js(f.read())
+                    with open(dst_path, 'w', encoding='utf-8') as f:
+                        f.write(content)
                 elif filename.endswith('.html'):
-                    content = strip_html(content)
-
-                with open(dst_path, 'w', encoding='utf-8') as f:
-                    f.write(content)
+                    with open(src_path, 'r', encoding='utf-8') as f:
+                        content = strip_html(f.read())
+                    with open(dst_path, 'w', encoding='utf-8') as f:
+                        f.write(content)
+                else:
+                    shutil.copy2(src_path, dst_path)
 
         with zipfile.ZipFile(out_zip, 'w', zipfile.ZIP_DEFLATED) as zf:
             for dirpath, dirnames, filenames in os.walk(tmp):
