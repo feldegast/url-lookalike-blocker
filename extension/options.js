@@ -222,12 +222,20 @@ function applyCompactMode(enabled) {
 }
 
 function openLanguageModal() {
+  const section = document.getElementById('section-languages');
+  const placeholder = document.createElement('div');
+  placeholder.id = 'language-modal-placeholder';
+  placeholder.style.height = section.getBoundingClientRect().height + 'px';
+  section.parentNode.insertBefore(placeholder, section);
   document.documentElement.classList.add('modal-open');
-  document.getElementById('section-languages').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.body.style.overflow = 'hidden';
 }
 
 function closeLanguageModal() {
   document.documentElement.classList.remove('modal-open');
+  document.body.style.overflow = '';
+  const placeholder = document.getElementById('language-modal-placeholder');
+  if (placeholder) placeholder.remove();
   updateCompactLanguageList();
 }
 
@@ -374,7 +382,55 @@ function getOffendingChars(unicodeDomain) {
   return chars;
 }
 
+function renderCompactWhitelist() {
+  const summary = document.getElementById('compact-whitelist-summary');
+  if (!summary) return;
+  summary.replaceChildren();
+  if (whitelist.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'compact-whitelist-empty';
+    empty.textContent = 'No whitelisted domains.';
+    summary.appendChild(empty);
+    return;
+  }
+  for (const domain of whitelist) {
+    const offendingSet = new Set(getOffendingChars(domain).map(o => o.char));
+    const item = document.createElement('div');
+    item.className = 'compact-whitelist-item';
+    for (const char of domain) {
+      if (offendingSet.has(char)) {
+        const span = document.createElement('span');
+        span.className = 'offending-char-glyph';
+        span.textContent = char;
+        item.appendChild(span);
+      } else {
+        item.appendChild(document.createTextNode(char));
+      }
+    }
+    summary.appendChild(item);
+  }
+}
+
+function openWhitelistModal() {
+  const section = document.getElementById('section-whitelist');
+  const placeholder = document.createElement('div');
+  placeholder.id = 'whitelist-modal-placeholder';
+  placeholder.style.height = section.getBoundingClientRect().height + 'px';
+  section.parentNode.insertBefore(placeholder, section);
+  document.documentElement.classList.add('whitelist-modal-open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeWhitelistModal() {
+  document.documentElement.classList.remove('whitelist-modal-open');
+  document.body.style.overflow = '';
+  const placeholder = document.getElementById('whitelist-modal-placeholder');
+  if (placeholder) placeholder.remove();
+  renderCompactWhitelist();
+}
+
 function renderWhitelist() {
+  renderCompactWhitelist();
   const container = document.getElementById('whitelist');
   container.replaceChildren();
 
@@ -762,6 +818,18 @@ function setupEventListeners() {
 
   document.getElementById('language-modal-backdrop').addEventListener('click', () => {
     closeLanguageModal();
+  });
+
+  document.getElementById('edit-whitelist-btn').addEventListener('click', () => {
+    openWhitelistModal();
+  });
+
+  document.getElementById('whitelist-modal-close-btn').addEventListener('click', () => {
+    closeWhitelistModal();
+  });
+
+  document.getElementById('whitelist-modal-backdrop').addEventListener('click', () => {
+    closeWhitelistModal();
   });
 
   // Show private-browsing warning toggle. Checkbox checked = show warning =

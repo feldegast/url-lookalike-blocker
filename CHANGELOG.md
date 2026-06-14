@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
-- **Compact mode for the Options page.** A new "Compact mode" toggle in Interface options replaces the full language table with a concise read-only list of enabled languages. Explicitly enabled languages appear in normal text; automatically enabled languages (single-script languages whose script is permitted through another enabled language) appear in italics below them; "Latin languages (always permitted)" is always shown at the bottom. An "Edit permitted languages" button opens the language table as a modal overlay for making changes. Compact mode is intended for users who rarely need to adjust language settings and for smaller screens.
+- **Compact mode for the Options page.** A new "Compact mode" toggle in Interface options replaces the full language table and whitelist editor with concise read-only summaries. The language summary lists explicitly enabled languages in normal text, automatically enabled languages (single-script languages whose script is already permitted) in italics, and "Latin languages (always permitted)" at the bottom. The whitelist summary lists each whitelisted domain with its offending characters highlighted in red. "Edit" buttons open each section as a modal overlay for making changes. Compact mode is intended for users who rarely need to adjust language settings and for smaller screens.
 
 ### Changed
 

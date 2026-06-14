@@ -10,7 +10,7 @@
     body {
       font-family: Arial, sans-serif;
       font-size: 16px;
-      max-width: 600px;
+      max-width: 520px;
       margin: 20px auto;
       padding: 20px;
       background-color: #e8e8e8;
@@ -408,7 +408,11 @@
     html.no-shadows .sticky-apply-bar { box-shadow: none; }
 
     /* Compact mode — collapsed language list and edit button */
-    .section-languages-header {
+    .section-languages-header h2 {
+      border-bottom: 2px solid #4caf50;
+      padding-bottom: 10px;
+    }
+    html.modal-open .section-languages-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -416,7 +420,7 @@
       padding-bottom: 10px;
       margin-bottom: 16px;
     }
-    .section-languages-header h2 {
+    html.modal-open .section-languages-header h2 {
       border-bottom: none;
       padding-bottom: 0;
       margin: 0;
@@ -449,8 +453,28 @@
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.5);
+      background: rgba(0, 0, 0, 0.85);
       z-index: 499;
+    }
+
+    /* Whitelist compact elements */
+    .section-whitelist-header h2 { border-bottom: 2px solid #4caf50; padding-bottom: 10px; }
+    #whitelist-modal-close-btn { display: none; background: #757575; color: white; flex-shrink: 0; }
+    #whitelist-modal-close-btn:hover { background: #616161; }
+    #compact-whitelist-summary { display: none; padding: 4px 0; }
+    .compact-whitelist-item {
+      padding: 5px 0;
+      border-bottom: 1px solid #eee;
+      font-size: 15px;
+      font-family: monospace;
+    }
+    .compact-whitelist-item:last-child { border-bottom: none; }
+    .compact-whitelist-empty { color: #888; font-style: italic; padding: 4px 0; }
+    #edit-whitelist-btn { display: none; margin-top: 12px; background: #4caf50; color: white; }
+    #edit-whitelist-btn:hover { background: #388e3c; }
+    #whitelist-modal-backdrop {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.85); z-index: 499;
     }
 
     /* Compact mode active — hide full table, show collapsed list */
@@ -461,7 +485,11 @@
     html.compact-mode #compact-language-list,
     html.compact-mode #edit-languages-btn { display: block; }
     html.compact-mode .latin-help-link { display: none; }
-    html.compact-mode:not(.modal-open) #sticky-apply-bar { display: none !important; }
+    html.compact-mode #whitelist,
+    html.compact-mode .whitelist-description { display: none; }
+    html.compact-mode #compact-whitelist-summary,
+    html.compact-mode #edit-whitelist-btn { display: block; }
+    html.compact-mode:not(.modal-open):not(.whitelist-modal-open) #sticky-apply-bar { display: none !important; }
 
     /* Modal open — language section floats as overlay */
     html.modal-open #language-modal-backdrop { display: block; }
@@ -470,7 +498,7 @@
       top: 5%;
       left: 50%;
       transform: translateX(-50%);
-      width: min(90vw, 400px);
+      width: min(90vw, 360px);
       max-height: 88vh;
       overflow-y: auto;
       z-index: 500;
@@ -482,13 +510,35 @@
     html.compact-mode.modal-open #compact-language-list,
     html.compact-mode.modal-open #edit-languages-btn { display: none; }
 
+    /* Whitelist modal open */
+    html.whitelist-modal-open #whitelist-modal-backdrop { display: block; }
+    html.whitelist-modal-open #section-whitelist {
+      position: fixed; top: 5%; left: 50%; transform: translateX(-50%);
+      width: min(90vw, 360px); max-height: 88vh; overflow-y: auto;
+      z-index: 500; margin: 0;
+    }
+    html.whitelist-modal-open .section-whitelist-header {
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 2px solid #4caf50; padding-bottom: 10px; margin-bottom: 16px;
+    }
+    html.whitelist-modal-open .section-whitelist-header h2 { border-bottom: none; padding-bottom: 0; margin: 0; }
+    html.whitelist-modal-open #whitelist-modal-close-btn { display: block; }
+    html.compact-mode.whitelist-modal-open #whitelist,
+    html.compact-mode.whitelist-modal-open .whitelist-description { display: block; }
+    html.compact-mode.whitelist-modal-open #compact-whitelist-summary,
+    html.compact-mode.whitelist-modal-open #edit-whitelist-btn { display: none; }
+
     /* Dark mode for new elements */
     @media (prefers-color-scheme: dark) {
       html:not([data-theme="light"]) .compact-lang-item { border-color: #444; }
       html:not([data-theme="light"]) .compact-lang-always { color: #777; }
+      html:not([data-theme="light"]) .compact-whitelist-item { border-color: #444; }
+      html:not([data-theme="light"]) .compact-whitelist-empty { color: #777; }
     }
     html[data-theme="dark"] .compact-lang-item { border-color: #444; }
     html[data-theme="dark"] .compact-lang-always { color: #777; }
+    html[data-theme="dark"] .compact-whitelist-item { border-color: #444; }
+    html[data-theme="dark"] .compact-whitelist-empty { color: #777; }
   </style>
 </head>
 <body>
@@ -524,14 +574,20 @@
     <h2>Interface options</h2>
     <label class="interface-option"><input type="checkbox" id="show-shadows" checked> Show shadows</label>
     <label class="interface-option"><input type="checkbox" id="show-private-warning" checked> Show private-browsing warning when access is not granted</label>
-    <label class="interface-option"><input type="checkbox" id="compact-mode"> Compact mode — show permitted languages as a list instead of the full language table</label>
+    <label class="interface-option"><input type="checkbox" id="compact-mode"> Compact mode</label>
   </div>
 
   <div class="section" id="section-whitelist">
-    <h2>Whitelisted domains</h2>
-    <p>Domains you have explicitly allowed. These will not be blocked even if they contain disallowed scripts.</p>
+    <div class="section-whitelist-header">
+      <h2>Whitelisted domains</h2>
+      <button id="whitelist-modal-close-btn" class="modal-close-btn">Close</button>
+    </div>
+    <p class="whitelist-description">Domains you have explicitly allowed. These will not be blocked even if they contain disallowed scripts.</p>
+    <div id="compact-whitelist-summary"></div>
+    <button id="edit-whitelist-btn">Edit whitelist</button>
     <div id="whitelist"></div>
   </div>
+  <div id="whitelist-modal-backdrop"></div>
 
   <div class="section" id="section-languages">
     <div class="section-languages-header">
