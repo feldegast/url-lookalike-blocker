@@ -1,43 +1,29 @@
 # TODO / Future Features
 
-## Bug: text overflows container box on block/warning page on Android
+## Recapture and add help-page screenshots
 
-On Android tablets, text on at least one of the block or warning pages extends beyond the right edge of the containing box. All text is visible (it does not go off-screen) but it overflows the box boundary. Likely a missing `word-break`, `overflow-wrap`, or `max-width` on the container or one of its text elements — long punycode/unicode domain strings or the character table are the most likely culprits. Needs investigation on device.
+The following screenshots need to be taken or retaken before the next release. Use Firefox DevTools Responsive Design Mode with Touch Simulation enabled for the compact-mode captures (manually tick Compact mode in Interface options).
 
----
+### Recapture — stale desktop screenshots
 
-## Compact mode for the Options page
+- **`options-white.png` / `options-black.png`** — full options page (header layout and Interface options section changed in v1.2).
+- **`warning-confusable-white.png` / `warning-confusable-black.png`** — page heading now reads "Confusable Character Domain Warning".
+- **`warning-mixed-white.png` / `warning-mixed-black.png`** — page heading now reads "Mixed Script Domain Warning".
 
-**Goal:** Add a "Compact mode" toggle in the Interface options section that hides the language table entirely, leaving just the whitelist and interface options visible. Aimed at users who want homograph protection without needing to understand scripts and locales — particularly useful on mobile (tablet and phone) and for Latin-script language users who will rarely if ever need to adjust language settings.
+### New — compact mode screenshots (desktop, reused for Android section)
 
-**Behaviour:**
-- When compact mode is on, the full language table is replaced with a read-only list of currently permitted languages (one per line, no checkboxes or script tags) with an [Edit] button that opens a modal/dialogue containing just the language table, Reset to locale defaults, and Apply/Discard. Everything else (whitelist, interface options) remains on the main options page.
-- When compact mode is off, the full language table is shown inline as it is today.
-- The locale-derived permitted scripts still apply in the background — compact mode is purely a UI simplification, not a change to the detection logic.
-- The toggle itself lives in Interface options and takes effect immediately (no Apply step required, same as the other interface options).
+Capture with Compact mode enabled and viewport set to ~390px wide in Responsive Design Mode:
 
-**Default by platform:**
-- **Phone:** compact mode on by default — the full language table is too complex for a small screen.
-- **Tablet and desktop:** compact mode off by default — screen real estate is sufficient for the full table, and power users should not have to drill down unnecessarily.
-- Platform detection via `navigator.userAgent` or screen width at first run to set the initial default; user can override via the toggle at any time.
+- **`options-compact-white.png` / `options-compact-black.png`** — compact mode main view (language and whitelist summaries visible, Edit buttons present).
+- **`options-compact-languages-white.png` / `options-compact-languages-black.png`** — language modal overlay open (tap Edit permitted languages to trigger).
+- **`options-compact-whitelist-white.png` / `options-compact-whitelist-black.png`** — whitelist modal overlay open (tap Edit whitelist to trigger; add a test domain first so the overlay is not empty).
 
-**Why it helps:**
-- Makes the extension approachable for casual users who just want the protection.
-- Dramatically simplifies the options page for phone layouts.
-- The edit dialogue approach means language configuration is still accessible on any device without cluttering the default view.
+Once captured, replace the `img-placeholder` divs in `help.html` with `<img>` elements using these filenames.
 
-**Implementation order:**
-1. **Compact mode toggle** — add the storage flag and the Interface options checkbox; no behaviour change yet, just the on/off mechanism.
-2. **Permitted languages read-only list + Edit dialogue** — core of compact mode and most complex piece; tackle while design is fresh.
-3. **Whitelist read-only summary + Edit dialogue** — same pattern as languages, easier second time around.
-4. **Platform default detection** — set compact mode on by default for phones once the feature itself is working.
-5. **Help page update** — document compact mode once the design is finalised, not before.
-
-Coloured squares and private browsing warning require no changes in compact mode.
-
-**Estimated effort:** Small to medium — the read-only list and modal dialogue are slightly more than a pure CSS show/hide, but the detection logic and storage pattern are straightforward.
+Follow the standard runbook below to normalise and gather listing screenshots after capturing.
 
 ---
+
 
 ## Animate script-tag colour transitions on the options page
 
@@ -55,13 +41,12 @@ Coloured squares and private browsing warning require no changes in compact mode
 
 ## Firefox for Android compatibility
 
-**Status: initial support shipped.** `gecko_android` declared in manifest, touch-friendly CSS added to all pages, blocked/warning buttons stack vertically on narrow screens.
+**Status: live.** Extension published and working on Android.
 
 **Remaining:**
 
-- **Toolbar badge** — on Android the extension icon lives inside the browser menu rather than the toolbar; confirm whether the numeric badge appears. If not, adjust help docs expectations.
-- **Context menu** — Firefox for Android has no right-click menu. The `menus` declaration is silently ignored. This is acceptable: the extension icon tap opens Options, and the Help button inside Options opens the help page — both entry points work without the context menu.
-- **Testing** on a real Android 16 tablet and phone (both available) before submission.
+- **Toolbar badge** — the extension icon is inside the browser menu, not the toolbar. Confirm whether the numeric badge appears on the menu entry. If not, remove badge mention from the Android help section.
+- **Script column overflow fix** — `overflow-x: auto` on `.details` and `word-break: break-all` on table cells applied in current code. Verify on device after next release.
 
 ## Internationalisation (i18n)
 

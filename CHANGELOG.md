@@ -4,6 +4,18 @@ All notable changes to URL Lookalike Blocker will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Help page: Firefox for Android section.** Documents how the extension works differently on Android: no toolbar icon, Options is accessed via the Open extension options button on block and warning pages, compact mode is on by default on phones and off on tablets. The Extension icon section is now subtitled "(desktop)" with a link to the Android section.
+- **Help page: compact mode screenshots (placeholders).** The Options page section now has subsections for full view, compact mode, permitted languages overlay, and whitelist overlay. Placeholder divs mark where screenshots are to be inserted; these same image files will be reused in the Android section.
+
+### Fixed
+
+- **Script name overflows the details box border on narrow screens.** On Android (and other narrow viewports), long script names in the offending-characters table on the block and warning pages could extend beyond the border of the details box. Fixed with `overflow-x: auto` on the details container and `word-break: break-all` on table cells. Applies to both `blocked.html` and `warning.html`.
+- **Language and whitelist modals clipped at the bottom on Android.** The modals used `max-height: 88vh`, which on Android includes browser chrome (address bar, navigation bar) in the viewport height, causing the bottom of the modal to clip behind the navigation bar. Added `max-height: 80svh` — the `svh` unit measures the viewport with all browser chrome visible, guaranteeing the modal fits on screen.
+
 ## [1.2] — 2026-06-15
 
 ### Added
