@@ -23,12 +23,15 @@ import shutil
 
 # (source filename in extension/img/, target filename in dev/listing-screenshots/)
 SCREENSHOTS = [
-    ('blocked-white.png',                  '01-block-page.png'),
-    ('warning-confusable-white.png',       '02-warning-confusable.png'),
-    ('warning-mixed-white.png',            '03-warning-mixed.png'),
-    ('options-white.png',                  '04-options.png'),
-    ('options-private-warning-white.png',  '05-options-private-warning.png'),
-    ('menu-white.png',                     '06-toolbar-menu.png'),
+    ('blocked-white.png',                      '01-block-page.png'),
+    ('warning-confusable-white.png',           '02-warning-confusable.png'),
+    ('warning-mixed-white.png',                '03-warning-mixed.png'),
+    ('options-white.png',                      '04-options.png'),
+    ('options-compact-white.png',              '05-options-compact.png'),
+    ('options-compact-languages-white.png',    '06-options-compact-languages.png'),
+    ('options-compact-whitelist-white.png',    '07-options-compact-whitelist.png'),
+    ('options-private-warning-white.png',      '08-options-private-warning.png'),
+    ('menu-white.png',                         '09-toolbar-menu.png'),
 ]
 
 

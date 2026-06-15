@@ -2,25 +2,16 @@
 
 ## Recapture and add help-page screenshots
 
-The following screenshots need to be taken or retaken before the next release. Use Firefox DevTools Responsive Design Mode with Touch Simulation enabled for the compact-mode captures (manually tick Compact mode in Interface options).
+Run the automated capture tool to produce all screenshots in one pass (right-click the extension toolbar icon → Developer: Capture screenshots). The script captures stale desktop screenshots and the three new compact mode views automatically.
 
-### Recapture — stale desktop screenshots
+Afterwards:
 
-- **`options-white.png` / `options-black.png`** — full options page (header layout and Interface options section changed in v1.2).
-- **`warning-confusable-white.png` / `warning-confusable-black.png`** — page heading now reads "Confusable Character Domain Warning".
-- **`warning-mixed-white.png` / `warning-mixed-black.png`** — page heading now reads "Mixed Script Domain Warning".
-
-### New — compact mode screenshots (desktop, reused for Android section)
-
-Capture with Compact mode enabled and viewport set to ~390px wide in Responsive Design Mode:
-
-- **`options-compact-white.png` / `options-compact-black.png`** — compact mode main view (language and whitelist summaries visible, Edit buttons present).
-- **`options-compact-languages-white.png` / `options-compact-languages-black.png`** — language modal overlay open (tap Edit permitted languages to trigger).
-- **`options-compact-whitelist-white.png` / `options-compact-whitelist-black.png`** — whitelist modal overlay open (tap Edit whitelist to trigger; add a test domain first so the overlay is not empty).
-
-Once captured, replace the `img-placeholder` divs in `help.html` with `<img>` elements using these filenames.
-
-Follow the standard runbook below to normalise and gather listing screenshots after capturing.
+1. Normalise and gather: `python dev/normalise_and_gather.py`
+2. Replace the `img-placeholder` divs in `help.html` with real `<img>` elements using these filenames:
+   - `options-compact-white.png` — compact mode main view
+   - `options-compact-languages-white.png` — language modal overlay
+   - `options-compact-whitelist-white.png` — whitelist modal overlay
+   (use the `-black.png` variants for dark-theme `<img>` tags in the same sections)
 
 ---
 
@@ -121,8 +112,7 @@ Navigate to each link via `dev/test-urls.html` — do not type or paste URLs int
 For each page: capture light theme, toggle the page's theme button, capture dark theme. See `dev/normalise_screenshots.py`'s docstring for the Firefox DevTools "Screenshot Node" steps. Then:
 
 ```
-python dev/normalise_screenshots.py extension/img/*.png   # normalise padding
-python dev/gather-listing-screenshots.py                  # refresh AMO listing copies
+python dev/normalise_and_gather.py   # normalise padding, then refresh AMO listing copies
 ```
 
 Reset the extension settings to a clean state after capturing.

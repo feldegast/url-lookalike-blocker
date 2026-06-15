@@ -10,7 +10,7 @@
     body {
       font-family: Arial, sans-serif;
       font-size: 16px;
-      max-width: 800px;
+      max-width: 520px;
       margin: 20px auto;
       padding: 20px;
       background-color: #e8e8e8;
@@ -48,8 +48,9 @@
     }
     .page-header {
       display: flex;
+      flex-direction: row;
       align-items: center;
-      justify-content: space-between;
+      gap: 12px;
       margin-bottom: 20px;
       position: sticky;
       top: 0;
@@ -59,12 +60,12 @@
       margin-top: -8px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.10);
     }
-    .page-header h1 { margin: 0; font-size: 1.4em; }
-    .header-buttons {
-      display: flex;
-      gap: 8px;
-      flex-shrink: 0;
-    }
+    .page-header-icon { height: 3em; flex-shrink: 0; }
+    .page-header-text { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+    .page-header h1 { margin: 0; }
+    .page-header-buttons { display: flex; align-items: center; gap: 16px; justify-content: space-between; }
+    .page-header-buttons > div { display: flex; gap: 8px; }
+    .page-header-subtitle { font-size: 2em; font-weight: bold; }
     button {
       padding: 8px 12px;
       border: none;
@@ -193,10 +194,16 @@
 </head>
 <body>
   <div class="page-header">
-    <h1><img src="icon.svg" alt="" style="height: 1.25em; vertical-align: middle; margin-right: 0.5em;"> URL Lookalike Blocker — Help</h1>
-    <div class="header-buttons">
-      <button id="options-btn" class="options-btn">Open Options</button>
-      <button id="theme-toggle" class="theme-toggle" title="Toggle dark/light mode">Auto</button>
+    <img src="icon.svg" alt="" class="page-header-icon">
+    <div class="page-header-text">
+      <h1>URL Lookalike Blocker</h1>
+      <div class="page-header-buttons">
+        <span class="page-header-subtitle">Help</span>
+        <div>
+          <button id="options-btn" class="options-btn">Open Options</button>
+          <button id="theme-toggle" class="theme-toggle" title="Toggle dark/light mode">Auto</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -218,10 +225,11 @@
       <figcaption>The block page showing the offending characters and available actions.</figcaption>
     </figure>
     <h3>What you can do</h3>
+    <p>Only use <strong>Allow this domain</strong> if you are confident the site is legitimate.</p>
     <ul>
       <li><strong>Allow this domain</strong> — adds the domain to your whitelist so it is never blocked again.</li>
       <li><strong>Open extension options</strong> — opens the Options page so you can enable the relevant language.</li>
-      <li><strong>Try again</strong> — re-attempts the URL (useful after applying new settings).</li>
+      <li><strong>Try again</strong> — re-attempts the URL (after applying new settings).</li>
       <li><strong>Go back</strong> — returns to the previous page.</li>
     </ul>
   </div>
@@ -238,9 +246,10 @@
       <figcaption>Confusable character warning — the Cyrillic 'р' in рaypal.com is highlighted red.</figcaption>
     </figure>
     <h3>What you can do</h3>
+    <p>Only use <strong>Allow this domain</strong> if you are confident the site is legitimate.</p>
     <ul>
-      <li><strong>Allow this domain</strong> — permanently whitelists the domain if you know it is safe.</li>
-      <li><strong>Continue anyway</strong> — proceeds to the domain for this browser session only.</li>
+      <li><strong>Allow this domain</strong> — permanently whitelists the domain.</li>
+      <li><strong>Continue anyway</strong> — allows this domain for the rest of the browser session. Does not whitelist the domain.</li>
       <li><strong>Open extension options</strong> — opens the Options page.</li>
       <li><strong>Try again</strong> — re-attempts the URL after applying new settings.</li>
       <li><strong>Go back</strong> — returns to the previous page.</li>
@@ -259,9 +268,10 @@
       <figcaption>Mixed-script warning — Latin combined with Cyrillic in testж.com.</figcaption>
     </figure>
     <h3>What you can do</h3>
+    <p>Only use <strong>Allow this domain</strong> if you are confident the site is legitimate.</p>
     <ul>
-      <li><strong>Allow this domain</strong> — permanently whitelists the domain if you know it is safe.</li>
-      <li><strong>Continue anyway</strong> — proceeds to the domain for this browser session only.</li>
+      <li><strong>Allow this domain</strong> — permanently whitelists the domain.</li>
+      <li><strong>Continue anyway</strong> — allows this domain for the rest of the browser session. Does not whitelist the domain.</li>
       <li><strong>Open extension options</strong> — opens the Options page.</li>
       <li><strong>Try again</strong> — re-attempts the URL after applying new settings.</li>
       <li><strong>Go back</strong> — returns to the previous page.</li>
@@ -306,30 +316,30 @@
     <p>The right-click context menu available on desktop does not exist on Android. The Options page and Help page are both accessible from the Options page header — use the <strong>Help</strong> button there to open this page.</p>
 
     <h3>Compact mode</h3>
-    <p>On phones, <strong>Compact mode</strong> is on by default. The Options page shows concise read-only summaries of the permitted languages and whitelist rather than the full tables. On tablets, Compact mode is off by default and the full tables are shown inline, the same as on desktop.</p>
+    <p>On phones, <strong>Compact mode</strong> is enabled by default. The Options page shows concise read-only summaries of the permitted languages and whitelist rather than the full tables. On tablets, Compact mode is off by default and the full tables are shown inline, the same as on desktop.</p>
     <figure class="img-light">
-      <div class="img-placeholder">Screenshot pending: options page in compact mode, light theme</div>
-      <figcaption>The Options page on a phone — compact mode on by default, showing read-only summaries of permitted languages and whitelisted domains.</figcaption>
+      <img src="img/options-compact-white.png" alt="Options page in compact mode, light theme">
+      <figcaption>The Options page on a phone — compact mode enabled by default, showing read-only summaries of permitted languages and whitelisted domains.</figcaption>
     </figure>
     <figure class="img-dark">
-      <div class="img-placeholder">Screenshot pending: options page in compact mode, dark theme</div>
+      <img src="img/options-compact-black.png" alt="Options page in compact mode, dark theme">
       <figcaption>The Options page in compact mode, dark theme.</figcaption>
     </figure>
     <p>Tap <strong>Edit permitted languages</strong> on the Options page to go to the language settings. Tap <strong>Edit whitelist</strong> to open the whitelist editor.</p>
     <figure class="img-light">
-      <div class="img-placeholder">Screenshot pending: language modal overlay, light theme</div>
+      <img src="img/options-compact-languages-white.png" alt="Permitted languages overlay, light theme">
       <figcaption>The permitted languages page — reached via Edit permitted languages on the compact Options page.</figcaption>
     </figure>
     <figure class="img-dark">
-      <div class="img-placeholder">Screenshot pending: language modal overlay, dark theme</div>
+      <img src="img/options-compact-languages-black.png" alt="Permitted languages overlay, dark theme">
       <figcaption>The permitted languages page, dark theme.</figcaption>
     </figure>
     <figure class="img-light">
-      <div class="img-placeholder">Screenshot pending: whitelist modal overlay, light theme</div>
+      <img src="img/options-compact-whitelist-white.png" alt="Whitelist overlay, light theme">
       <figcaption>The whitelist overlay — tap Edit whitelist to open it.</figcaption>
     </figure>
     <figure class="img-dark">
-      <div class="img-placeholder">Screenshot pending: whitelist modal overlay, dark theme</div>
+      <img src="img/options-compact-whitelist-black.png" alt="Whitelist overlay, dark theme">
       <figcaption>The whitelist overlay, dark theme.</figcaption>
     </figure>
   </div>
@@ -352,33 +362,33 @@
     <h3>Compact mode</h3>
     <p>On phones — and on any device where you enable <strong>Compact mode</strong> in Interface options — the language and whitelist sections collapse into concise read-only summaries. Tap <strong>Edit permitted languages</strong> or <strong>Edit whitelist</strong> to open each section as a modal overlay.</p>
     <figure class="img-light">
-      <div class="img-placeholder">Screenshot pending: options page in compact mode, light theme</div>
+      <img src="img/options-compact-white.png" alt="Options page in compact mode, light theme">
       <figcaption>The options page in compact mode — language and whitelist sections show read-only summaries.</figcaption>
     </figure>
     <figure class="img-dark">
-      <div class="img-placeholder">Screenshot pending: options page in compact mode, dark theme</div>
+      <img src="img/options-compact-black.png" alt="Options page in compact mode, dark theme">
       <figcaption>The options page in compact mode, dark theme.</figcaption>
     </figure>
 
     <h3>Permitted languages overlay</h3>
     <p>In compact mode, <strong>Edit permitted languages</strong> on the Options page opens the full language table as an overlay. Changes made here follow the normal Apply / Discard workflow.</p>
     <figure class="img-light">
-      <div class="img-placeholder">Screenshot pending: language modal overlay, light theme</div>
+      <img src="img/options-compact-languages-white.png" alt="Permitted languages overlay, light theme">
       <figcaption>The permitted languages page, reached via Edit permitted languages on the compact Options page.</figcaption>
     </figure>
     <figure class="img-dark">
-      <div class="img-placeholder">Screenshot pending: language modal overlay, dark theme</div>
+      <img src="img/options-compact-languages-black.png" alt="Permitted languages overlay, dark theme">
       <figcaption>The permitted languages page, dark theme.</figcaption>
     </figure>
 
     <h3>Whitelist overlay</h3>
     <p>Tapping <strong>Edit whitelist</strong> opens the full whitelist editor as an overlay.</p>
     <figure class="img-light">
-      <div class="img-placeholder">Screenshot pending: whitelist modal overlay, light theme</div>
+      <img src="img/options-compact-whitelist-white.png" alt="Whitelist overlay, light theme">
       <figcaption>The whitelist overlay opened from compact mode.</figcaption>
     </figure>
     <figure class="img-dark">
-      <div class="img-placeholder">Screenshot pending: whitelist modal overlay, dark theme</div>
+      <img src="img/options-compact-whitelist-black.png" alt="Whitelist overlay, dark theme">
       <figcaption>The whitelist overlay, dark theme.</figcaption>
     </figure>
   </div>

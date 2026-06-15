@@ -168,6 +168,8 @@ async function devDownload(blob, filename) {
   });
   URL.revokeObjectURL(url);
   console.log('[devDownload] done:', filename);
+  const [completedItem] = await browser.downloads.search({ id });
+  return completedItem ? completedItem.filename : null;
 }
 
 async function devCapture(windowId) {
@@ -278,13 +280,65 @@ async function devCapture(windowId) {
       await browser.tabs.sendMessage(optTab.id, { type: 'devShowFooter' });
     }
 
+    // Phase 3b: compact mode captures
+    await browser.tabs.sendMessage(optTab.id, { type: 'devSetLanguages',
+      scripts: ['Han', 'Hiragana', 'Katakana'], languages: ['Japanese'] });
+    await browser.tabs.sendMessage(optTab.id, { type: 'devSetWhitelist', entries: ['testж.com'] });
+    await browser.tabs.sendMessage(optTab.id, { type: 'devSetCompactMode', enabled: true });
+    await devDelay(400);
+
+    for (const [theme, suffix] of [['light', 'white'], ['dark', 'black']]) {
+      await browser.storage.local.set({ theme });
+      await browser.tabs.sendMessage(optTab.id, { type: 'devSetTheme', theme });
+      await devDelay(250);
+
+      await browser.tabs.sendMessage(optTab.id, { type: 'devHidePrivateWarning' });
+      await browser.tabs.sendMessage(optTab.id, { type: 'devHideFooter' });
+      await devDelay(100);
+      queue.push({ filename: `options-compact-${suffix}.png`,
+        blob: await devCaptureFullPage(optTab.id, windowId) });
+      await browser.tabs.sendMessage(optTab.id, { type: 'devShowFooter' });
+
+      await browser.tabs.sendMessage(optTab.id, { type: 'devOpenLanguageModal' });
+      await devDelay(200);
+      queue.push({ filename: `options-compact-languages-${suffix}.png`,
+        blob: await devCaptureElement(optTab.id, windowId, '#section-languages', { clamp: true }) });
+      await browser.tabs.sendMessage(optTab.id, { type: 'devCloseLanguageModal' });
+      await devDelay(150);
+
+      await browser.tabs.sendMessage(optTab.id, { type: 'devOpenWhitelistModal' });
+      await devDelay(200);
+      queue.push({ filename: `options-compact-whitelist-${suffix}.png`,
+        blob: await devCaptureElement(optTab.id, windowId, '#section-whitelist', { clamp: true }) });
+      await browser.tabs.sendMessage(optTab.id, { type: 'devCloseWhitelistModal' });
+      await devDelay(150);
+    }
+
+    await browser.tabs.sendMessage(optTab.id, { type: 'devRestoreLanguages' });
+    await browser.tabs.sendMessage(optTab.id, { type: 'devRestoreWhitelist' });
+    await browser.tabs.sendMessage(optTab.id, { type: 'devSetCompactMode', enabled: false });
+    await devDelay(300);
+
     // Phase 4: download all captures
     console.log('[devCapture] Phase 4: downloading', queue.length, 'files:', queue.map(q => q.filename).join(', '));
+    let captureFolder = null;
     for (const { blob, filename } of queue) {
       console.log('[devCapture] queuing download:', filename);
-      await devDownload(blob, filename);
+      const fullPath = await devDownload(blob, filename);
+      if (!captureFolder && fullPath) {
+        const sep = fullPath.includes('/') ? '/' : '\\';
+        captureFolder = fullPath.slice(0, fullPath.lastIndexOf(sep) + 1);
+      }
     }
     console.log('[devCapture] Phase 4 complete');
+    browser.tabs.sendMessage(optTab.id, {
+      type: 'devShowToast',
+      lines: [
+        `Capture complete — ${queue.length} images`,
+        captureFolder ? `From: ${captureFolder}` : null,
+        `Copy to extension/img/ in your repo, then from the repo root run: python dev/normalise_and_gather.py`,
+      ].filter(Boolean),
+    });;
 
   } finally {
     additionalScripts     = savedScripts;

@@ -131,6 +131,45 @@ browser.runtime.onMessage.addListener((message) => {
     if (el) el.style.display = '';
     return;
   }
+  if (message.type === 'devShowToast') {
+    const lines = message.lines || [message.text];
+    const toast = document.createElement('div');
+    toast.innerHTML = lines.map(l => `<div>${l}</div>`).join('');
+    Object.assign(toast.style, {
+      position: 'fixed', bottom: '24px', left: '50%', transform: 'translateX(-50%)',
+      background: '#222', color: '#fff', padding: '12px 20px', borderRadius: '6px',
+      fontSize: '13px', lineHeight: '1.6', zIndex: '9999', maxWidth: '80vw',
+      opacity: '1', transition: 'opacity 0.4s',
+    });
+    document.body.appendChild(toast);
+    setTimeout(() => { toast.style.opacity = '0'; }, 15000);
+    setTimeout(() => { toast.remove(); }, 15400);
+    return;
+  }
+  if (message.type === 'devSetCompactMode') {
+    const cb = document.getElementById('compact-mode');
+    if (cb) {
+      cb.checked = message.enabled;
+      cb.dispatchEvent(new Event('change'));
+    }
+    return;
+  }
+  if (message.type === 'devOpenLanguageModal') {
+    document.documentElement.classList.add('modal-open');
+    return;
+  }
+  if (message.type === 'devCloseLanguageModal') {
+    document.documentElement.classList.remove('modal-open');
+    return;
+  }
+  if (message.type === 'devOpenWhitelistModal') {
+    document.documentElement.classList.add('whitelist-modal-open');
+    return;
+  }
+  if (message.type === 'devCloseWhitelistModal') {
+    document.documentElement.classList.remove('whitelist-modal-open');
+    return;
+  }
   if (message.type === 'devSetLanguages') {
     if (window._devHooks) {
       devOriginalLanguages = window._devHooks.getLanguages();
