@@ -1,11 +1,5 @@
 # TODO / Future Features
 
-## Bug: text overflows container box on block/warning page on Android
-
-On Android tablets, text on at least one of the block or warning pages extends beyond the right edge of the containing box. All text is visible (it does not go off-screen) but it overflows the box boundary. Likely a missing `word-break`, `overflow-wrap`, or `max-width` on the container or one of its text elements — long punycode/unicode domain strings or the character table are the most likely culprits. Needs investigation on device.
-
----
-
 ## Animate script-tag colour transitions on the options page
 
 **Goal:** When the user ticks or unticks a language, script tags change colour (grey ↔ green) with a staggered delay so the change visibly propagates top-to-bottom, left-to-right — making the cascade feel tangible rather than instantaneous.
