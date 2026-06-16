@@ -42,7 +42,7 @@ import os
 import sys
 from PIL import Image, ImageOps
 
-PADDING   = 20   # px of background colour to preserve on every side after trimming
+PADDING   = 0    # px of background colour to preserve — borders are applied in CSS instead
 TOLERANCE = 10   # max per-channel distance to treat a pixel as background
 
 
@@ -121,8 +121,12 @@ def main():
             i += 1
 
     if not paths:
-        print(__doc__)
-        sys.exit(1)
+        import glob as _glob
+        staging = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'listing-screenshots')
+        paths = sorted(_glob.glob(os.path.join(staging, '*.png')))
+        if not paths:
+            print('No PNGs found in dev/listing-screenshots/')
+            sys.exit(1)
 
     print(f"Normalising {len(paths)} image(s) with {padding} px padding …")
     for path in paths:

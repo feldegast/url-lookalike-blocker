@@ -156,18 +156,63 @@ browser.runtime.onMessage.addListener((message) => {
   }
   if (message.type === 'devOpenLanguageModal') {
     document.documentElement.classList.add('modal-open');
+    // Force backdrop hidden — inline display:none loses to the CSS rule, so use !important via a style element.
+    let s = document.getElementById('_dev_backdrop_override');
+    if (!s) {
+      s = document.createElement('style');
+      s.id = '_dev_backdrop_override';
+      document.head.appendChild(s);
+    }
+    s.textContent = '#language-modal-backdrop { display: none !important; }';
+    document.body.style.overflow = '';
+    const el = document.getElementById('section-languages');
+    if (el) {
+      el.style.position = 'relative';
+      el.style.top = 'auto';
+      el.style.left = 'auto';
+      el.style.transform = 'none';
+      el.style.width = 'auto';
+      el.style.maxHeight = 'none';
+      el.style.overflowY = 'visible';
+      el.style.zIndex = '';
+      el.style.borderRadius = '0';
+    }
     return;
   }
   if (message.type === 'devCloseLanguageModal') {
     document.documentElement.classList.remove('modal-open');
+    const s = document.getElementById('_dev_backdrop_override');
+    if (s) s.textContent = '';
+    const el = document.getElementById('section-languages');
+    if (el) {
+      el.style.position = '';
+      el.style.top = '';
+      el.style.left = '';
+      el.style.transform = '';
+      el.style.width = '';
+      el.style.maxHeight = '';
+      el.style.overflowY = '';
+      el.style.zIndex = '';
+      el.style.borderRadius = '';
+    }
     return;
   }
   if (message.type === 'devOpenWhitelistModal') {
     document.documentElement.classList.add('whitelist-modal-open');
+    let s = document.getElementById('_dev_backdrop_override');
+    if (!s) {
+      s = document.createElement('style');
+      s.id = '_dev_backdrop_override';
+      document.head.appendChild(s);
+    }
+    s.textContent = '#whitelist-modal-backdrop { display: none !important; }';
+    document.body.style.overflow = '';
     return;
   }
   if (message.type === 'devCloseWhitelistModal') {
     document.documentElement.classList.remove('whitelist-modal-open');
+    const s = document.getElementById('_dev_backdrop_override');
+    if (s) s.textContent = '';
     return;
   }
   if (message.type === 'devSetLanguages') {

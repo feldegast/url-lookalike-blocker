@@ -109,10 +109,24 @@
       border-radius: 6px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
-    figure.img-light img,
-    figure.img-dark img {
-      border: 1px solid #ddd;
+    figure.img-light img {
+      box-sizing: border-box;
+      padding: 20px;
+      background: #e8e8e8;
+      border: 1px solid #444;
     }
+    figure.img-dark img {
+      box-sizing: border-box;
+      padding: 20px;
+      background: #1a1a1a;
+      border: 1px solid #888;
+    }
+    figure.compact-img img {
+      border-width: 2px;
+      border-color: #444;
+    }
+    html[data-theme="dark"] figure.compact-img img,
+    html:not([data-theme="light"]) figure.compact-img img { border-color: #888; }
     .badge-pair {
       display: flex;
       gap: 24px;
@@ -162,8 +176,6 @@
       html:not([data-theme="light"]) .theme-toggle { border-color: #555; color: #bbb; }
       html:not([data-theme="light"]) .theme-toggle:hover { background: rgba(255,255,255,0.07); }
       html:not([data-theme="light"]) figcaption { color: #888; }
-      html:not([data-theme="light"]) figure.img-light img,
-      html:not([data-theme="light"]) figure.img-dark img { border-color: #444; }
       html:not([data-theme="light"]) .img-placeholder { border-color: #444; background: #222; color: #666; }
       html:not([data-theme="light"]) .page-header { background-color: #1a1a1a; box-shadow: 0 2px 6px rgba(0,0,0,0.35); }
     }
@@ -176,8 +188,6 @@
     html[data-theme="dark"] .theme-toggle { border-color: #555; color: #bbb; }
     html[data-theme="dark"] .theme-toggle:hover { background: rgba(255,255,255,0.07); }
     html[data-theme="dark"] figcaption { color: #888; }
-    html[data-theme="dark"] figure.img-light img,
-    html[data-theme="dark"] figure.img-dark img { border-color: #444; }
     html[data-theme="dark"] .img-placeholder { border-color: #444; background: #222; color: #666; }
     html[data-theme="dark"] .page-header { background-color: #1a1a1a; box-shadow: 0 2px 6px rgba(0,0,0,0.35); }
 
@@ -317,30 +327,30 @@
 
     <h3>Compact mode</h3>
     <p>On phones, <strong>Compact mode</strong> is enabled by default. The Options page shows concise read-only summaries of the permitted languages and whitelist rather than the full tables. On tablets, Compact mode is off by default and the full tables are shown inline, the same as on desktop.</p>
-    <figure class="img-light">
+    <figure class="img-light compact-img">
       <img src="img/options-compact-white.png" alt="Options page in compact mode, light theme">
       <figcaption>The Options page on a phone — compact mode enabled by default, showing read-only summaries of permitted languages and whitelisted domains.</figcaption>
     </figure>
-    <figure class="img-dark">
+    <figure class="img-dark compact-img">
       <img src="img/options-compact-black.png" alt="Options page in compact mode, dark theme">
       <figcaption>The Options page in compact mode, dark theme.</figcaption>
     </figure>
-    <p>Tap <strong>Edit permitted languages</strong> on the Options page to go to the language settings. Tap <strong>Edit whitelist</strong> to open the whitelist editor.</p>
-    <figure class="img-light">
-      <img src="img/options-compact-languages-white.png" alt="Permitted languages overlay, light theme">
-      <figcaption>The permitted languages page — reached via Edit permitted languages on the compact Options page.</figcaption>
-    </figure>
-    <figure class="img-dark">
-      <img src="img/options-compact-languages-black.png" alt="Permitted languages overlay, dark theme">
-      <figcaption>The permitted languages page, dark theme.</figcaption>
-    </figure>
-    <figure class="img-light">
+    <p>Tap <strong>Edit whitelist</strong> to open the whitelist editor. Tap <strong>Edit permitted languages</strong> to go to the language settings.</p>
+    <figure class="img-light compact-img">
       <img src="img/options-compact-whitelist-white.png" alt="Whitelist overlay, light theme">
       <figcaption>The whitelist overlay — tap Edit whitelist to open it.</figcaption>
     </figure>
-    <figure class="img-dark">
+    <figure class="img-dark compact-img">
       <img src="img/options-compact-whitelist-black.png" alt="Whitelist overlay, dark theme">
       <figcaption>The whitelist overlay, dark theme.</figcaption>
+    </figure>
+    <figure class="img-light compact-img">
+      <img src="img/options-compact-languages-white.png" alt="Permitted languages overlay, light theme">
+      <figcaption>The permitted languages page — reached via Edit permitted languages on the compact Options page.</figcaption>
+    </figure>
+    <figure class="img-dark compact-img">
+      <img src="img/options-compact-languages-black.png" alt="Permitted languages overlay, dark theme">
+      <figcaption>The permitted languages page, dark theme.</figcaption>
     </figure>
   </div>
 
@@ -360,36 +370,36 @@
     </figure>
 
     <h3>Compact mode</h3>
-    <p>On phones — and on any device where you enable <strong>Compact mode</strong> in Interface options — the language and whitelist sections collapse into concise read-only summaries. Tap <strong>Edit permitted languages</strong> or <strong>Edit whitelist</strong> to open each section as a modal overlay.</p>
-    <figure class="img-light">
+    <p>On phones — and on any device where you enable <strong>Compact mode</strong> in Interface options — the language and whitelist sections collapse into concise read-only summaries. Tap <strong>Edit whitelist</strong> or <strong>Edit permitted languages</strong> to open each section as a modal overlay.</p>
+    <figure class="img-light compact-img">
       <img src="img/options-compact-white.png" alt="Options page in compact mode, light theme">
       <figcaption>The options page in compact mode — language and whitelist sections show read-only summaries.</figcaption>
     </figure>
-    <figure class="img-dark">
+    <figure class="img-dark compact-img">
       <img src="img/options-compact-black.png" alt="Options page in compact mode, dark theme">
       <figcaption>The options page in compact mode, dark theme.</figcaption>
     </figure>
 
-    <h3>Permitted languages overlay</h3>
-    <p>In compact mode, <strong>Edit permitted languages</strong> on the Options page opens the full language table as an overlay. Changes made here follow the normal Apply / Discard workflow.</p>
-    <figure class="img-light">
-      <img src="img/options-compact-languages-white.png" alt="Permitted languages overlay, light theme">
-      <figcaption>The permitted languages page, reached via Edit permitted languages on the compact Options page.</figcaption>
-    </figure>
-    <figure class="img-dark">
-      <img src="img/options-compact-languages-black.png" alt="Permitted languages overlay, dark theme">
-      <figcaption>The permitted languages page, dark theme.</figcaption>
-    </figure>
-
     <h3>Whitelist overlay</h3>
     <p>Tapping <strong>Edit whitelist</strong> opens the full whitelist editor as an overlay.</p>
-    <figure class="img-light">
+    <figure class="img-light compact-img">
       <img src="img/options-compact-whitelist-white.png" alt="Whitelist overlay, light theme">
       <figcaption>The whitelist overlay opened from compact mode.</figcaption>
     </figure>
-    <figure class="img-dark">
+    <figure class="img-dark compact-img">
       <img src="img/options-compact-whitelist-black.png" alt="Whitelist overlay, dark theme">
       <figcaption>The whitelist overlay, dark theme.</figcaption>
+    </figure>
+
+    <h3>Permitted languages overlay</h3>
+    <p>In compact mode, <strong>Edit permitted languages</strong> on the Options page opens the full language table as an overlay. Changes made here follow the normal Apply / Discard workflow.</p>
+    <figure class="img-light compact-img">
+      <img src="img/options-compact-languages-white.png" alt="Permitted languages overlay, light theme">
+      <figcaption>The permitted languages page, reached via Edit permitted languages on the compact Options page.</figcaption>
+    </figure>
+    <figure class="img-dark compact-img">
+      <img src="img/options-compact-languages-black.png" alt="Permitted languages overlay, dark theme">
+      <figcaption>The permitted languages page, dark theme.</figcaption>
     </figure>
   </div>
 

@@ -176,7 +176,7 @@ async function devCapture(windowId) {
   const savedScripts     = new Set(additionalScripts);
   const savedLangScripts = [...additionalLangScripts];
   const savedWhitelist   = new Set(whitelist);
-  const { theme: savedTheme } = await browser.storage.local.get('theme');
+  const { theme: savedTheme, compactMode: savedCompactMode } = await browser.storage.local.get(['theme', 'compactMode']);
 
   hostnameCache.clear();
   for (const { url } of DEV_TEST_CAPTURES) {
@@ -227,6 +227,7 @@ async function devCapture(windowId) {
     }
 
     // Phase 3: open options and capture each section
+    await browser.storage.local.set({ compactMode: false });
     const optTab = await browser.tabs.create({ url: optionsBase, active: true });
     optionsTabId = optTab.id;
     await devWaitForTabReady(optTab.id, optionsBase);
@@ -302,7 +303,7 @@ async function devCapture(windowId) {
       await browser.tabs.sendMessage(optTab.id, { type: 'devOpenLanguageModal' });
       await devDelay(200);
       queue.push({ filename: `options-compact-languages-${suffix}.png`,
-        blob: await devCaptureElement(optTab.id, windowId, '#section-languages', { clamp: true }) });
+        blob: await devCaptureElementFull(optTab.id, windowId, '#section-languages') });
       await browser.tabs.sendMessage(optTab.id, { type: 'devCloseLanguageModal' });
       await devDelay(150);
 
@@ -336,7 +337,7 @@ async function devCapture(windowId) {
       lines: [
         `Capture complete — ${queue.length} images`,
         captureFolder ? `From: ${captureFolder}` : null,
-        `Copy to extension/img/ in your repo, then from the repo root run: python dev/normalise_and_gather.py`,
+        `From the repo root run: python dev/normalise_and_gather.py`,
       ].filter(Boolean),
     });;
 
@@ -349,6 +350,11 @@ async function devCapture(windowId) {
       await browser.storage.local.set({ theme: savedTheme });
     } else {
       await browser.storage.local.remove('theme');
+    }
+    if (savedCompactMode !== undefined) {
+      await browser.storage.local.set({ compactMode: savedCompactMode });
+    } else {
+      await browser.storage.local.remove('compactMode');
     }
     for (const tabId of captureTabIds) {
       browser.tabs.remove(tabId).catch(() => {});

@@ -1,20 +1,10 @@
 # TODO / Future Features
 
-## Recapture and add help-page screenshots
+## Bug: text overflows container box on block/warning page on Android
 
-Run the automated capture tool to produce all screenshots in one pass (right-click the extension toolbar icon → Developer: Capture screenshots). The script captures stale desktop screenshots and the three new compact mode views automatically.
-
-Afterwards:
-
-1. Normalise and gather: `python dev/normalise_and_gather.py`
-2. Replace the `img-placeholder` divs in `help.html` with real `<img>` elements using these filenames:
-   - `options-compact-white.png` — compact mode main view
-   - `options-compact-languages-white.png` — language modal overlay
-   - `options-compact-whitelist-white.png` — whitelist modal overlay
-   (use the `-black.png` variants for dark-theme `<img>` tags in the same sections)
+On Android tablets, text on at least one of the block or warning pages extends beyond the right edge of the containing box. All text is visible (it does not go off-screen) but it overflows the box boundary. Likely a missing `word-break`, `overflow-wrap`, or `max-width` on the container or one of its text elements — long punycode/unicode domain strings or the character table are the most likely culprits. Needs investigation on device.
 
 ---
-
 
 ## Animate script-tag colour transitions on the options page
 
@@ -32,12 +22,13 @@ Afterwards:
 
 ## Firefox for Android compatibility
 
-**Status: live.** Extension published and working on Android.
+**Status: initial support shipped.** `gecko_android` declared in manifest, touch-friendly CSS added to all pages, blocked/warning buttons stack vertically on narrow screens.
 
 **Remaining:**
 
-- **Toolbar badge** — the extension icon is inside the browser menu, not the toolbar. Confirm whether the numeric badge appears on the menu entry. If not, remove badge mention from the Android help section.
-- **Script column overflow fix** — `overflow-x: auto` on `.details` and `word-break: break-all` on table cells applied in current code. Verify on device after next release.
+- **Toolbar badge** — on Android the extension icon lives inside the browser menu rather than the toolbar; confirm whether the numeric badge appears. If not, adjust help docs expectations.
+- **Context menu** — Firefox for Android has no right-click menu. The `menus` declaration is silently ignored. This is acceptable: the extension icon tap opens Options, and the Help button inside Options opens the help page — both entry points work without the context menu.
+- **Testing** on a real Android 16 tablet and phone (both available) before submission.
 
 ## Internationalisation (i18n)
 
@@ -112,7 +103,8 @@ Navigate to each link via `dev/test-urls.html` — do not type or paste URLs int
 For each page: capture light theme, toggle the page's theme button, capture dark theme. See `dev/normalise_screenshots.py`'s docstring for the Firefox DevTools "Screenshot Node" steps. Then:
 
 ```
-python dev/normalise_and_gather.py   # normalise padding, then refresh AMO listing copies
+python dev/normalise_screenshots.py extension/img/*.png   # normalise padding
+python dev/gather-listing-screenshots.py                  # refresh AMO listing copies
 ```
 
 Reset the extension settings to a clean state after capturing.
