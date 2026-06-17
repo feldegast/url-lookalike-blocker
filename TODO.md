@@ -56,15 +56,61 @@ Coloured squares are functional in compact mode but rarely useful on phones/tabl
 
 **Goal:** Full keyboard navigation across all extension pages — required for AMO Recommended status and important for accessibility.
 
-**What's involved:**
+### Language table (Desktop and Compact mode — same implementation, shared)
 
-- **Options page — language table:** Tab through language rows, Space to toggle a checkbox, arrow keys to move between rows. The table currently requires a mouse/touch.
-- **Options page — whitelist:** Tab to each remove button, Enter/Space to activate.
-- **Blocked/warning pages:** Tab through action buttons (already partially works via native button focus — verify and fix any gaps).
-- **All pages:** Ensure focus indicators are visible (not suppressed by `outline: none`).
-- Test with keyboard-only navigation and verify logical tab order.
+The table is a single Tab stop. Arrow keys navigate within it:
 
-**Estimated effort:** Medium — the language table is the main work; the rest should be minor fixes.
+| Key | Action |
+|---|---|
+| Tab / Shift+Tab | Enter/leave the table (single tab stop) |
+| ↑ / ↓ | Move one row up or down |
+| Home / End | Jump to first / last language |
+| Space | Toggle the focused language on/off |
+| A–Z | Multi-character typeahead — jump to next language matching the typed prefix |
+| Escape | Close the overlay (compact mode only) |
+
+Typeahead resets after **1500ms** of inactivity. Implementation: roving tabindex pattern — only the active row has `tabindex="0"`, all others have `tabindex="-1"`.
+
+The compact mode language overlay uses the same DOM element as the desktop inline table (moved into the modal on open, moved back on close) — so the keyboard logic is written once and works in both contexts.
+
+### Whitelist (Desktop and Compact mode — same implementation, shared)
+
+Tab/Shift+Tab moves between remove buttons. Space or Enter activates the focused button. Same single implementation works inline (desktop) and in the compact modal.
+
+### Modal focus management (compact mode)
+
+One reusable focus-trap function, called by both `openLanguageModal()` and `openWhitelistModal()`:
+
+- On open: move focus to the first focusable element inside the modal
+- Tab at the last focusable element wraps to the first (and vice versa for Shift+Tab)
+- Escape closes the modal and returns focus to the button that opened it
+
+### Blocked and warning pages
+
+Buttons are natively focusable — just needs visible focus indicators added (CSS only).
+
+### Focus indicators
+
+- `.tab-dot-btn` suppresses the default outline (`outline: none`) but has `border: 3px solid transparent` — on `:focus-visible` make that border visible (white or green)
+- Add a consistent `:focus-visible` style for all buttons and interactive elements across all pages
+
+### Help page documentation
+
+Document keyboard shortcuts once in the **Desktop view** section. The **Compact view — Additional sections** entry for keyboard navigation just says: "identical to Desktop view — see Desktop view keyboard shortcuts."
+
+### Tab order across the options page (top to bottom)
+
+1. Header buttons (Options, theme toggle)
+2. Coloured squares
+3. Private browsing warning (if shown)
+4. Interface options checkboxes
+5. Whitelist section
+6. Language table (single Tab stop, arrow keys within)
+7. Apply / Discard bar
+
+Tab/Shift+Tab moves between sections — no section-jump shortcuts needed.
+
+**Estimated effort:** Medium — roving tabindex and modal focus trap are the main work; everything else is CSS fixes.
 
 ---
 
