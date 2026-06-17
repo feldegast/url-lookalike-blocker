@@ -4,12 +4,19 @@ All notable changes to URL Lookalike Blocker will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.3.0] — 2026-06-17
 
 ### Added
 
 - **Help page: Desktop view and Compact view sections.** The help page now organises the Options window into two view sections — Desktop view (full inline tables) and Compact view (collapsed summaries with Edit buttons). Android-specific differences (no toolbar icon, no right-click menu) are documented in the Compact view intro since Android phones default to compact mode. The Extension icon section links to Compact view instead of a separate Android section.
+- **Help page: table of contents.** A contents panel at the top of the page links to every section by anchor. Each section heading links back to the contents list with a ↑ arrow at the right edge.
 - **Dev: automated compact mode screenshot capture.** The Developer: Capture screenshots tool now captures compact mode in the same pass as the standard screenshots — compact main view, language modal, and whitelist modal in both light and dark themes (six additional files). No need for a separate manual capture run.
+
+### Changed
+
+- **Help page: sections reordered.** The Compact view section has moved to after all the Desktop view subsections (Coloured squares, Private browsing protection, Interface options, Whitelisted domains, Permitted languages, Latin-script languages, Reset to locale defaults, Apply changes / Discard changes), so the Desktop view reference material flows directly into its Compact view counterpart.
+- **Help page: Compact view section simplified.** The section now covers only the differences from Desktop view — the whitelist and language overlay behaviour, and the absence of a toolbar icon on Android — rather than re-documenting features that work identically in both views.
+- **Help page: section descriptions rewritten for clarity.** Wording across several sections has been tightened to more precisely describe the underlying behaviour.
 
 ### Fixed
 

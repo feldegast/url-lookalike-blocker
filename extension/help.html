@@ -200,6 +200,27 @@
       .options-btn, .theme-toggle { min-height: 44px; padding: 10px 18px; }
       figure img { max-width: 100%; }
     }
+    .toc-list { margin: 4px 0 0; list-style: none; padding-left: 0; }
+    .toc-list li { line-height: 1.9; }
+    .toc-list .toc-sub { padding-left: 1.5em; font-size: 0.95em; }
+    .toc-back {
+      display: flex;
+      align-items: baseline;
+      color: inherit;
+      text-decoration: none;
+    }
+    .toc-back:hover { color: #4caf50; }
+    .toc-arrow {
+      margin-left: auto;
+      font-size: 0.7em;
+      font-weight: bold;
+      color: #888;
+      flex-shrink: 0;
+      padding-left: 10px;
+    }
+    html[data-theme="dark"] .toc-arrow,
+    html:not([data-theme="light"]) .toc-arrow { color: #aaa; }
+    .toc-back:hover .toc-arrow { color: #4caf50; }
   </style>
 </head>
 <body>
@@ -217,14 +238,39 @@
     </div>
   </div>
 
-  <div class="section">
+  <div class="section" id="intro">
     <h2>What does this extension do?</h2>
     <p>When you visit a website, your browser shows the domain name (like <code>google.com</code>). Attackers can register domains that look identical to real ones by substituting characters from other languages — for example, using a Cyrillic <code>а</code> instead of the Latin <code>a</code> in <code>apple.com</code>. These are called <strong>IDN homograph attacks</strong>.</p>
     <p>This extension inspects every domain name your browser visits and blocks or warns you when it detects characters that are likely part of a spoofing attempt.</p>
   </div>
 
-  <div class="section">
-    <h2><span class="pill pill-block">Blocked</span> Block page</h2>
+  <div class="section" id="toc">
+    <h2>Contents</h2>
+    <ul class="toc-list">
+      <li><a href="#intro">What does this extension do?</a></li>
+      <li><a href="#block-page">Block page</a></li>
+      <li><a href="#warning-confusable">Confusable Character Domain Warning</a></li>
+      <li><a href="#warning-mixed">Mixed Script Domain Warning</a></li>
+      <li><a href="#extension-icon">Extension icon (desktop)</a></li>
+      <li><a href="#desktop">Desktop view</a></li>
+      <li class="toc-sub"><a href="#coloured-squares">Coloured squares</a></li>
+      <li class="toc-sub"><a href="#private-browsing">Private browsing protection</a></li>
+      <li class="toc-sub"><a href="#interface-options">Interface options</a></li>
+      <li class="toc-sub"><a href="#whitelisted-domains">Whitelisted domains</a></li>
+      <li class="toc-sub"><a href="#permitted-languages">Permitted languages</a></li>
+      <li class="toc-sub"><a href="#latin-languages">Latin-script languages — always permitted</a></li>
+      <li class="toc-sub"><a href="#reset-defaults">Reset to locale defaults</a></li>
+      <li class="toc-sub"><a href="#apply-changes">Apply changes / Discard changes</a></li>
+      <li><a href="#compact">Compact view</a></li>
+      <li class="toc-sub"><a href="#compact-whitelist">Whitelist</a></li>
+      <li class="toc-sub"><a href="#compact-languages">Permitted languages</a></li>
+      <li class="toc-sub"><a href="#compact-additional">Additional sections</a></li>
+      <li><a href="#about">About</a></li>
+    </ul>
+  </div>
+
+  <div class="section" id="block-page">
+    <h2><a href="#toc" class="toc-back"><span class="pill pill-block">Blocked</span> Block page <span class="toc-arrow">↑</span></a></h2>
     <p>A block page appears when the domain contains characters from scripts (writing systems) that you have not enabled in settings. For example, if a domain contains Cyrillic characters and you have not enabled Russian, it is blocked.</p>
     <figure class="img-light">
       <img src="img/blocked-white.png" alt="Block page, light theme">
@@ -244,8 +290,8 @@
     </ul>
   </div>
 
-  <div class="section">
-    <h2><span class="pill pill-warn">Warning</span> Confusable Character Domain Warning</h2>
+  <div class="section" id="warning-confusable">
+    <h2><a href="#toc" class="toc-back"><span class="pill pill-warn">Warning</span> Confusable Character Domain Warning <span class="toc-arrow">↑</span></a></h2>
     <p>This page appears when a domain contains a character that visually resembles a Latin letter — for example the Cyrillic <code>р</code> mimicking <code>p</code> in <code>рaypal.com</code>. This is a targeted attack technique. The confusable character is highlighted in <strong>red</strong> and the lookalike is shown (e.g. "Looks like: p"). This warning can appear even if you have the relevant script enabled, because legitimate sites do not normally use characters that resemble letters from a different script.</p>
     <figure class="img-light">
       <img src="img/warning-confusable-white.png" alt="Confusable character domain warning page, light theme">
@@ -266,8 +312,8 @@
     </ul>
   </div>
 
-  <div class="section">
-    <h2><span class="pill pill-warn">Warning</span> Mixed Script Domain Warning</h2>
+  <div class="section" id="warning-mixed">
+    <h2><a href="#toc" class="toc-back"><span class="pill pill-warn">Warning</span> Mixed Script Domain Warning <span class="toc-arrow">↑</span></a></h2>
     <p>This page appears when a domain label mixes characters from two or more scripts that are not commonly combined — for example Latin and Cyrillic together in <code>testж.com</code>. The non-Latin characters are highlighted in <strong>amber</strong>. This warning can appear even if you have the relevant scripts enabled, because legitimate sites do not normally mix scripts within a single domain label. If enabling a specific language would permit this combination, a hint is shown (e.g. "enable Serbian in Extension Settings").</p>
     <figure class="img-light">
       <img src="img/warning-mixed-white.png" alt="Mixed script domain warning page, light theme">
@@ -288,8 +334,8 @@
     </ul>
   </div>
 
-  <div class="section">
-    <h2>Extension icon (desktop)</h2>
+  <div class="section" id="extension-icon">
+    <h2><a href="#toc" class="toc-back">Extension icon (desktop) <span class="toc-arrow">↑</span></a></h2>
     <p>Left-clicking the extension icon in the toolbar opens the Options page. Right-clicking gives a small menu with <strong>Open Options</strong> and <strong>Help</strong>.</p>
     <div class="badge-pair">
       <figure>
@@ -315,7 +361,7 @@
   </div>
 
   <div class="section" id="desktop">
-    <h2>Desktop view</h2>
+    <h2><a href="#toc" class="toc-back">Desktop view <span class="toc-arrow">↑</span></a></h2>
     <p>The Options page is where you can use a coloured square to return to a block or warning page, modify interface options, edit whitelisted domains and change which languages are permitted. On tablets and desktops the full language table and whitelist editor are shown inline.</p>
     <figure class="img-light">
       <img src="img/options-white.png" alt="Options page, light theme">
@@ -327,44 +373,8 @@
     </figure>
   </div>
 
-  <div class="section" id="compact">
-    <h2>Compact view</h2>
-    <p><strong>Compact mode</strong> is enabled by default on phones. On tablets and desktops it can be enabled manually via <strong>Compact mode</strong> in Interface options. The language and whitelist sections are shown as collapsed concise read-only summaries with buttons to show and allow the full functionality of that section. Tap <strong>Edit whitelist</strong> or <strong>Edit permitted languages</strong> to open each section.</p>
-    <p>On Android, there is no toolbar icon — the most reliable way to reach the Options page is via the <strong>Open extension options</strong> button on any block or warning page. The right-click context menu is not available on Android; the <strong>Help</strong> button in the Options page header opens this page.</p>
-    <figure class="img-light compact-img">
-      <img src="img/options-compact-white.png" alt="Options page in compact mode, light theme">
-      <figcaption>The options page in compact mode — language and whitelist sections show read-only summaries.</figcaption>
-    </figure>
-    <figure class="img-dark compact-img">
-      <img src="img/options-compact-black.png" alt="Options page in compact mode, dark theme">
-      <figcaption>The options page in compact mode.</figcaption>
-    </figure>
-
-    <h3>Whitelist</h3>
-    <p>In compact mode, whitelisted domains are shown as a read-only list above the <strong>Edit whitelist</strong> button. Tapping <strong>Edit whitelist</strong> opens the list of whitelisted domains and permits deletion.</p>
-    <figure class="img-light compact-img">
-      <img src="img/options-compact-whitelist-white.png" alt="Whitelist, light theme">
-      <figcaption>The whitelist opened from compact mode.</figcaption>
-    </figure>
-    <figure class="img-dark compact-img">
-      <img src="img/options-compact-whitelist-black.png" alt="Whitelist, dark theme">
-      <figcaption>The whitelist.</figcaption>
-    </figure>
-
-    <h3>Permitted languages</h3>
-    <p>In compact mode, permitted languages are shown as a read-only list above the <strong>Edit permitted languages</strong> button. Tapping <strong>Edit permitted languages</strong> opens the full language table where languages can be enabled or disabled in the same way as the languages section in the desktop view.</p>
-    <figure class="img-light compact-img">
-      <img src="img/options-compact-languages-white.png" alt="Permitted languages, light theme">
-      <figcaption>The permitted languages page, reached via Edit permitted languages on the compact Options page.</figcaption>
-    </figure>
-    <figure class="img-dark compact-img">
-      <img src="img/options-compact-languages-black.png" alt="Permitted languages, dark theme">
-      <figcaption>The permitted languages page.</figcaption>
-    </figure>
-  </div>
-
-  <div class="section">
-    <h2>Coloured squares</h2>
+  <div class="section" id="coloured-squares">
+    <h2><a href="#toc" class="toc-back">Coloured squares <span class="toc-arrow">↑</span></a></h2>
     <p>When multiple blocked or warning pages are open at once, each tab gets a unique coloured rounded square so you can tell them apart.</p>
     <ul>
       <li>Clicking the square on a <strong>blocked or warning page</strong> opens the Options page.</li>
@@ -382,8 +392,8 @@
     </figure>
   </div>
 
-  <div class="section">
-    <h2>Private browsing protection</h2>
+  <div class="section" id="private-browsing">
+    <h2><a href="#toc" class="toc-back">Private browsing protection <span class="toc-arrow">↑</span></a></h2>
     <p>By default, Firefox does not run extensions in private windows. If you use private browsing and want this extension to protect those windows too, you need to enable it manually.</p>
     <p>When the extension is not allowed to run in private windows, the Options page shows a warning banner at the top:</p>
     <figure class="img-light">
@@ -400,8 +410,8 @@
     <p>If you cannot grant private-window access — for example in a managed Firefox setup where the option is disabled by policy — click <strong>Dismiss this warning</strong> on the banner, or untick <strong>Show private-browsing warning when access is not granted</strong> in the <em>Interface options</em> section. The protection itself remains off; dismissing only hides the banner.</p>
   </div>
 
-  <div class="section">
-    <h2>Interface options</h2>
+  <div class="section" id="interface-options">
+    <h2><a href="#toc" class="toc-back">Interface options <span class="toc-arrow">↑</span></a></h2>
     <p>Three preferences that take effect immediately when changed, with no Apply step required.</p>
     <ul>
       <li><strong>Show shadows</strong> — controls the drop shadows around panels on every extension page. Untick for a flatter look. Default: on.</li>
@@ -410,14 +420,14 @@
     </ul>
   </div>
 
-  <div class="section">
-    <h2>Whitelisted domains</h2>
+  <div class="section" id="whitelisted-domains">
+    <h2><a href="#toc" class="toc-back">Whitelisted domains <span class="toc-arrow">↑</span></a></h2>
     <p>Domains you have explicitly allowed (via "Allow this domain" on a block or warning page) are listed here with their offending characters annotated. You can remove any domain at any time — it will be blocked or warned again on the next visit.</p>
     <p>In Compact mode, the whitelist shows each domain with its offending characters highlighted in red. Click <strong>Edit whitelist</strong> to open the full editor.</p>
   </div>
 
-  <div class="section">
-    <h2>Permitted languages</h2>
+  <div class="section" id="permitted-languages">
+    <h2><a href="#toc" class="toc-back">Permitted languages <span class="toc-arrow">↑</span></a></h2>
     <p>Tick the languages whose scripts (character sets) you want to allow in domain names. Your browser's locale is used as the starting point — so if your Firefox language is set to Japanese, then Japanese is already permitted and the Han, Hiragana, and Katakana scripts are allowed. Latin is universally permitted regardless of locale.</p>
     <p>Each language row shows its scripts as small tags. A <strong>green tag</strong> means that script is currently permitted; a <strong>grey tag</strong> means it is not.</p>
     <p>Languages that use only a single non-Latin script are enabled automatically when that script turns green — for example, enabling Japanese enables Han, which then causes Chinese (Simplified and Traditional) to be enabled automatically (shown with a dimmed label). Multi-script languages like Korean are never ticked automatically and must be enabled explicitly.</p>
@@ -433,7 +443,7 @@
   </div>
 
   <div class="section" id="latin-languages">
-    <h2>Latin-script languages — always permitted</h2>
+    <h2><a href="#toc" class="toc-back">Latin-script languages — always permitted <span class="toc-arrow">↑</span></a></h2>
     <p>Latin is permitted by default, so URLs written in any Latin-script language load normally — the extension doesn't block them or warn you about them. The languages shown in the options panel are the most widely-used ones, but many more Latin-script languages exist and are equally unaffected by this extension.</p>
 
     <h3>European</h3>
@@ -454,13 +464,13 @@
     </ul>
   </div>
 
-  <div class="section">
-    <h2>Reset to locale defaults</h2>
+  <div class="section" id="reset-defaults">
+    <h2><a href="#toc" class="toc-back">Reset to locale defaults <span class="toc-arrow">↑</span></a></h2>
     <p>Re-checks the languages that match your current Firefox locale setting, and resets to just those language(s). Applied immediately.</p>
   </div>
 
-  <div class="section">
-    <h2>Apply changes / Discard changes</h2>
+  <div class="section" id="apply-changes">
+    <h2><a href="#toc" class="toc-back">Apply changes / Discard changes <span class="toc-arrow">↑</span></a></h2>
     <p>Changes to language settings are held in memory until you click <strong>Apply changes</strong>. The orange "Unsaved changes" dot appears while there are pending edits. <strong>Discard changes</strong> reverts to the last saved state without closing the page.</p>
     <figure class="img-light">
       <img src="img/options-apply-bar-white.png" alt="Options page with unsaved changes banner, light theme">
@@ -472,8 +482,55 @@
     </figure>
   </div>
 
-  <div class="section">
-    <h2>About</h2>
+  <div class="section" id="compact">
+    <h2><a href="#toc" class="toc-back">Compact view <span class="toc-arrow">↑</span></a></h2>
+    <p><strong>Compact mode</strong> is enabled by default on phones. On tablets and desktops it can be enabled manually via <strong>Compact mode</strong> in Interface options. The language and whitelist sections are shown as collapsed concise read-only summaries with buttons to show and allow the full functionality of that section. Tap <strong>Edit whitelist</strong> or <strong>Edit permitted languages</strong> to open each section.</p>
+    <p>On Android, there is no toolbar icon — the most reliable way to reach the Options page is via the <strong>Open extension options</strong> button on any block or warning page. The right-click context menu is not available on Android; the <strong>Help</strong> button in the Options page header opens this page.</p>
+    <figure class="img-light compact-img">
+      <img src="img/options-compact-white.png" alt="Options page in compact mode, light theme">
+      <figcaption>The options page in compact mode — language and whitelist sections show read-only summaries.</figcaption>
+    </figure>
+    <figure class="img-dark compact-img">
+      <img src="img/options-compact-black.png" alt="Options page in compact mode, dark theme">
+      <figcaption>The options page in compact mode.</figcaption>
+    </figure>
+
+    <h2 id="compact-whitelist"><a href="#toc" class="toc-back">Whitelist <span class="toc-arrow">↑</span></a></h2>
+    <p>In compact mode, whitelisted domains are shown as a read-only list above the <strong>Edit whitelist</strong> button. Tapping <strong>Edit whitelist</strong> opens the list of whitelisted domains and permits deletion.</p>
+    <figure class="img-light compact-img">
+      <img src="img/options-compact-whitelist-white.png" alt="Whitelist, light theme">
+      <figcaption>The whitelist opened from compact mode.</figcaption>
+    </figure>
+    <figure class="img-dark compact-img">
+      <img src="img/options-compact-whitelist-black.png" alt="Whitelist, dark theme">
+      <figcaption>The whitelist.</figcaption>
+    </figure>
+
+    <h2 id="compact-languages"><a href="#toc" class="toc-back">Permitted languages <span class="toc-arrow">↑</span></a></h2>
+    <p>In compact mode, permitted languages are shown as a read-only list above the <strong>Edit permitted languages</strong> button. Tapping <strong>Edit permitted languages</strong> opens the full language table where languages can be enabled or disabled in the same way as the languages section in the desktop view.</p>
+    <figure class="img-light compact-img">
+      <img src="img/options-compact-languages-white.png" alt="Permitted languages, light theme">
+      <figcaption>The permitted languages page, reached via Edit permitted languages on the compact Options page.</figcaption>
+    </figure>
+    <figure class="img-dark compact-img">
+      <img src="img/options-compact-languages-black.png" alt="Permitted languages, dark theme">
+      <figcaption>The permitted languages page.</figcaption>
+    </figure>
+
+    <h2 id="compact-additional"><a href="#toc" class="toc-back">Additional sections <span class="toc-arrow">↑</span></a></h2>
+    <p>The following sections from the desktop view apply equally in compact mode, where functionality and usage differs from Desktop view ahead it will be mentioned here:</p>
+    <ul>
+      <li><strong>Coloured squares</strong> — functional in compact mode but hard to use on a phone due to the small screen size.</li>
+      <li><strong>Private browsing protection</strong></li>
+      <li><strong>Interface options</strong></li>
+      <li><strong>Latin-script languages — always permitted</strong></li>
+      <li><strong>Reset to locale defaults</strong></li>
+      <li><strong>Apply changes / Discard changes</strong></li>
+    </ul>
+  </div>
+
+  <div class="section" id="about">
+    <h2><a href="#toc" class="toc-back">About <span class="toc-arrow">↑</span></a></h2>
     <p>© 2026 Lee MacKinnell</p>
     <p>Dual-licensed under <strong>MPL-2.0 OR GPL-3.0</strong> — the recipient chooses which terms to comply with. AMO releases are distributed under MPL-2.0.</p>
     <p>Source code, full licence text, and contribution notes: <a href="https://github.com/feldegast/url-lookalike-blocker" target="_blank" rel="noopener">github.com/feldegast/url-lookalike-blocker</a></p>
