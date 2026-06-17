@@ -165,7 +165,7 @@ Tab/Shift+Tab moves between sections — no section-jump shortcuts needed.
 
 **Staging:**
 - **Phase 1** — Scaffolding only: `en_GB` messages.json + string extraction refactor + help redirect mechanism. No user-visible change, but the infrastructure is in place.
-- **Phase 2** — Tier 1 languages: English (American), French, German, Spanish, Italian, Portuguese, Dutch. AI translation quality is high enough to ship without mandatory native review.
+- **Phase 2** — Tier 1 languages: English (American), French, German, Spanish, Italian, Portuguese, Dutch. AI translation quality is high enough to ship without mandatory native review. **Completing Phase 2 is a prerequisite for applying to the AMO Recommended Extensions programme** (satisfies the "general, international audience" criterion).
 - **Phase 3** — Tier 2 languages: Russian, Polish, Japanese, Simplified Chinese, Korean. Flag on the AMO listing as "translations AI-assisted, native corrections welcome."
 - **Phase 4** — anything else. The scaffolding makes community contributions possible; Firefox falls back to English GB for any unsupported locale.
 
