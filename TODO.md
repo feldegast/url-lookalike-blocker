@@ -20,16 +20,6 @@ Coloured squares are functional in compact mode but rarely useful on phones/tabl
 
 ---
 
-## Firefox for Android compatibility
-
-**Status: initial support shipped.** `gecko_android` declared in manifest, touch-friendly CSS added to all pages, blocked/warning buttons stack vertically on narrow screens.
-
-**Remaining:**
-
-- **Toolbar badge** — on Android the extension icon lives inside the browser menu rather than the toolbar; confirm whether the numeric badge appears. If not, adjust help docs expectations.
-- **Context menu** — Firefox for Android has no right-click menu. The `menus` declaration is silently ignored. This is acceptable: the extension icon tap opens Options, and the Help button inside Options opens the help page — both entry points work without the context menu.
-- **Testing** on a real Android 16 tablet and phone (both available) before submission.
-
 ## Internationalisation (i18n)
 
 **Goal:** Render the extension UI in the user's Firefox **display language** (the one Firefox itself uses for its UI, returned by `browser.i18n.getUILanguage()` — distinct from the page-content language preferences).
@@ -72,19 +62,6 @@ Coloured squares are functional in compact mode but rarely useful on phones/tabl
 - Rate limits on public RDAP servers
 - The async lookup should not delay the block page render — fetch in parallel and update the page if/when the result arrives
 - Consider making this an opt-in setting in the options page
-
----
-
-## Recapture help-page screenshots for v1.2 changes
-
-The following screenshots are out of date and need recapturing before the next release:
-
-- **`options-white.png` / `options-black.png`** — full options page (new header layout, Compact mode toggle now visible in Interface options).
-- **`warning-confusable-white.png` / `warning-confusable-black.png`** — heading now reads "Confusable Character Domain Warning".
-- **`warning-mixed-white.png` / `warning-mixed-black.png`** — heading now reads "Mixed Script Domain Warning".
-- **`options-interface-white.png` / `options-interface-black.png`** — Interface options section now has three checkboxes (Compact mode added). Note: this screenshot was removed from the help page in v1.2 so recapturing is low priority unless it is added back.
-
-Follow the runbook below to recapture.
 
 ---
 
