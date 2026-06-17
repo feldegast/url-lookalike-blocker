@@ -118,14 +118,27 @@ Tab/Shift+Tab moves between sections — no section-jump shortcuts needed.
 
 **Goal:** Apply for Mozilla's Recommended badge, which improves discoverability and signals trustworthiness to users.
 
-**What's involved:**
+**How it works:** Mozilla editorial staff curate the programme — there is no formal application form. Email **amo-featured@mozilla.org** with a link to the AMO listing. Criteria are assessed on five dimensions:
 
-- Review Mozilla's published criteria at https://support.mozilla.org/en-US/kb/recommended-extensions-program
-- The likely gaps before applying: keyboard accessibility (above) and possibly a formal justification review for `<all_urls>`.
-- The `<all_urls>` host permission is necessary because the extension must inspect every navigation — document this clearly in the AMO reviewer notes.
-- Once keyboard accessibility and CSP are done, the extension should meet the technical bar.
+1. **Functionality** — works exceptionally well at what it promises
+2. **Security** — passes rigorous review by Mozilla security staff
+3. **User experience** — intuitive and delightful to use, including keyboard accessibility
+4. **Relevance** — appeals to a general, international audience
+5. **Active development** — maintained and evolving with Firefox
 
-**Estimated effort:** No code — research, checklist review, and submitting an application.
+**Pre-application checklist** — complete these first:
+
+- [ ] CSP declared in manifest
+- [ ] storage.sync with chunked whitelist
+- [ ] Keyboard accessibility (language table, whitelist, modal focus trap)
+- [ ] i18n Tier 1 — English (US), French, German, Spanish, Italian, Portuguese, Dutch (covers "international audience" criterion at high translation confidence)
+- [ ] Email amo-featured@mozilla.org with AMO listing link
+
+**Notes:**
+- Criterion 4 (international audience) is the main reason i18n Tier 1 is a prerequisite — an extension displaying only in British English is inherently limited in scope.
+- Tier 1 languages (7 Western European + en_US) should be sufficient to make the international case without needing Tier 2.
+
+**Estimated effort:** No code beyond the prerequisites above — just the email once they are done.
 
 ---
 
