@@ -20,6 +20,69 @@ Coloured squares are functional in compact mode but rarely useful on phones/tabl
 
 ---
 
+## Sync settings across devices (browser.storage.sync)
+
+**Goal:** Whitelist and language settings follow the user across all their Firefox installs automatically — particularly relevant now that the extension supports both desktop and Android.
+
+**What's involved:**
+
+- Switch `browser.storage.local` to `browser.storage.sync` for whitelist and language settings (interface preferences like theme and shadows can stay local).
+- Handle the sync storage quota: 100KB total, 8KB per item. A very large whitelist could hit this. Graceful fallback: detect quota errors and warn the user, or offer a "local only" toggle.
+- Test that changes on one device propagate to another via `storage.onChanged`.
+
+**Estimated effort:** Small to medium — the storage calls are already centralised, so the switch is straightforward. The quota handling adds some complexity.
+
+---
+
+## Content Security Policy (CSP)
+
+**Goal:** Declare an explicit CSP in the manifest rather than relying on the MV3 default.
+
+**What's involved:**
+
+- Add to `manifest.json`:
+  ```json
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+  ```
+- Verify no inline scripts or `eval` calls exist anywhere in the extension pages (there shouldn't be — the reviewer's red-flag scan confirmed this).
+
+**Estimated effort:** Trivial — one manifest change plus a quick audit.
+
+---
+
+## Keyboard accessibility
+
+**Goal:** Full keyboard navigation across all extension pages — required for AMO Recommended status and important for accessibility.
+
+**What's involved:**
+
+- **Options page — language table:** Tab through language rows, Space to toggle a checkbox, arrow keys to move between rows. The table currently requires a mouse/touch.
+- **Options page — whitelist:** Tab to each remove button, Enter/Space to activate.
+- **Blocked/warning pages:** Tab through action buttons (already partially works via native button focus — verify and fix any gaps).
+- **All pages:** Ensure focus indicators are visible (not suppressed by `outline: none`).
+- Test with keyboard-only navigation and verify logical tab order.
+
+**Estimated effort:** Medium — the language table is the main work; the rest should be minor fixes.
+
+---
+
+## AMO Recommended Extensions programme
+
+**Goal:** Apply for Mozilla's Recommended badge, which improves discoverability and signals trustworthiness to users.
+
+**What's involved:**
+
+- Review Mozilla's published criteria at https://support.mozilla.org/en-US/kb/recommended-extensions-program
+- The likely gaps before applying: keyboard accessibility (above) and possibly a formal justification review for `<all_urls>`.
+- The `<all_urls>` host permission is necessary because the extension must inspect every navigation — document this clearly in the AMO reviewer notes.
+- Once keyboard accessibility and CSP are done, the extension should meet the technical bar.
+
+**Estimated effort:** No code — research, checklist review, and submitting an application.
+
+---
+
 ## Internationalisation (i18n)
 
 **Goal:** Render the extension UI in the user's Firefox **display language** (the one Firefox itself uses for its UI, returned by `browser.i18n.getUILanguage()` — distinct from the page-content language preferences).
@@ -43,7 +106,7 @@ Coloured squares are functional in compact mode but rarely useful on phones/tabl
 
 **Staging:**
 - **Phase 1** — Scaffolding only: `en_GB` messages.json + string extraction refactor + help redirect mechanism. No user-visible change, but the infrastructure is in place.
-- **Phase 2** — Tier 1 languages: French, German, Spanish, Italian, Portuguese, Dutch. AI translation quality is high enough to ship without mandatory native review.
+- **Phase 2** — Tier 1 languages: English (American), French, German, Spanish, Italian, Portuguese, Dutch. AI translation quality is high enough to ship without mandatory native review.
 - **Phase 3** — Tier 2 languages: Russian, Polish, Japanese, Simplified Chinese, Korean. Flag on the AMO listing as "translations AI-assisted, native corrections welcome."
 - **Phase 4** — anything else. The scaffolding makes community contributions possible; Firefox falls back to English GB for any unsupported locale.
 
