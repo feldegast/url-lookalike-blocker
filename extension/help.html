@@ -123,10 +123,10 @@
     }
     figure.compact-img img {
       border-width: 2px;
-      border-color: #444;
+      border-color: #888;
     }
     html[data-theme="dark"] figure.compact-img img,
-    html:not([data-theme="light"]) figure.compact-img img { border-color: #888; }
+    html:not([data-theme="light"]) figure.compact-img img { border-color: #444; }
     .badge-pair {
       display: flex;
       gap: 24px;
@@ -311,95 +311,55 @@
       <img src="img/menu-black.png" alt="Right-click menu, dark theme">
       <figcaption>The right-click context menu on the extension icon.</figcaption>
     </figure>
-    <p>On Firefox for Android, the extension icon is not shown in the toolbar — see <a href="#android">Firefox for Android</a> below.</p>
+    <p>On Firefox for Android, the extension icon is not shown in the toolbar — see <a href="#compact">Compact view</a> below.</p>
   </div>
 
-  <div class="section" id="android">
-    <h2>Firefox for Android</h2>
-    <p>This extension supports Firefox for Android (version 140 and later). Homograph protection works the same way — block pages and warning pages appear exactly as they do on desktop — but a few things work differently on Android.</p>
-
-    <h3>Accessing the extension</h3>
-    <p>There is no toolbar icon on Android. The most reliable way to reach the Options page is via the <strong>Open extension options</strong> button on any block or warning page.</p>
-
-
-    <h3>No right-click menu</h3>
-    <p>The right-click context menu available on desktop does not exist on Android. The Options page and Help page are both accessible from the Options page header — use the <strong>Help</strong> button there to open this page.</p>
-
-    <h3>Compact mode</h3>
-    <p>On phones, <strong>Compact mode</strong> is enabled by default. The Options page shows concise read-only summaries of the permitted languages and whitelist rather than the full tables. On tablets, Compact mode is off by default and the full tables are shown inline, the same as on desktop.</p>
-    <figure class="img-light compact-img">
-      <img src="img/options-compact-white.png" alt="Options page in compact mode, light theme">
-      <figcaption>The Options page on a phone — compact mode enabled by default, showing read-only summaries of permitted languages and whitelisted domains.</figcaption>
-    </figure>
-    <figure class="img-dark compact-img">
-      <img src="img/options-compact-black.png" alt="Options page in compact mode, dark theme">
-      <figcaption>The Options page in compact mode, dark theme.</figcaption>
-    </figure>
-    <p>Tap <strong>Edit whitelist</strong> to open the whitelist editor. Tap <strong>Edit permitted languages</strong> to go to the language settings.</p>
-    <figure class="img-light compact-img">
-      <img src="img/options-compact-whitelist-white.png" alt="Whitelist overlay, light theme">
-      <figcaption>The whitelist overlay — tap Edit whitelist to open it.</figcaption>
-    </figure>
-    <figure class="img-dark compact-img">
-      <img src="img/options-compact-whitelist-black.png" alt="Whitelist overlay, dark theme">
-      <figcaption>The whitelist overlay, dark theme.</figcaption>
-    </figure>
-    <figure class="img-light compact-img">
-      <img src="img/options-compact-languages-white.png" alt="Permitted languages overlay, light theme">
-      <figcaption>The permitted languages page — reached via Edit permitted languages on the compact Options page.</figcaption>
-    </figure>
-    <figure class="img-dark compact-img">
-      <img src="img/options-compact-languages-black.png" alt="Permitted languages overlay, dark theme">
-      <figcaption>The permitted languages page, dark theme.</figcaption>
-    </figure>
-  </div>
-
-  <div class="section">
-    <h2>Options page</h2>
-    <p>The Options page is where you can use a coloured square to return to a block or warning page, modify interface options, edit whitelisted domains and change which languages are permitted.</p>
-
-    <h3>Full view</h3>
-    <p>On tablets and desktops the full language table and whitelist editor are shown inline.</p>
+  <div class="section" id="desktop">
+    <h2>Desktop view</h2>
+    <p>The Options page is where you can use a coloured square to return to a block or warning page, modify interface options, edit whitelisted domains and change which languages are permitted. On tablets and desktops the full language table and whitelist editor are shown inline.</p>
     <figure class="img-light">
       <img src="img/options-white.png" alt="Options page, light theme">
-      <figcaption>The options page showing coloured tabs, interface options, whitelisted domains and permitted languages.</figcaption>
+      <figcaption>The options page showing coloured tabs, interface options, whitelisted domains and permitted languages all simultaneously.</figcaption>
     </figure>
     <figure class="img-dark">
       <img src="img/options-black.png" alt="Options page, dark theme">
-      <figcaption>The options page showing coloured tabs, interface options, whitelisted domains and permitted languages.</figcaption>
+      <figcaption>The options page showing coloured tabs, interface options, whitelisted domains and permitted languages all simultaneously.</figcaption>
     </figure>
+  </div>
 
-    <h3>Compact mode</h3>
-    <p>On phones — and on any device where you enable <strong>Compact mode</strong> in Interface options — the language and whitelist sections collapse into concise read-only summaries. Tap <strong>Edit whitelist</strong> or <strong>Edit permitted languages</strong> to open each section as a modal overlay.</p>
+  <div class="section" id="compact">
+    <h2>Compact view</h2>
+    <p><strong>Compact mode</strong> is enabled by default on phones. On tablets and desktops it can be enabled manually via <strong>Compact mode</strong> in Interface options. The language and whitelist sections are shown as collapsed concise read-only summaries with buttons to show and allow the full functionality of that section. Tap <strong>Edit whitelist</strong> or <strong>Edit permitted languages</strong> to open each section.</p>
+    <p>On Android, there is no toolbar icon — the most reliable way to reach the Options page is via the <strong>Open extension options</strong> button on any block or warning page. The right-click context menu is not available on Android; the <strong>Help</strong> button in the Options page header opens this page.</p>
     <figure class="img-light compact-img">
       <img src="img/options-compact-white.png" alt="Options page in compact mode, light theme">
       <figcaption>The options page in compact mode — language and whitelist sections show read-only summaries.</figcaption>
     </figure>
     <figure class="img-dark compact-img">
       <img src="img/options-compact-black.png" alt="Options page in compact mode, dark theme">
-      <figcaption>The options page in compact mode, dark theme.</figcaption>
+      <figcaption>The options page in compact mode.</figcaption>
     </figure>
 
-    <h3>Whitelist overlay</h3>
-    <p>Tapping <strong>Edit whitelist</strong> opens the full whitelist editor as an overlay.</p>
+    <h3>Whitelist</h3>
+    <p>In compact mode, whitelisted domains are shown as a read-only list above the <strong>Edit whitelist</strong> button. Tapping <strong>Edit whitelist</strong> opens the list of whitelisted domains and permits deletion.</p>
     <figure class="img-light compact-img">
-      <img src="img/options-compact-whitelist-white.png" alt="Whitelist overlay, light theme">
-      <figcaption>The whitelist overlay opened from compact mode.</figcaption>
+      <img src="img/options-compact-whitelist-white.png" alt="Whitelist, light theme">
+      <figcaption>The whitelist opened from compact mode.</figcaption>
     </figure>
     <figure class="img-dark compact-img">
-      <img src="img/options-compact-whitelist-black.png" alt="Whitelist overlay, dark theme">
-      <figcaption>The whitelist overlay, dark theme.</figcaption>
+      <img src="img/options-compact-whitelist-black.png" alt="Whitelist, dark theme">
+      <figcaption>The whitelist.</figcaption>
     </figure>
 
-    <h3>Permitted languages overlay</h3>
-    <p>In compact mode, <strong>Edit permitted languages</strong> on the Options page opens the full language table as an overlay. Changes made here follow the normal Apply / Discard workflow.</p>
+    <h3>Permitted languages</h3>
+    <p>In compact mode, permitted languages are shown as a read-only list above the <strong>Edit permitted languages</strong> button. Tapping <strong>Edit permitted languages</strong> opens the full language table where languages can be enabled or disabled in the same way as the languages section in the desktop view.</p>
     <figure class="img-light compact-img">
-      <img src="img/options-compact-languages-white.png" alt="Permitted languages overlay, light theme">
+      <img src="img/options-compact-languages-white.png" alt="Permitted languages, light theme">
       <figcaption>The permitted languages page, reached via Edit permitted languages on the compact Options page.</figcaption>
     </figure>
     <figure class="img-dark compact-img">
-      <img src="img/options-compact-languages-black.png" alt="Permitted languages overlay, dark theme">
-      <figcaption>The permitted languages page, dark theme.</figcaption>
+      <img src="img/options-compact-languages-black.png" alt="Permitted languages, dark theme">
+      <figcaption>The permitted languages page.</figcaption>
     </figure>
   </div>
 
@@ -460,7 +420,7 @@
     <h2>Permitted languages</h2>
     <p>Tick the languages whose scripts (character sets) you want to allow in domain names. Your browser's locale is used as the starting point — so if your Firefox language is set to Japanese, then Japanese is already permitted and the Han, Hiragana, and Katakana scripts are allowed. Latin is universally permitted regardless of locale.</p>
     <p>Each language row shows its scripts as small tags. A <strong>green tag</strong> means that script is currently permitted; a <strong>grey tag</strong> means it is not.</p>
-    <p>Languages that use only a single non-Latin script are ticked automatically when that script turns green — for example, enabling Japanese enables Han, which causes Chinese (Simplified and Traditional) to tick themselves automatically (shown with a dimmed label). Multi-script languages like Korean are never ticked automatically and must be enabled explicitly.</p>
+    <p>Languages that use only a single non-Latin script are enabled automatically when that script turns green — for example, enabling Japanese enables Han, which then causes Chinese (Simplified and Traditional) to be enabled automatically (shown with a dimmed label). Multi-script languages like Korean are never ticked automatically and must be enabled explicitly.</p>
     <p>Unticking a language removes its scripts from the permitted set. Any other enabled language that relied on those same scripts is also disabled in turn, cascading until the permitted set is stable.</p>
     <figure class="img-light">
       <img src="img/options-languages-white.png" alt="Permitted languages section, light theme">
@@ -468,7 +428,7 @@
     </figure>
     <figure class="img-dark">
       <img src="img/options-languages-black.png" alt="Permitted languages section, dark theme">
-      <figcaption>The language table with Japanese enabled, dark theme.</figcaption>
+      <figcaption>The language table with Japanese enabled.</figcaption>
     </figure>
   </div>
 

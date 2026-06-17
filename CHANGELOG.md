@@ -8,8 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
-- **Help page: Firefox for Android section.** Documents how the extension works differently on Android: no toolbar icon, Options is accessed via the Open extension options button on block and warning pages, compact mode is on by default on phones and off on tablets. The Extension icon section is now subtitled "(desktop)" with a link to the Android section.
-- **Help page: compact mode screenshots (placeholders).** The Options page section now has subsections for full view, compact mode, permitted languages overlay, and whitelist overlay. Placeholder divs mark where screenshots are to be inserted; these same image files will be reused in the Android section.
+- **Help page: Desktop view and Compact view sections.** The help page now organises the Options window into two view sections — Desktop view (full inline tables) and Compact view (collapsed summaries with Edit buttons). Android-specific differences (no toolbar icon, no right-click menu) are documented in the Compact view intro since Android phones default to compact mode. The Extension icon section links to Compact view instead of a separate Android section.
 - **Dev: automated compact mode screenshot capture.** The Developer: Capture screenshots tool now captures compact mode in the same pass as the standard screenshots — compact main view, language modal, and whitelist modal in both light and dark themes (six additional files). No need for a separate manual capture run.
 
 ### Fixed

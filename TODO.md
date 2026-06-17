@@ -1,5 +1,11 @@
 # TODO / Future Features
 
+## Help page: explain coloured squares in compact view if requested
+
+Coloured squares are functional in compact mode but rarely useful on phones/tablets where multiple blocked tabs are unlikely. Add a note to the Compact view section only if users ask about it.
+
+---
+
 ## Animate script-tag colour transitions on the options page
 
 **Goal:** When the user ticks or unticks a language, script tags change colour (grey ↔ green) with a staggered delay so the change visibly propagates top-to-bottom, left-to-right — making the cascade feel tangible rather than instantaneous.
