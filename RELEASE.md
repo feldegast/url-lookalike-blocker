@@ -22,7 +22,7 @@ In `CHANGELOG.md`, rename the `## [Unreleased]` heading to `## [<new-version>] �
 
 ### 3. Strip dev-mode files
 
-The dev screenshot capture tool lives in dedicated `*-dev.js` files. **Remove every reference to a `*-dev.js` file** from the staging copy before zipping:
+The dev screenshot capture tool lives in dedicated `*-dev.js` files. Four things must be stripped from the public bundle:
 
 1. **Manifest — scripts array:** remove `"background-dev.js"`
    ```json
@@ -33,9 +33,17 @@ The dev screenshot capture tool lives in dedicated `*-dev.js` files. **Remove ev
 
 3. **HTML files — script tags:** remove `<script src="pages-dev.js"></script>` from `blocked.html`, `warning.html`, and `options.html`
 
-Quick audit: `grep -r "\-dev\.js" dev/review-staging/` should return nothing before you zip.
+4. **JS files — fenced blocks:** remove `// DEV-BEGIN … // DEV-END` blocks from any `.js` file that contains them (currently `options.js`)
 
-The staging copy is a throwaway — the working files in `extension/` are never modified, so the full dev infrastructure (both `*-dev.js` files, the `downloads` permission, and the `pages-dev.js` script tags) remains intact and ready for the next development cycle.
+The easiest way to do all four correctly is to use `dev/build.sh` (see step 6). If stripping manually, audit afterwards:
+
+```
+grep -rn 'pages-dev\|background-dev\|DEV-BEGIN\|DEV-END\|_devHooks\|"downloads"' <staging-dir>/
+```
+
+This should return nothing before you zip.
+
+The working files in `extension/` are never modified — the full dev infrastructure remains intact for the next development cycle.
 
 ### 4. Regenerate icons if the source changed
 
@@ -59,26 +67,24 @@ python dev/gather-listing-screenshots.py
 
 See the runbook at the bottom of `TODO.md` for the full capture workflow. If nothing visual has changed, skip this step.
 
-### 6. Build the submission zip
+### 6. Build the submission zips
 
-The zip must contain only files inside `extension/`, with `manifest.json` at the **zip root** (not under an `extension/` subdirectory). All screenshots are captured by the in-extension dev tool and stored in `extension/img/`. Exclude `extension/img/working files/` (working directory used during development, not part of the submission).
-
-Using PowerShell on Windows:
+Run the build script from anywhere inside the repo:
 
 ```
-$staging = "dev/review-staging"
-if (Test-Path $staging) { Remove-Item -Recurse -Force $staging }
-Copy-Item -Recurse extension $staging
-Remove-Item -Recurse -Force "$staging/img/working files" -ErrorAction SilentlyContinue
-$version = (Get-Content "$staging/manifest.json" | ConvertFrom-Json).version
-$date = Get-Date -Format "yyyy-MM-dd"
-$zipName = "dev/url-lookalike-blocker-$version-$date.zip"
-if (Test-Path $zipName) { Remove-Item $zipName }
-Compress-Archive -Path "$staging/*" -DestinationPath $zipName
-Remove-Item -Recurse -Force $staging
+bash dev/build.sh
 ```
 
-The zip is named `url-lookalike-blocker-<version>-<date>.zip` — the version and date prevent accidental overwrites and make the file self-describing for the GitHub release attachment.
+This produces two zips in the repo root (both gitignored):
+
+| File | Purpose |
+|---|---|
+| `url-lookalike-blocker-<version>.zip` | AMO submission — all dev code stripped and verified |
+| `url-lookalike-blocker-<version>-dev.zip` | Local testing — full bundle including dev tools |
+
+The script reads the version from `manifest.json` automatically, applies all four strip steps from step 3, runs a verification pass that aborts with a clear error if any dev reference survives, and leaves the working files in `extension/` untouched.
+
+Submit the non-`-dev` zip to AMO.
 
 ### 7. Validate locally
 
