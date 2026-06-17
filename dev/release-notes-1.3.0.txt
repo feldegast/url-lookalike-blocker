@@ -1,0 +1,14 @@
+Release Notes — URL Lookalike Blocker 1.3.0
+==========================================
+(Paste into the AMO "What's new in this version" field)
+
+All changes in this release are cosmetic and documentation — no behaviour,
+detection logic, or security-relevant code changed between 1.2.1 and 1.3.0.
+
+- Long URLs on the block and warning pages now wrap and scroll correctly
+  instead of overflowing off-screen on narrow viewports.
+- Help page reorganised with a table of contents, section anchors, and
+  per-section "back to top" links.
+- Help page now documents compact (mobile) mode with screenshots.
+- Various small layout polish on the options page for compact/mobile use
+  (safe-area padding, modal sizing on mobile browsers).
