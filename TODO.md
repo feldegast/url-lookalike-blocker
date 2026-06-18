@@ -1,5 +1,30 @@
 # TODO / Future Features
 
+## Optional: disable "always permit Latin"
+
+**Goal:** Allow users to opt out of Latin being unconditionally permitted, for contexts where Latin-script domains are not needed or are a security risk (e.g. a Chinese school network where all legitimate browsing is Han-script only).
+
+**Background:** Latin is currently hardcoded into `ALWAYS_PERMITTED` alongside Common and Inherited — a eurocentric assumption that every user has a legitimate reason to visit Latin-script domains. For non-Latin-script users this increases their homograph attack surface unnecessarily.
+
+**Design intent:** Latin should be removed from the hardcoded `ALWAYS_PERMITTED` set in the core logic. Instead, a UI setting — "Always enable Latin script" — controls it, defaulting **on**. The net effect for most users is unchanged; the setting exists so non-Latin-script users can opt out.
+
+**What's involved:**
+
+- Remove Latin from the hardcoded `ALWAYS_PERMITTED` (`['Common', 'Inherited']` only).
+- Add an "Always enable Latin script" toggle to the options page (default: on).
+- Store the preference in sync storage alongside `showShadows`/`theme`.
+- When the setting is on, Latin is added to `permittedScripts` at runtime exactly as any other permitted script.
+- In `computeScriptsFromLanguages`, thread the setting through so the derivation check reflects whether Latin is currently permitted.
+- Update the help page to explain the setting and when disabling it makes sense.
+
+**Notes:**
+- Common and Inherited remain hardcoded as always permitted — they cover punctuation, digits, and combining marks shared across all scripts.
+- Step 3 mixed-script warnings already catch Latin+non-Latin mixing for users who haven't enabled a Latin-bridging language, so the main benefit of disabling Latin is at step 1 (hard blocking of pure Latin-script domains entirely).
+
+**Estimated effort:** Small to medium — the toggle itself is simple; the main care is threading the setting through `ALWAYS_PERMITTED` consistently across background.js, options.js, and unicode-scripts.js.
+
+---
+
 ## Help page: explain coloured squares in compact view if requested
 
 Coloured squares are functional in compact mode but rarely useful on phones/tablets where multiple blocked tabs are unlikely. Add a note to the Compact view section only if users ask about it.
@@ -128,9 +153,9 @@ Tab/Shift+Tab moves between sections — no section-jump shortcuts needed.
 
 **Pre-application checklist** — complete these first:
 
-- [ ] CSP declared in manifest
-- [ ] storage.sync with chunked whitelist
-- [ ] Keyboard accessibility (language table, whitelist, modal focus trap)
+- [x] CSP declared in manifest
+- [x] storage.sync with chunked whitelist
+- [x] Keyboard accessibility (language table, whitelist, modal focus trap)
 - [ ] i18n Tier 1 — English (US), French, German, Spanish, Italian, Portuguese, Dutch (covers "international audience" criterion at high translation confidence)
 - [ ] Email amo-featured@mozilla.org with AMO listing link
 
@@ -154,7 +179,8 @@ Tab/Shift+Tab moves between sections — no section-jump shortcuts needed.
 
 - Add `"default_locale": "en_GB"` to `manifest.json`.
 - Create `_locales/en_GB/messages.json` with all UI strings — this is the canonical English (GB) source.
-- Replace hardcoded UI strings in `options.js`, `blocked.html/js`, and `warning.html/js` with `browser.i18n.getMessage()` calls.
+- Replace all displayed strings across every extension page and view with `browser.i18n.getMessage()` calls — this includes desktop and compact mode, all modal/overlay labels, and all dynamically inserted text in `options.js`, `blocked.html/js`, and `warning.html/js`. No displayed string is out of scope.
+- The Latin-related string (`'Latin languages (always permitted)'` or its replacement) will have been revised by the "disable Latin" feature before Phase 1 begins — extract whatever that feature leaves in place, not the current hardcoded text.
 - Add a locale-redirect script so `help.html` is the en_GB fallback and `help.<lang>.html` files are served when available.
 - Per-language UI translations live in `_locales/<lang>/messages.json`; Firefox falls back to `en_GB` automatically if none exists.
 
@@ -184,6 +210,29 @@ Tab/Shift+Tab moves between sections — no section-jump shortcuts needed.
 - Rate limits on public RDAP servers
 - The async lookup should not delay the block page render — fetch in parallel and update the page if/when the result arrives
 - Consider making this an opt-in setting in the options page
+
+---
+
+## Country-code TLD blocking (beyond original scope — under consideration)
+
+**Goal:** Allow users or organisations to block all navigation to domains under selected country-code TLDs (e.g. block all `.cz`, `.ru`, `.cn` traffic).
+
+**Motivation:** Enterprise networks can enforce country-based blocking at the router or DNS level, but this is out of reach for home offices and small businesses with consumer hardware. A browser extension is often the only practical layer available to these users.
+
+**Why this is beyond the extension's original scope:** The extension's core purpose is Unicode script anomaly detection (IDN homograph attacks). TLD blocking is access policy — it blocks destinations regardless of how the domain looks, which is a different threat model entirely.
+
+**If implemented:**
+- A dedicated section in the options page listing ccTLDs with checkboxes
+- Blocking would be enforced in `background.js` at the same `onBeforeRequest` intercept point, before the script check
+- Blocked navigation redirects to `blocked.html` with a message distinguishing TLD policy blocks from homograph blocks
+- The feature should be clearly opt-in and off by default
+
+**Considerations before implementing:**
+- AMO review: Mozilla may question whether TLD blocking fits the extension's stated purpose — the description and permissions would need updating
+- False positives: legitimate sites under blocked TLDs would be unreachable with no per-site override unless a whitelist exception is also respected
+- Maintenance: ccTLD lists change rarely but do change
+
+**Status:** Deferred — assess after core features are stable and AMO Recommended status is achieved.
 
 ---
 
