@@ -205,6 +205,98 @@ Repeat step 1 after all the above to confirm nothing broke pass-through for norm
 
 ---
 
+## 9. storage.sync — cross-device settings
+
+These tests verify that settings are written to `storage.sync` and read back correctly, with a local-storage fallback for users without a Firefox account.
+
+**Before starting:** Open the extension's background-page console via `about:debugging` → This Firefox → find the extension → click **Inspect** next to the extension name (not any specific page). This opens the background script inspector. Leave it open throughout this section. The options tab closes automatically when you click Apply, so all storage queries must be run from this background console — not from the options page's own DevTools.
+
+**Part A — Sync write on Apply:**
+
+- [ ] Open options, enable Russian, click Apply Changes (options tab closes)
+- [ ] In the **background console** type `browser.storage.sync.get(null)` and press Enter — result contains:
+  - `sync_settings` with fields `enabledLanguages` (array including `"Russian"`), `theme` (string), and `showShadows` (boolean)
+  - `sync_meta` with field `whitelist_chunks` (number)
+  - `whitelist_0` containing the current whitelist array (may be empty `[]`)
+- [ ] Open options, click Reset to Locale Defaults (applies immediately, no Apply needed) — in the background console, `browser.storage.sync.get('sync_settings')` shows `enabledLanguages` as `[]`
+
+**Note on interface options:** Only `theme` and `showShadows` are written to sync. Compact mode and the private-browsing-warning checkbox are local-only and will not appear in sync storage.
+
+**Part B — Sync read on startup (local fallback):**
+
+- [ ] Disable Firefox Sync (or test without a Firefox account signed in)
+- [ ] Apply a setting (e.g. enable Greek), close Firefox completely, reopen Firefox — that setting is still applied (loaded from `storage.local` fallback)
+- [ ] In the background console run `browser.storage.local.get(null)` — result contains `enabledLanguages` and `whitelist`
+
+**Part C — Whitelist chunking:**
+
+- [ ] Add at least one domain to the whitelist via the block page ("Allow this domain"), then Apply Changes
+- [ ] In the background console run `browser.storage.sync.get(null)` — `sync_meta.whitelist_chunks` equals 1 and `whitelist_0` contains that domain
+- [ ] Remove the domain from the whitelist in options and Apply Changes — `sync_meta.whitelist_chunks` equals 0; `whitelist_0` key is gone from the sync result (stale chunk removed)
+
+**Part D — Live sync propagation (requires two devices both signed into Firefox Sync):**
+
+- [ ] On device 1: enable a new language (e.g. Hebrew) and Apply Changes
+- [ ] On device 2: wait for sync (~30 s) then reload a previously blocked Hebrew URL (`xn--4db7d.com`) — it passes through without touching options on device 2
+- [ ] On device 2: disable Hebrew and Apply Changes; on device 1: wait for sync then visit the Hebrew URL — it blocks again
+
+---
+
+## 10. Content Security Policy
+
+These tests verify that the CSP (`script-src 'self'; object-src 'self'`) is enforced on all extension pages and that no CSP violations appear during normal use.
+
+**Before starting:** Open the browser DevTools console (F12) on each extension page being tested.
+
+- [ ] Open the options page — DevTools console shows no CSP violation errors
+- [ ] Open the blocked page (click any blocked URL from `test-urls.html`) — DevTools console shows no CSP violation errors
+- [ ] Open the warning page (click any warning URL from `test-urls.html`) — DevTools console shows no CSP violation errors
+- [ ] Open the help page — DevTools console shows no CSP violation errors
+- [ ] In DevTools console on the options page, type `eval('1+1')` and press Enter — the browser throws an `EvalError` or CSP violation (eval is blocked by `script-src 'self'`)
+- [ ] Check `manifest.json` → `content_security_policy.extension_pages` equals `"script-src 'self'; object-src 'self'"`
+
+---
+
+## 11. Keyboard accessibility
+
+These tests verify that all interactive elements are reachable by keyboard and that the language modal traps focus correctly.
+
+**Before starting:** Ensure you have a mouse-free path available. Use Tab to move forward and Shift+Tab to move backward. Test in a normal (non-compact) window first.
+
+**Part A — Focus indicators on all pages:**
+
+- [ ] Navigate to the options page; press Tab repeatedly — every button receives a visible green outline (`outline: 2px solid #4caf50`) when focused; no button is skipped
+- [ ] Navigate to a blocked page; press Tab — "Allow this domain", "Try again", "Go back", and "Open extension options" each receive the green focus outline in turn
+- [ ] Navigate to a warning page; press Tab — all buttons receive the green focus outline
+- [ ] Open help page; press Tab — all buttons and links receive a visible focus indicator
+
+**Part B — Language table keyboard navigation (normal mode):**
+
+- [ ] On the options page, Tab into the language table — each language row (`lang-row`) is focusable and receives a visible green outline
+- [ ] Press Space on a focused language row — the checkbox toggles; the "unsaved changes" indicator appears
+
+**Part C — Language modal focus trap (compact mode):**
+
+- [ ] Enable compact mode (Interface options → Compact mode checkbox → Apply)
+- [ ] The options page shows "Edit permitted languages" button instead of the full table
+- [ ] Press Tab to reach "Edit permitted languages" and press Enter (or Space) — the language modal opens; the Apply/Discard bar at the bottom is hidden while the modal is open
+- [ ] Press Tab repeatedly inside the modal — focus cycles through all interactive elements inside the modal (close button, language rows, "Reset to locale defaults") and does NOT escape to the page behind the modal backdrop
+- [ ] Press Shift+Tab at the first focusable element in the modal — focus wraps to the last focusable element (focus trap is bidirectional)
+- [ ] Press Escape — the modal closes and focus returns to the "Edit permitted languages" button
+- [ ] Press Tab to reach the close button inside the modal and press Enter — modal closes; focus returns to "Edit permitted languages"
+
+**Part D — Apply/Discard bar keyboard access:**
+
+- [ ] Make a change inside the language modal, then close it — the Apply/Discard bar appears at the bottom of the page
+- [ ] Press Tab until the "Apply changes" button is focused; press Enter — changes are applied
+- [ ] Open the modal, make another change, close the modal; Tab to "Discard changes"; press Enter — changes are reverted
+
+**Part E — Dark mode focus indicator:**
+
+- [ ] Toggle dark mode (☾ button); Tab through language rows — focus outline changes to `#81c784` (lighter green) to remain visible against the dark background
+
+---
+
 ## Polish notes (post-testing)
 
 - **Badge recovery after background-page suspension** — not manually testable via extension reload (reload closes all extension pages). `recoverBlockedTabs()` guards against Firefox silently suspending the idle background script while blocked tabs remain open; this happens automatically and cannot be triggered from about:debugging.

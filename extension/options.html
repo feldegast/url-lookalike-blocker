@@ -275,6 +275,7 @@
     body.has-sticky-bar {
       padding-bottom: 74px;
     }
+
     .private-warning {
       display: flex;
       align-items: flex-start;
@@ -490,7 +491,8 @@
     html.compact-mode .whitelist-description { display: none; }
     html.compact-mode #compact-whitelist-summary,
     html.compact-mode #edit-whitelist-btn { display: block; }
-    html.compact-mode:not(.modal-open):not(.whitelist-modal-open) #sticky-apply-bar { display: none !important; }
+    html.compact-mode.modal-open #sticky-apply-bar,
+    html.compact-mode.whitelist-modal-open #sticky-apply-bar { display: none !important; }
 
     /* Modal open — language section floats as overlay */
     html.modal-open #language-modal-backdrop { display: block; }

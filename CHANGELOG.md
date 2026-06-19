@@ -1,10 +1,14 @@
-# Changelog
+th# Changelog
 
 All notable changes to URL Lookalike Blocker will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased] — 
+
+### Fixed
+
+- **Compact mode: apply bar hidden while language or whitelist modal is open.** The sticky Apply/Discard bar was previously shown behind the modal backdrop while a modal was open, making it appear greyed out and unclickable. The bar now hides when any modal is open and reappears after the modal is closed, so Apply and Discard are always reachable.
 
 
 ## [1.3.0] — 2026-06-17
