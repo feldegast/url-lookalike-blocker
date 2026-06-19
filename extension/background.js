@@ -95,10 +95,23 @@ async function initialize() {
 }
 
 async function loadSettings() {
-  const result = await browser.storage.local.get(['whitelist', 'additionalScripts', 'additionalLangScripts']);
-  whitelist = new Set(result.whitelist || []);
-  additionalScripts = new Set(result.additionalScripts || []);
-  additionalLangScripts = result.additionalLangScripts || [];
+  // Try sync storage first; fall back to local for users without a Firefox
+  // account or on the first load before settings have been applied.
+  const [syncSettings, syncWhitelist] = await Promise.all([
+    readSyncedSettings(),
+    readSyncedWhitelist()
+  ]);
+
+  if (syncSettings !== null && syncWhitelist !== null) {
+    ({ additionalScripts, additionalLangScripts } =
+      computeScriptsFromLanguages(syncSettings.enabledLanguages || []));
+    whitelist = new Set(syncWhitelist);
+  } else {
+    const result = await browser.storage.local.get(['whitelist', 'enabledLanguages']);
+    whitelist = new Set(result.whitelist || []);
+    ({ additionalScripts, additionalLangScripts } =
+      computeScriptsFromLanguages(result.enabledLanguages || []));
+  }
 }
 
 function updatePermittedScripts() {
@@ -194,21 +207,34 @@ browser.tabs.onUpdated.addListener((tabId, changeInfo) => {
 
 // Storage change listener keeps background state in sync after a browser
 // restart (when the options page may not be open to send an applySettings
-// message) and for direct storage writes (e.g. Reset to Locale Defaults).
+// message) and for cross-device sync propagation.
 // The applySettings message below handles the normal apply-and-close flow.
-browser.storage.onChanged.addListener((changes) => {
+browser.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName === 'sync') {
+    if (changes.sync_settings) {
+      const settings = changes.sync_settings.newValue || {};
+      const { additionalScripts: scripts, additionalLangScripts: langScripts } =
+        computeScriptsFromLanguages(settings.enabledLanguages || []);
+      additionalScripts = scripts;
+      additionalLangScripts = langScripts;
+      updatePermittedScripts();
+    }
+    const whitelistChanged = Object.keys(changes).some(
+      k => k === 'sync_meta' || k.startsWith('whitelist_')
+    );
+    if (whitelistChanged) {
+      readSyncedWhitelist().then(wl => {
+        if (wl !== null) {
+          whitelist = new Set(wl);
+          hostnameCache.clear();
+        }
+      });
+    }
+    return;
+  }
   if (changes.whitelist) {
     whitelist = new Set(changes.whitelist.newValue || []);
     hostnameCache.clear();
-  }
-  if (changes.additionalScripts) {
-    additionalScripts = new Set(changes.additionalScripts.newValue || []);
-  }
-  if (changes.additionalLangScripts) {
-    additionalLangScripts = changes.additionalLangScripts.newValue || [];
-  }
-  if (changes.additionalScripts || changes.additionalLangScripts) {
-    updatePermittedScripts();
   }
 });
 
@@ -319,13 +345,9 @@ browser.runtime.onMessage.addListener((message, sender) => {
   if (message.type === 'applySettings') {
     // Accept new settings from the options page synchronously so permittedScripts
     // is updated before the user retries a blocked tab — no race condition.
-    if (message.additionalScripts !== undefined) {
-      additionalScripts = new Set(message.additionalScripts);
-    }
-    if (message.additionalLangScripts !== undefined) {
-      additionalLangScripts = message.additionalLangScripts;
-    }
-    if (message.additionalScripts !== undefined || message.additionalLangScripts !== undefined) {
+    if (message.enabledLanguages !== undefined) {
+      ({ additionalScripts, additionalLangScripts } =
+        computeScriptsFromLanguages(message.enabledLanguages));
       updatePermittedScripts();
     }
     if (message.whitelist !== undefined) {

@@ -17,78 +17,7 @@ const urlParams = new URLSearchParams(window.location.search);
 const initialBlockedTabId = urlParams.get('blockedTabId')
   ? parseInt(urlParams.get('blockedTabId'), 10) : null;
 
-const LANGUAGE_SCRIPTS = {
-  'English': ['Latin'],
-  'Spanish': ['Latin'],
-  'French': ['Latin'],
-  'German': ['Latin'],
-  'Italian': ['Latin'],
-  'Portuguese': ['Latin'],
-  'Dutch': ['Latin'],
-  'Swedish': ['Latin'],
-  'Norwegian': ['Latin'],
-  'Danish': ['Latin'],
-  'Finnish': ['Latin'],
-  'Polish': ['Latin'],
-  'Czech': ['Latin'],
-  'Slovak': ['Latin'],
-  'Hungarian': ['Latin'],
-  'Romanian': ['Latin'],
-  'Turkish': ['Latin'],
-  'Vietnamese': ['Latin'],
-  'Indonesian': ['Latin'],
-  'Malay': ['Latin'],
-  'Filipino': ['Latin'],
-  'Catalan': ['Latin'],
-  'Galician': ['Latin'],
-  'Basque': ['Latin'],
-  'Afrikaans': ['Latin'],
-  'Esperanto': ['Latin'],
-  'Russian': ['Cyrillic'],
-  'Ukrainian': ['Cyrillic'],
-  'Bulgarian': ['Cyrillic'],
-  'Serbian': ['Cyrillic', 'Latin'],
-  'Macedonian': ['Cyrillic'],
-  'Belarusian': ['Cyrillic'],
-  'Kazakh': ['Cyrillic'],
-  'Kyrgyz': ['Cyrillic'],
-  'Tajik': ['Cyrillic'],
-  'Uzbek': ['Cyrillic'],
-  'Mongolian': ['Cyrillic'],
-  'Greek': ['Greek'],
-  'Arabic': ['Arabic'],
-  'Urdu': ['Arabic'],
-  'Persian': ['Arabic'],
-  'Pashto': ['Arabic'],
-  'Hebrew': ['Hebrew'],
-  'Japanese': ['Han', 'Hiragana', 'Katakana'],
-  'Chinese (Simplified)': ['Han'],
-  'Chinese (Traditional)': ['Han'],
-  'Korean': ['Han', 'Hangul'],
-  'Hindi': ['Devanagari'],
-  'Marathi': ['Devanagari'],
-  'Sanskrit': ['Devanagari'],
-  'Bengali': ['Bengali'],
-  'Punjabi (Gurmukhi)': ['Gurmukhi'],
-  'Gujarati': ['Gujarati'],
-  'Odia': ['Oriya'],
-  'Tamil': ['Tamil'],
-  'Telugu': ['Telugu'],
-  'Kannada': ['Kannada'],
-  'Malayalam': ['Malayalam'],
-  'Thai': ['Thai'],
-  'Lao': ['Lao'],
-  'Khmer': ['Khmer'],
-  'Burmese': ['Myanmar'],
-  'Sinhala': ['Sinhala'],
-  'Armenian': ['Armenian'],
-  'Georgian': ['Georgian'],
-  'Canadian Aboriginal': ['Canadian_Aboriginal'],
-  'Cherokee': ['Cherokee']
-};
-
-// Scripts that are always permitted regardless of settings (hardcoded in unicode-scripts.js)
-const ALWAYS_PERMITTED = new Set(['Latin', 'Common', 'Inherited']);
+// LANGUAGE_SCRIPTS and ALWAYS_PERMITTED are defined in unicode-scripts.js (loaded first).
 
 const LOCALE_TO_LANGUAGE = {
   'ru': 'Russian', 'uk': 'Ukrainian', 'bg': 'Bulgarian', 'sr': 'Serbian',
@@ -104,7 +33,9 @@ const LOCALE_TO_LANGUAGE = {
 
 function getLocaleLanguages() {
   const languages = new Set();
-  for (const locale of (navigator.languages || [navigator.language || 'en'])) {
+  const uiLocale = (typeof browser !== 'undefined' && browser.i18n?.getUILanguage?.()) || null;
+  const locales = [...(uiLocale ? [uiLocale] : []), ...(navigator.languages || [navigator.language || 'en'])];
+  for (const locale of locales) {
     const lower = locale.toLowerCase();
     const prefix = lower.split('-')[0];
     if (prefix === 'zh') {
@@ -166,30 +97,12 @@ systemDark.addEventListener('change', () => {
   if (themePref === 'opposite') applyTheme('opposite');
 });
 
-async function initTheme() {
-  const result = await browser.storage.local.get('theme');
-  const value = result.theme || 'auto';
-  applyTheme(value);
-  // Mirror to localStorage so apply-theme-early.js has a fresh sync cache next paint.
-  try { localStorage.setItem('theme', value); } catch (e) { /* unavailable */ }
-}
-
 // Shadows default ON. Only suppress when explicitly disabled (false). Mirrors
 // the logic in theme.js so blocked/warning/help pages stay in sync.
 function applyShadowPref(showShadows) {
   document.documentElement.classList.toggle('no-shadows', showShadows === false);
   const cb = document.getElementById('show-shadows');
   if (cb) cb.checked = showShadows !== false;
-}
-
-async function initShadows() {
-  const result = await browser.storage.local.get('showShadows');
-  applyShadowPref(result.showShadows);
-  // Mirror to localStorage so apply-theme-early.js has a fresh sync cache next paint.
-  try {
-    if (result.showShadows === undefined) localStorage.removeItem('showShadows');
-    else localStorage.setItem('showShadows', String(result.showShadows));
-  } catch (e) { /* unavailable */ }
 }
 
 function updateCompactLanguageList() {
@@ -221,6 +134,18 @@ function applyCompactMode(enabled) {
   if (enabled) updateCompactLanguageList();
 }
 
+async function initCompactMode(storedValue) {
+  if (storedValue === undefined) {
+    const isPhone = Math.min(screen.width, screen.height) < 600;
+    await browser.storage.local.set({ compactMode: isPhone });
+    applyCompactMode(isPhone);
+  } else {
+    applyCompactMode(storedValue === true);
+  }
+}
+
+let languageModalCleanup = null;
+
 function openLanguageModal() {
   const section = document.getElementById('section-languages');
   const placeholder = document.createElement('div');
@@ -229,9 +154,15 @@ function openLanguageModal() {
   section.parentNode.insertBefore(placeholder, section);
   document.documentElement.classList.add('modal-open');
   document.body.style.overflow = 'hidden';
+  languageModalCleanup = trapFocus(
+    section,
+    document.getElementById('edit-languages-btn'),
+    closeLanguageModal
+  );
 }
 
 function closeLanguageModal() {
+  if (languageModalCleanup) { languageModalCleanup(); languageModalCleanup = null; }
   document.documentElement.classList.remove('modal-open');
   document.body.style.overflow = '';
   const placeholder = document.getElementById('language-modal-placeholder');
@@ -239,23 +170,56 @@ function closeLanguageModal() {
   updateCompactLanguageList();
 }
 
-async function initCompactMode() {
-  const result = await browser.storage.local.get('compactMode');
-  if (result.compactMode === undefined) {
-    const isPhone = Math.min(screen.width, screen.height) < 600;
-    await browser.storage.local.set({ compactMode: isPhone });
-    applyCompactMode(isPhone);
-  } else {
-    applyCompactMode(result.compactMode === true);
-  }
+let whitelistModalCleanup = null;
+
+function openWhitelistModal() {
+  const section = document.getElementById('section-whitelist');
+  const placeholder = document.createElement('div');
+  placeholder.id = 'whitelist-modal-placeholder';
+  placeholder.style.height = section.getBoundingClientRect().height + 'px';
+  section.parentNode.insertBefore(placeholder, section);
+  document.documentElement.classList.add('whitelist-modal-open');
+  document.body.style.overflow = 'hidden';
+  whitelistModalCleanup = trapFocus(
+    section,
+    document.getElementById('edit-whitelist-btn'),
+    closeWhitelistModal
+  );
+}
+
+function closeWhitelistModal() {
+  if (whitelistModalCleanup) { whitelistModalCleanup(); whitelistModalCleanup = null; }
+  document.documentElement.classList.remove('whitelist-modal-open');
+  document.body.style.overflow = '';
+  const placeholder = document.getElementById('whitelist-modal-placeholder');
+  if (placeholder) placeholder.remove();
+  renderCompactWhitelist();
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-  await initTheme();
-  await initShadows();
-  await initCompactMode();
-  await loadSettings();
+  const [syncSettings, syncWhitelist, localResult] = await Promise.all([
+    readSyncedSettings(),
+    readSyncedWhitelist(),
+    browser.storage.local.get(['theme', 'showShadows', 'compactMode', 'whitelist', 'enabledLanguages'])
+  ]);
+
+  // Apply theme: sync value if available, else local
+  const theme = syncSettings?.theme ?? localResult.theme ?? 'auto';
+  applyTheme(theme);
+  try { localStorage.setItem('theme', theme); } catch (e) { /* unavailable */ }
+
+  // Apply shadows
+  const showShadows = syncSettings?.showShadows ?? localResult.showShadows;
+  applyShadowPref(showShadows);
+  try {
+    if (showShadows === undefined) localStorage.removeItem('showShadows');
+    else localStorage.setItem('showShadows', String(showShadows));
+  } catch (e) { /* unavailable */ }
+
+  await initCompactMode(localResult.compactMode);
+  await loadSettings(syncSettings, syncWhitelist, localResult);
   buildLanguageTable();
+  setupLanguageTableKeyboard();
   refreshState();
   setupEventListeners();
   const latinLink = document.getElementById('latin-help-link');
@@ -293,60 +257,40 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 });
 
-async function loadSettings() {
-  const result = await browser.storage.local.get(['whitelist', 'additionalScripts', 'enabledLanguages']);
-  whitelist = result.whitelist || [];
-
-  if (result.additionalScripts === undefined) {
-    // First run: seed from the browser locale so the user immediately sees
-    // what has been permitted and can adjust if needed.
-    additionalScripts = getLocaleScripts();
-    enabledLanguages = new Set(getLocaleLanguages());
-    await applyToStorage();
+async function loadSettings(syncSettings, syncWhitelist, localResult) {
+  if (syncSettings !== null) {
+    enabledLanguages = new Set(syncSettings.enabledLanguages || []);
+    whitelist = syncWhitelist !== null ? syncWhitelist : (localResult.whitelist || []);
   } else {
-    additionalScripts = new Set(result.additionalScripts);
-    if (result.enabledLanguages !== undefined) {
-      enabledLanguages = new Set(result.enabledLanguages);
+    whitelist = localResult.whitelist || [];
+    if (localResult.enabledLanguages !== undefined) {
+      enabledLanguages = new Set(localResult.enabledLanguages);
     } else {
-      // Backward compat: infer from additionalScripts using old logic.
-      // Runs once — after the user applies, enabledLanguages is stored permanently.
-      for (const [lang, scripts] of Object.entries(LANGUAGE_SCRIPTS)) {
-        const required = scripts.filter(s => !ALWAYS_PERMITTED.has(s));
-        if (required.length > 0 && required.every(s => additionalScripts.has(s))) {
-          enabledLanguages.add(lang);
-        }
-      }
+      // Fresh install — seed from browser locale.
+      enabledLanguages = new Set(getLocaleLanguages());
+      await applyToStorage();
     }
   }
+  ({ additionalScripts } = computeScriptsFromLanguages(enabledLanguages));
 
   initialLanguages = new Set(enabledLanguages);
   initialWhitelist = [...whitelist];
   renderWhitelist();
 }
 
-// Builds additionalLangScripts for background.js mixed-script detection.
-// Uses enabledLanguages (explicitly checked by the user) rather than inferring
-// from which scripts happen to be present — prevents a language that shares
-// scripts with an enabled language (e.g. Serbian sharing Cyrillic with Russian)
-// from being silently added to the blessed-mix list.
-function computeLangScripts() {
-  const out = [];
-  for (const lang of enabledLanguages) {
-    if (LANGUAGE_SCRIPTS[lang]) out.push(LANGUAGE_SCRIPTS[lang]);
-  }
-  return out;
-}
-
-// Saves the current additionalScripts to storage and notifies background.js.
-// Used on first run and on reset so permissions take effect without requiring Apply.
+// Saves the current language settings to storage and notifies background.js.
+// Used on first run and on Reset so permissions take effect without requiring Apply.
 async function applyToStorage() {
-  const scripts = Array.from(additionalScripts);
-  const langScripts = computeLangScripts();
-  await browser.storage.local.set({
-    additionalScripts: scripts,
-    additionalLangScripts: langScripts,
-    enabledLanguages: [...enabledLanguages]
-  });
+  const showShadows = document.getElementById('show-shadows')?.checked ?? true;
+  try {
+    await writeSyncedSettings({
+      enabledLanguages: [...enabledLanguages],
+      theme: themePref,
+      showShadows
+    });
+  } catch (e) { /* No Firefox account or quota error — ok */ }
+  // Keep local storage in sync as fallback for users without a Firefox account.
+  await browser.storage.local.set({ enabledLanguages: [...enabledLanguages] });
   // Background state is synced via storage.onChanged in background.js.
   // Do NOT send applySettings here — that message closes the options tab.
 }
@@ -415,24 +359,6 @@ function renderCompactWhitelist() {
     }
     summary.appendChild(item);
   }
-}
-
-function openWhitelistModal() {
-  const section = document.getElementById('section-whitelist');
-  const placeholder = document.createElement('div');
-  placeholder.id = 'whitelist-modal-placeholder';
-  placeholder.style.height = section.getBoundingClientRect().height + 'px';
-  section.parentNode.insertBefore(placeholder, section);
-  document.documentElement.classList.add('whitelist-modal-open');
-  document.body.style.overflow = 'hidden';
-}
-
-function closeWhitelistModal() {
-  document.documentElement.classList.remove('whitelist-modal-open');
-  document.body.style.overflow = '';
-  const placeholder = document.getElementById('whitelist-modal-placeholder');
-  if (placeholder) placeholder.remove();
-  renderCompactWhitelist();
 }
 
 function renderWhitelist() {
@@ -548,9 +474,7 @@ function buildLanguageTable() {
 
   toggleable.forEach(language => {
     const allScripts = LANGUAGE_SCRIPTS[language];
-    const nonPermitted = allScripts.filter(s => !ALWAYS_PERMITTED.has(s));
 
-    // Language parent row
     const tr = document.createElement('tr');
     tr.dataset.language = language;
     tr.className = 'lang-row';
@@ -582,11 +506,114 @@ function buildLanguageTable() {
     });
     tr.appendChild(scriptsTd);
     tbody.appendChild(tr);
-
   });
 
   table.appendChild(tbody);
   container.appendChild(table);
+}
+
+// Sets up roving tabindex and keyboard navigation on the language table.
+// Called once after buildLanguageTable().
+function setupLanguageTableKeyboard() {
+  const tbody = document.querySelector('#script-tree .script-table tbody');
+  if (!tbody) return;
+  const rows = [...tbody.querySelectorAll('.lang-row')];
+  if (rows.length === 0) return;
+  rows[0].setAttribute('tabindex', '0');
+  rows.slice(1).forEach(r => r.setAttribute('tabindex', '-1'));
+
+  let typeaheadBuffer = '';
+  let typeaheadTimeout = null;
+
+  tbody.addEventListener('keydown', (e) => {
+    const currentRows = [...tbody.querySelectorAll('.lang-row')];
+    const idx = currentRows.indexOf(document.activeElement);
+    if (idx < 0) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        moveLangFocus(Math.min(idx + 1, currentRows.length - 1));
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        moveLangFocus(Math.max(idx - 1, 0));
+        break;
+      case 'Home':
+        e.preventDefault();
+        moveLangFocus(0);
+        break;
+      case 'End':
+        e.preventDefault();
+        moveLangFocus(currentRows.length - 1);
+        break;
+      case ' ':
+        e.preventDefault();
+        currentRows[idx].querySelector('input[type="checkbox"]')?.click();
+        break;
+      default:
+        if (e.key.length === 1 && /[a-z]/i.test(e.key)) {
+          clearTimeout(typeaheadTimeout);
+          typeaheadBuffer += e.key.toLowerCase();
+          typeaheadTimeout = setTimeout(() => { typeaheadBuffer = ''; }, 1500);
+          const start = (idx + 1) % currentRows.length;
+          const ordered = [...currentRows.slice(start), ...currentRows.slice(0, start)];
+          const match = ordered.find(r =>
+            (r.dataset.language || '').toLowerCase().startsWith(typeaheadBuffer)
+          );
+          if (match) moveLangFocus(currentRows.indexOf(match));
+        }
+        break;
+    }
+  });
+}
+
+function moveLangFocus(newIndex) {
+  const rows = [...document.querySelectorAll('#script-tree .script-table tbody .lang-row')];
+  if (newIndex < 0 || newIndex >= rows.length) return;
+  rows.forEach((r, i) => r.setAttribute('tabindex', i === newIndex ? '0' : '-1'));
+  rows[newIndex].focus();
+}
+
+// Installs a focus trap on modalEl. Returns a cleanup function.
+// Pressing Escape closes the modal via closeFn and returns focus to returnEl.
+function trapFocus(modalEl, returnEl, closeFn) {
+  const focusableSelector = 'button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+  function getFocusableEls() {
+    return [...modalEl.querySelectorAll(focusableSelector)].filter(
+      el => el.offsetParent !== null
+    );
+  }
+
+  const initial = getFocusableEls();
+  if (initial.length > 0) initial[0].focus();
+
+  function onKeydown(e) {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      cleanup();
+      closeFn();
+      returnEl?.focus();
+      return;
+    }
+    if (e.key !== 'Tab') return;
+    const els = getFocusableEls();
+    if (els.length === 0) return;
+    const first = els[0];
+    const last = els[els.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
+
+  modalEl.addEventListener('keydown', onKeydown);
+  function cleanup() { modalEl.removeEventListener('keydown', onKeydown); }
+  return cleanup;
 }
 
 function onLanguageToggle(language, checked) {
@@ -628,24 +655,15 @@ function untickLanguage(language) {
 // Permitted set = explicit additionalScripts ∪ locale scripts ∪ always-permitted,
 // matching the set the background uses — so the display always reflects reality.
 function refreshState() {
-  const permittedScripts = new Set([
-    ...additionalScripts,
-    ...getLocaleScripts(),
-    ...ALWAYS_PERMITTED,
-  ]);
+  const localeScripts = getLocaleScripts();
+  const { derivedLanguages } = computeScriptsFromLanguages(enabledLanguages, localeScripts);
+  derivedTicked = derivedLanguages;
+
+  const permittedScripts = new Set([...ALWAYS_PERMITTED, ...additionalScripts, ...localeScripts]);
 
   document.querySelectorAll('.script-tag[data-script]').forEach(tag => {
     tag.classList.toggle('script-permitted', permittedScripts.has(tag.dataset.script));
   });
-
-  derivedTicked = new Set();
-  for (const [lang, scripts] of Object.entries(LANGUAGE_SCRIPTS)) {
-    if (enabledLanguages.has(lang)) continue;
-    const nonAlways = scripts.filter(s => !ALWAYS_PERMITTED.has(s));
-    if (scripts.length === 1 && nonAlways.length === 1 && permittedScripts.has(nonAlways[0])) {
-      derivedTicked.add(lang);
-    }
-  }
 
   document.querySelectorAll('input[data-language]').forEach(cb => {
     const lang = cb.dataset.language;
@@ -789,12 +807,14 @@ function setupEventListeners() {
   });
 
   document.getElementById('theme-toggle').addEventListener('click', async () => {
-    const current = themePref;
-    const next = { auto: 'opposite', opposite: 'dark', dark: 'light', light: 'auto' }[current] || 'auto';
+    const next = { auto: 'opposite', opposite: 'dark', dark: 'light', light: 'auto' }[themePref] || 'auto';
     applyTheme(next);
-    // Mirror to localStorage so apply-theme-early.js can apply this synchronously
-    // on the next page load and avoid a flash of the previous theme.
     try { localStorage.setItem('theme', next); } catch (e) { /* unavailable */ }
+    const showShadows = document.getElementById('show-shadows')?.checked ?? true;
+    // Write to both sync and local so other devices and theme.js stay in sync.
+    try {
+      await writeSyncedSettings({ enabledLanguages: [...enabledLanguages], theme: next, showShadows });
+    } catch (e) { /* no Firefox account or quota */ }
     await browser.storage.local.set({ theme: next });
   });
 
@@ -804,6 +824,9 @@ function setupEventListeners() {
     const showShadows = e.target.checked;
     applyShadowPref(showShadows);
     try { localStorage.setItem('showShadows', String(showShadows)); } catch (e) { /* unavailable */ }
+    try {
+      await writeSyncedSettings({ enabledLanguages: [...enabledLanguages], theme: themePref, showShadows });
+    } catch (e) { /* no Firefox account or quota */ }
     await browser.storage.local.set({ showShadows });
   });
 
@@ -866,9 +889,8 @@ function setupEventListeners() {
   });
 
   document.getElementById('apply-btn').addEventListener('click', async () => {
-    const scripts = Array.from(additionalScripts);
-    const langScripts = computeLangScripts();
     const wl = [...whitelist];
+    const showShadows = document.getElementById('show-shadows').checked;
 
     // Clear dirty state before the awaits so the beforeunload guard does not
     // block the tab close that background.js will trigger.
@@ -877,9 +899,17 @@ function setupEventListeners() {
     isDirty = false;
     checkDirty();
 
+    // Write to sync (source of truth) and local (fallback).
+    try {
+      await Promise.all([
+        writeSyncedSettings({ enabledLanguages: [...enabledLanguages], theme: themePref, showShadows }),
+        writeSyncedWhitelist(wl)
+      ]);
+    } catch (e) {
+      // Sync quota exceeded or no Firefox account — settings are saved locally only.
+      // TODO: surface a "Sync storage full" warning in the UI when quota is hit.
+    }
     await browser.storage.local.set({
-      additionalScripts: scripts,
-      additionalLangScripts: langScripts,
       enabledLanguages: [...enabledLanguages],
       whitelist: wl
     });
@@ -888,8 +918,7 @@ function setupEventListeners() {
     // blocked tab, and closes this options tab.
     await browser.runtime.sendMessage({
       type: 'applySettings',
-      additionalScripts: scripts,
-      additionalLangScripts: langScripts,
+      enabledLanguages: [...enabledLanguages],
       whitelist: wl
     });
   });

@@ -8,10 +8,15 @@ async function allowDomain(blockedUrl) {
   if (!blockedUrl) return;
   const hostname = decodeHostname(blockedUrl);
   if (!hostname) return;
-  const result = await browser.storage.local.get('whitelist');
-  const wl = new Set(result.whitelist || []);
+  const syncedWl = await readSyncedWhitelist();
+  const localResult = await browser.storage.local.get('whitelist');
+  const wl = new Set(syncedWl ?? localResult.whitelist ?? []);
   wl.add(hostname);
-  await browser.storage.local.set({ whitelist: Array.from(wl) });
+  const wlArray = Array.from(wl);
+  await Promise.all([
+    writeSyncedWhitelist(wlArray).catch(() => {}),
+    browser.storage.local.set({ whitelist: wlArray })
+  ]);
   await browser.runtime.sendMessage({ type: 'addToWhitelist', domain: hostname });
   window.location.href = blockedUrl;
 }

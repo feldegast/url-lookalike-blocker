@@ -37,8 +37,11 @@
       "matches": ["<all_urls>"]
     }
   ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
   "background": {
-    "scripts": ["unicode-scripts.js", "background.js", "background-dev.js"]
+    "scripts": ["unicode-scripts.js", "storage-sync.js", "background.js", "background-dev.js"]
   },
   "action": {
     "default_title": "URL Lookalike Blocker Options",

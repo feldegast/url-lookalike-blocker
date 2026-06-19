@@ -49,7 +49,13 @@
 
   mq.addEventListener('change', () => { if (pref === 'opposite') applyPref(pref); });
 
-  browser.storage.onChanged.addListener((changes) => {
+  browser.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName === 'sync' && changes.sync_settings !== undefined) {
+      const s = changes.sync_settings.newValue || {};
+      if (s.theme !== undefined) { applyPref(s.theme); mirrorTheme(s.theme); }
+      if (s.showShadows !== undefined) { applyShadowPref(s.showShadows); mirrorShadows(s.showShadows); }
+      return;
+    }
     if (changes.theme !== undefined) {
       applyPref(changes.theme.newValue);
       mirrorTheme(changes.theme.newValue);

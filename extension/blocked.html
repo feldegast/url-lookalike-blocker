@@ -159,6 +159,11 @@
     /* Interface option: when "Show shadows" is disabled, suppress the container drop shadow. */
     html.no-shadows .container { box-shadow: none; }
 
+    button:focus-visible {
+      outline: 2px solid #4caf50;
+      outline-offset: 2px;
+    }
+
     /* Touch-friendly sizing for coarse-pointer (touch) devices */
     @media (pointer: coarse) {
       button { min-height: 44px; }
@@ -194,6 +199,7 @@
   </div>
 
   <script src="unicode-scripts.js"></script>
+  <script src="storage-sync.js"></script>
   <script src="page-utils.js"></script>
   <script src="theme.js"></script>
   <script src="blocked.js"></script>

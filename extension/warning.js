@@ -29,8 +29,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  const ALWAYS_PERMITTED = new Set(['Latin', 'Common', 'Inherited']);
-
   // --- Determine warning type ---
   // Step 2 trigger: confusable characters in a mixed-script label (targeted attack).
   // Step 3 trigger: mixed-script label with no confusables (suspicious combination).

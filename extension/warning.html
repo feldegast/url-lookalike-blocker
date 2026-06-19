@@ -169,6 +169,11 @@
     html[data-theme="dark"] .tab-dot-wrapper { color: #aaa; }
     html[data-theme="dark"] .tab-dot-wrapper:hover { color: #ddd; }
 
+    button:focus-visible {
+      outline: 2px solid #4caf50;
+      outline-offset: 2px;
+    }
+
     /* Interface option: when "Show shadows" is disabled, suppress the container drop shadow. */
     html.no-shadows .container { box-shadow: none; }
 
@@ -209,6 +214,7 @@
   </div>
 
   <script src="unicode-scripts.js"></script>
+  <script src="storage-sync.js"></script>
   <script src="page-utils.js"></script>
   <script src="theme.js"></script>
   <script src="warning.js"></script>

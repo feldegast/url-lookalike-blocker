@@ -598,6 +598,124 @@ function decodeHostname(url) {
   }
 }
 
+// Maps human-readable language names (as shown in the options UI) to the
+// Unicode scripts required to write them. Used to derive permitted scripts
+// from the user's enabled-language list.
+const LANGUAGE_SCRIPTS = {
+  'English': ['Latin'],
+  'Spanish': ['Latin'],
+  'French': ['Latin'],
+  'German': ['Latin'],
+  'Italian': ['Latin'],
+  'Portuguese': ['Latin'],
+  'Dutch': ['Latin'],
+  'Swedish': ['Latin'],
+  'Norwegian': ['Latin'],
+  'Danish': ['Latin'],
+  'Finnish': ['Latin'],
+  'Polish': ['Latin'],
+  'Czech': ['Latin'],
+  'Slovak': ['Latin'],
+  'Hungarian': ['Latin'],
+  'Romanian': ['Latin'],
+  'Turkish': ['Latin'],
+  'Vietnamese': ['Latin'],
+  'Indonesian': ['Latin'],
+  'Malay': ['Latin'],
+  'Filipino': ['Latin'],
+  'Catalan': ['Latin'],
+  'Galician': ['Latin'],
+  'Basque': ['Latin'],
+  'Afrikaans': ['Latin'],
+  'Esperanto': ['Latin'],
+  'Russian': ['Cyrillic'],
+  'Ukrainian': ['Cyrillic'],
+  'Bulgarian': ['Cyrillic'],
+  'Serbian': ['Cyrillic', 'Latin'],
+  'Macedonian': ['Cyrillic'],
+  'Belarusian': ['Cyrillic'],
+  'Kazakh': ['Cyrillic'],
+  'Kyrgyz': ['Cyrillic'],
+  'Tajik': ['Cyrillic'],
+  'Uzbek': ['Cyrillic'],
+  'Mongolian': ['Cyrillic'],
+  'Greek': ['Greek'],
+  'Arabic': ['Arabic'],
+  'Urdu': ['Arabic'],
+  'Persian': ['Arabic'],
+  'Pashto': ['Arabic'],
+  'Hebrew': ['Hebrew'],
+  'Japanese': ['Han', 'Hiragana', 'Katakana'],
+  'Chinese (Simplified)': ['Han'],
+  'Chinese (Traditional)': ['Han'],
+  'Korean': ['Han', 'Hangul'],
+  'Hindi': ['Devanagari'],
+  'Marathi': ['Devanagari'],
+  'Sanskrit': ['Devanagari'],
+  'Bengali': ['Bengali'],
+  'Punjabi (Gurmukhi)': ['Gurmukhi'],
+  'Gujarati': ['Gujarati'],
+  'Odia': ['Oriya'],
+  'Tamil': ['Tamil'],
+  'Telugu': ['Telugu'],
+  'Kannada': ['Kannada'],
+  'Malayalam': ['Malayalam'],
+  'Thai': ['Thai'],
+  'Lao': ['Lao'],
+  'Khmer': ['Khmer'],
+  'Burmese': ['Myanmar'],
+  'Sinhala': ['Sinhala'],
+  'Armenian': ['Armenian'],
+  'Georgian': ['Georgian'],
+  'Canadian Aboriginal': ['Canadian_Aboriginal'],
+  'Cherokee': ['Cherokee']
+};
+
+// Scripts always permitted regardless of settings — hardcoded in request filtering.
+const ALWAYS_PERMITTED = new Set(['Latin', 'Common', 'Inherited']);
+
+// Derives everything needed from a set/array of enabled language names:
+//   additionalScripts    — non-always-permitted scripts to add to the blocking filter
+//   additionalLangScripts — per-language script arrays for isSingleLocaleScriptMix
+//   derivedLanguages     — languages auto-enabled because all their scripts are
+//                          already permitted by another enabled language; never
+//                          stored, used only for UI display (checkboxes + colouring)
+//
+// permittedBase: optional extra scripts to include when computing derivedLanguages
+// (options.js passes getLocaleScripts() so locale-seeded scripts count toward
+// derivation; background.js omits it and ignores derivedLanguages entirely).
+function computeScriptsFromLanguages(enabledLanguages, permittedBase) {
+  const enabled = enabledLanguages instanceof Set ? enabledLanguages : new Set(enabledLanguages);
+  const additionalScripts = new Set();
+  const additionalLangScripts = [];
+
+  for (const lang of enabled) {
+    const scripts = LANGUAGE_SCRIPTS[lang];
+    if (!scripts) continue;
+    additionalLangScripts.push(scripts);
+    for (const s of scripts) {
+      if (!ALWAYS_PERMITTED.has(s)) additionalScripts.add(s);
+    }
+  }
+
+  // Build the full permitted set used for derivation.
+  const permittedForDerivation = new Set([...ALWAYS_PERMITTED, ...additionalScripts, ...(permittedBase || [])]);
+
+  // Derive auto-enabled languages: a language is derived when it has exactly one
+  // non-always-permitted script and that script is already permitted through
+  // another enabled language (or the locale).
+  const derivedLanguages = new Set();
+  for (const [lang, scripts] of Object.entries(LANGUAGE_SCRIPTS)) {
+    if (enabled.has(lang)) continue;
+    const nonAlways = scripts.filter(s => !ALWAYS_PERMITTED.has(s));
+    if (scripts.length === 1 && nonAlways.length === 1 && permittedForDerivation.has(nonAlways[0])) {
+      derivedLanguages.add(lang);
+    }
+  }
+
+  return { additionalScripts, additionalLangScripts, derivedLanguages };
+}
+
 // Test cases as per prompt
 function runTests() {
   console.log('Running tests for unicode-scripts.js');
@@ -639,6 +757,9 @@ if (typeof module !== 'undefined' && module.exports) {
     getConfusableChars,
     isSingleLocaleScriptMix,
     getEnabledLangScriptSets,
+    LANGUAGE_SCRIPTS,
+    ALWAYS_PERMITTED,
+    computeScriptsFromLanguages,
     runTests
   };
 }
