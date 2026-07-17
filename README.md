@@ -1,8 +1,8 @@
 # url-lookalike-blocker
 
-A Firefox extension that protects against IDN homograph attacks — attempts by attackers to register domain names that look identical to legitimate sites by substituting visually similar characters from other Unicode scripts. For example, a fake `apple.com` can be registered using a Cyrillic character (U+0430) that is visually indistinguishable from the corresponding Latin letter a.
+A browser extension that protects against IDN homograph attacks — attempts by attackers to register domain names that look identical to legitimate sites by substituting visually similar characters from other Unicode scripts. For example, a fake `apple.com` can be registered using a Cyrillic character (U+0430) that is visually indistinguishable from the corresponding Latin letter a.
 
-**Firefox only.** Chrome's Manifest V3 does not support blocking `webRequest`, which is required for dynamic Unicode script detection.
+Supports **Firefox** (via `webRequestBlocking`) and **Chromium-based browsers** such as Chrome and Edge (via `webNavigation`). The Firefox build blocks at the network level; the Chromium build intercepts navigations slightly later but provides equivalent user-facing protection.
 
 ## How it works
 

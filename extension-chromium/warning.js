@@ -1,0 +1,1 @@
+../extension/warning.js

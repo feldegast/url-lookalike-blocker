@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased] — 
 
+### Added
+
+- **Chromium support.** A new `extension-chromium/` directory contains a Chromium-compatible build of the extension. All detection logic (`unicode-scripts.js`), page scripts, and HTML are shared with the Firefox build via symlinks. The background script uses `chrome.webNavigation.onBeforeNavigate` instead of `webRequest.onBeforeRequest` — the only viable interception approach under Chrome MV3. A `browser-compat.js` shim maps `browser.*` to `chrome.*` so all shared code runs unchanged in Chrome. Thanks to Jeff Parrish for researching and supplying the `webNavigation`-based approach.
+
 ### Fixed
 
 - **Compact mode: apply bar hidden while language or whitelist modal is open.** The sticky Apply/Discard bar was previously shown behind the modal backdrop while a modal was open, making it appear greyed out and unclickable. The bar now hides when any modal is open and reappears after the modal is closed, so Apply and Discard are always reachable.

@@ -4,18 +4,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**url-lookalike-blocker** is a Firefox browser extension (Manifest V3) that protects users from IDN homograph attacks by blocking navigation to domains containing characters outside the scripts associated with the user's locale. The extension is fully implemented and working.
+**url-lookalike-blocker** is a browser extension (Manifest V3) that protects users from IDN homograph attacks by blocking navigation to domains containing characters outside the scripts associated with the user's locale. The extension is fully implemented and working.
 
-**Firefox only.** Chrome's MV3 removes blocking `webRequest`, which is required for dynamic Unicode script detection.
+Supports **Firefox** (via `webRequestBlocking`) and **Chromium-based browsers** (via `webNavigation`). The two builds share all detection logic and page code; only the background script and manifest differ.
 
 ## Repository Structure
 
 ```
-extension/      — the submittable Firefox extension (all files needed for AMO submission)
-dev/            — development tools and reference material, not part of the submission
-README.md       — project documentation
-LICENSE         — licence file
-CLAUDE.md       — this file
+extension/           — the submittable Firefox extension (all files needed for AMO submission)
+extension-chromium/  — Chromium build; background.js uses webNavigation; shared files are symlinked from extension/
+dev/                 — development tools and reference material, not part of the submission
+README.md            — project documentation
+LICENSE              — licence file
+CLAUDE.md            — this file
 ```
 
 ## Extension File Structure (`extension/`)

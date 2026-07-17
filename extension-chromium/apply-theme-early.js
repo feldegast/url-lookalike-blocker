@@ -1,0 +1,1 @@
+../extension/apply-theme-early.js

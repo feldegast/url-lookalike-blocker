@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>URL Lookalike Blocker — Help</title>
+  <link rel="icon" href="icon.svg">
+  <script src="apply-theme-early.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 16px;
+      max-width: 520px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #e8e8e8;
+    }
+    .section {
+      background: white;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      color: #333;
+      border-bottom: 2px solid #4caf50;
+      padding-bottom: 10px;
+    }
+    h3 {
+      color: #444;
+      margin: 16px 0 6px;
+    }
+    p { margin: 8px 0; line-height: 1.6; }
+    ul { margin: 8px 0; padding-left: 20px; line-height: 1.7; }
+    code {
+      font-family: monospace;
+      background: #f0f0f0;
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+    .example-domain {
+      font-family: monospace;
+      background: #fff3e0;
+      border: 1px solid #ffe0b2;
+      border-radius: 3px;
+      padding: 1px 6px;
+    }
+    .page-header {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background-color: #e8e8e8;
+      padding: 8px 0;
+      margin-top: -8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.10);
+    }
+    .page-header-icon { height: 3em; flex-shrink: 0; }
+    .page-header-text { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+    .page-header h1 { margin: 0; }
+    .page-header-buttons { display: flex; align-items: center; gap: 16px; justify-content: space-between; }
+    .page-header-buttons > div { display: flex; gap: 8px; }
+    .page-header-subtitle { font-size: 2em; font-weight: bold; }
+    button {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .options-btn {
+      background: #4caf50;
+      color: white;
+    }
+    .options-btn:hover { background: #388e3c; }
+    .theme-toggle {
+      background: none;
+      border: 1px solid #bbb;
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 15px;
+      cursor: pointer;
+      color: #555;
+      white-space: nowrap;
+    }
+    .theme-toggle:hover { background: rgba(0,0,0,0.06); }
+    .pill {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: bold;
+      border-radius: 12px;
+      padding: 2px 10px;
+      margin-right: 4px;
+      vertical-align: middle;
+    }
+    .pill-block { background: #ffebee; color: #c62828; border: 1px solid #ef9a9a; }
+    .pill-warn  { background: #fff8e1; color: #e65100; border: 1px solid #ffcc02; }
+    figure {
+      margin: 24px 0;
+      text-align: center;
+    }
+    figure img {
+      max-width: 100%;
+      border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    figure.img-light img {
+      box-sizing: border-box;
+      padding: 20px;
+      background: #e8e8e8;
+      border: 1px solid #444;
+    }
+    figure.img-dark img {
+      box-sizing: border-box;
+      padding: 20px;
+      background: #1a1a1a;
+      border: 1px solid #888;
+    }
+    figure.compact-img img {
+      border-width: 2px;
+      border-color: #888;
+    }
+    html[data-theme="dark"] figure.compact-img img,
+    html:not([data-theme="light"]) figure.compact-img img { border-color: #444; }
+    .badge-pair {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      align-items: flex-end;
+      flex-wrap: wrap;
+    }
+    .badge-pair figure {
+      margin: 0;
+      flex: 0 0 auto;
+    }
+    .img-dark { display: none; }
+    @media (prefers-color-scheme: dark) {
+      html:not([data-theme="light"]) .img-light { display: none; }
+      html:not([data-theme="light"]) .img-dark  { display: block; }
+    }
+    html[data-theme="dark"] .img-light { display: none; }
+    html[data-theme="dark"] .img-dark  { display: block; }
+    figcaption {
+      font-size: 13px;
+      color: #777;
+      margin-top: 16px;
+    }
+    .img-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px dashed #ccc;
+      border-radius: 6px;
+      padding: 30px;
+      color: #aaa;
+      font-size: 13px;
+      font-style: italic;
+      background: #fafafa;
+    }
+
+    @media (prefers-color-scheme: dark) { html:not([data-theme="light"]) { color-scheme: dark; } }
+    html[data-theme="dark"] { color-scheme: dark; }
+
+    @media (prefers-color-scheme: dark) {
+      html:not([data-theme="light"]) body { background-color: #1a1a1a; color: #e0e0e0; }
+      html:not([data-theme="light"]) h2 { color: #e0e0e0; border-bottom-color: #388e3c; }
+      html:not([data-theme="light"]) h3 { color: #ccc; }
+      html:not([data-theme="light"]) .section { background: #2a2a2a; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+      html:not([data-theme="light"]) code { background: #333; }
+      html:not([data-theme="light"]) .example-domain { background: #2d1500; border-color: #5a3000; }
+      html:not([data-theme="light"]) .theme-toggle { border-color: #555; color: #bbb; }
+      html:not([data-theme="light"]) .theme-toggle:hover { background: rgba(255,255,255,0.07); }
+      html:not([data-theme="light"]) figcaption { color: #888; }
+      html:not([data-theme="light"]) .img-placeholder { border-color: #444; background: #222; color: #666; }
+      html:not([data-theme="light"]) .page-header { background-color: #1a1a1a; box-shadow: 0 2px 6px rgba(0,0,0,0.35); }
+    }
+    html[data-theme="dark"] body { background-color: #1a1a1a; color: #e0e0e0; }
+    html[data-theme="dark"] h2 { color: #e0e0e0; border-bottom-color: #388e3c; }
+    html[data-theme="dark"] h3 { color: #ccc; }
+    html[data-theme="dark"] .section { background: #2a2a2a; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+    html[data-theme="dark"] code { background: #333; }
+    html[data-theme="dark"] .example-domain { background: #2d1500; border-color: #5a3000; }
+    html[data-theme="dark"] .theme-toggle { border-color: #555; color: #bbb; }
+    html[data-theme="dark"] .theme-toggle:hover { background: rgba(255,255,255,0.07); }
+    html[data-theme="dark"] figcaption { color: #888; }
+    html[data-theme="dark"] .img-placeholder { border-color: #444; background: #222; color: #666; }
+    html[data-theme="dark"] .page-header { background-color: #1a1a1a; box-shadow: 0 2px 6px rgba(0,0,0,0.35); }
+
+    /* Interface option: when "Show shadows" is disabled, suppress all drop shadows. */
+    html.no-shadows .section,
+    html.no-shadows figure img { box-shadow: none; }
+
+    /* Touch-friendly sizing for coarse-pointer (touch) devices */
+    @media (pointer: coarse) {
+      .options-btn, .theme-toggle { min-height: 44px; padding: 10px 18px; }
+      figure img { max-width: 100%; }
+    }
+    .toc-list { margin: 4px 0 0; list-style: none; padding-left: 0; }
+    .toc-list li { line-height: 1.9; }
+    .toc-list .toc-sub { padding-left: 1.5em; font-size: 0.95em; }
+    .toc-back {
+      display: flex;
+      align-items: baseline;
+      color: inherit;
+      text-decoration: none;
+    }
+    .toc-back:hover { color: #4caf50; }
+    .toc-arrow {
+      margin-left: auto;
+      font-size: 0.7em;
+      font-weight: bold;
+      color: #888;
+      flex-shrink: 0;
+      padding-left: 10px;
+    }
+    html[data-theme="dark"] .toc-arrow,
+    html:not([data-theme="light"]) .toc-arrow { color: #aaa; }
+    .toc-back:hover .toc-arrow { color: #4caf50; }
+  </style>
+</head>
+<body>
+  <div class="page-header">
+    <img src="icon.svg" alt="" class="page-header-icon">
+    <div class="page-header-text">
+      <h1>URL Lookalike Blocker</h1>
+      <div class="page-header-buttons">
+        <span class="page-header-subtitle">Help</span>
+        <div>
+          <button id="options-btn" class="options-btn">Open Options</button>
+          <button id="theme-toggle" class="theme-toggle" title="Toggle dark/light mode">Auto</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="intro">
+    <h2>What does this extension do?</h2>
+    <p>When you visit a website, your browser shows the domain name (like <code>google.com</code>). Attackers can register domains that look identical to real ones by substituting characters from other languages — for example, using a Cyrillic <code>а</code> instead of the Latin <code>a</code> in <code>apple.com</code>. These are called <strong>IDN homograph attacks</strong>.</p>
+    <p>This extension inspects every domain name your browser visits and blocks or warns you when it detects characters that are likely part of a spoofing attempt.</p>
+  </div>
+
+  <div class="section" id="toc">
+    <h2>Contents</h2>
+    <ul class="toc-list">
+      <li><a href="#intro">What does this extension do?</a></li>
+      <li><a href="#block-page">Block page</a></li>
+      <li><a href="#warning-confusable">Confusable Character Domain Warning</a></li>
+      <li><a href="#warning-mixed">Mixed Script Domain Warning</a></li>
+      <li><a href="#extension-icon">Extension icon (desktop)</a></li>
+      <li><a href="#desktop">Desktop view</a></li>
+      <li class="toc-sub"><a href="#coloured-squares">Coloured squares</a></li>
+      <li class="toc-sub"><a href="#private-browsing">Private browsing protection</a></li>
+      <li class="toc-sub"><a href="#interface-options">Interface options</a></li>
+      <li class="toc-sub"><a href="#whitelisted-domains">Whitelisted domains</a></li>
+      <li class="toc-sub"><a href="#permitted-languages">Permitted languages</a></li>
+      <li class="toc-sub"><a href="#latin-languages">Latin-script languages — always permitted</a></li>
+      <li class="toc-sub"><a href="#reset-defaults">Reset to locale defaults</a></li>
+      <li class="toc-sub"><a href="#apply-changes">Apply changes / Discard changes</a></li>
+      <li><a href="#compact">Compact view</a></li>
+      <li class="toc-sub"><a href="#compact-whitelist">Whitelist</a></li>
+      <li class="toc-sub"><a href="#compact-languages">Permitted languages</a></li>
+      <li class="toc-sub"><a href="#compact-additional">Additional sections</a></li>
+      <li><a href="#about">About</a></li>
+    </ul>
+  </div>
+
+  <div class="section" id="block-page">
+    <h2><a href="#toc" class="toc-back"><span class="pill pill-block">Blocked</span> Block page <span class="toc-arrow">↑</span></a></h2>
+    <p>A block page appears when the domain contains characters from scripts (writing systems) that you have not enabled in settings. For example, if a domain contains Cyrillic characters and you have not enabled Russian, it is blocked.</p>
+    <figure class="img-light">
+      <img src="img/blocked-white.png" alt="Block page, light theme">
+      <figcaption>The block page showing the offending characters and available actions.</figcaption>
+    </figure>
+    <figure class="img-dark">
+      <img src="img/blocked-black.png" alt="Block page, dark theme">
+      <figcaption>The block page showing the offending characters and available actions.</figcaption>
+    </figure>
+    <h3>What you can do</h3>
+    <p>Only use <strong>Allow this domain</strong> if you are confident the site is legitimate.</p>
+    <ul>
+      <li><strong>Allow this domain</strong> — adds the domain to your whitelist so it is never blocked again.</li>
+      <li><strong>Open extension options</strong> — opens the Options page so you can enable the relevant language.</li>
+      <li><strong>Try again</strong> — re-attempts the URL (after applying new settings).</li>
+      <li><strong>Go back</strong> — returns to the previous page.</li>
+    </ul>
+  </div>
+
+  <div class="section" id="warning-confusable">
+    <h2><a href="#toc" class="toc-back"><span class="pill pill-warn">Warning</span> Confusable Character Domain Warning <span class="toc-arrow">↑</span></a></h2>
+    <p>This page appears when a domain contains a character that visually resembles a Latin letter — for example the Cyrillic <code>р</code> mimicking <code>p</code> in <code>рaypal.com</code>. This is a targeted attack technique. The confusable character is highlighted in <strong>red</strong> and the lookalike is shown (e.g. "Looks like: p"). This warning can appear even if you have the relevant script enabled, because legitimate sites do not normally use characters that resemble letters from a different script.</p>
+    <figure class="img-light">
+      <img src="img/warning-confusable-white.png" alt="Confusable character domain warning page, light theme">
+      <figcaption>Confusable character warning — the Cyrillic 'р' in рaypal.com is highlighted red.</figcaption>
+    </figure>
+    <figure class="img-dark">
+      <img src="img/warning-confusable-black.png" alt="Confusable character domain warning page, dark theme">
+      <figcaption>Confusable character warning — the Cyrillic 'р' in рaypal.com is highlighted red.</figcaption>
+    </figure>
+    <h3>What you can do</h3>
+    <p>Only use <strong>Allow this domain</strong> if you are confident the site is legitimate.</p>
+    <ul>
+      <li><strong>Allow this domain</strong> — permanently whitelists the domain.</li>
+      <li><strong>Continue anyway</strong> — allows this domain for the rest of the browser session. Does not whitelist the domain.</li>
+      <li><strong>Open extension options</strong> — opens the Options page.</li>
+      <li><strong>Try again</strong> — re-attempts the URL after applying new settings.</li>
+      <li><strong>Go back</strong> — returns to the previous page.</li>
+    </ul>
+  </div>
+
+  <div class="section" id="warning-mixed">
+    <h2><a href="#toc" class="toc-back"><span class="pill pill-warn">Warning</span> Mixed Script Domain Warning <span class="toc-arrow">↑</span></a></h2>
+    <p>This page appears when a domain label mixes characters from two or more scripts that are not commonly combined — for example Latin and Cyrillic together in <code>testж.com</code>. The non-Latin characters are highlighted in <strong>amber</strong>. This warning can appear even if you have the relevant scripts enabled, because legitimate sites do not normally mix scripts within a single domain label. If enabling a specific language would permit this combination, a hint is shown (e.g. "enable Serbian in Extension Settings").</p>
+    <figure class="img-light">
+      <img src="img/warning-mixed-white.png" alt="Mixed script domain warning page, light theme">
+      <figcaption>Mixed-script warning — Latin combined with Cyrillic in testж.com.</figcaption>
+    </figure>
+    <figure class="img-dark">
+      <img src="img/warning-mixed-black.png" alt="Mixed script domain warning page, dark theme">
+      <figcaption>Mixed-script warning — Latin combined with Cyrillic in testж.com.</figcaption>
+    </figure>
+    <h3>What you can do</h3>
+    <p>Only use <strong>Allow this domain</strong> if you are confident the site is legitimate.</p>
+    <ul>
+      <li><strong>Allow this domain</strong> — permanently whitelists the domain.</li>
+      <li><strong>Continue anyway</strong> — allows this domain for the rest of the browser session. Does not whitelist the domain.</li>
+      <li><strong>Open extension options</strong> — opens the Options page.</li>
+      <li><strong>Try again</strong> — re-attempts the URL after applying new settings.</li>
+      <li><strong>Go back</strong> — returns to the previous page.</li>
+    </ul>
+  </div>
+
+  <div class="section" id="extension-icon">
+    <h2><a href="#toc" class="toc-back">Extension icon (desktop) <span class="toc-arrow">↑</span></a></h2>
+    <p>Left-clicking the extension icon in the toolbar opens the Options page. Right-clicking gives a small menu with <strong>Open Options</strong> and <strong>Help</strong>.</p>
+    <div class="badge-pair">
+      <figure>
+        <img src="img/badge-0.svg" alt="Extension icon, no badge">
+        <figcaption>No blocked tabs</figcaption>
+      </figure>
+      <figure>
+        <img src="img/badge-1.svg" alt="Extension icon, badge showing 1">
+        <figcaption>One blocked or warning tab</figcaption>
+      </figure>
+    </div>
+    <p>If the Options page (shown in the next section) is already open, clicking the icon switches to the Options page rather than opening a second copy.</p>
+    <p>When one or more blocked or warning pages are open, the icon shows a <strong>red number badge</strong> indicating how many there are. The badge clears automatically once all blocked and warning tabs have been resolved or closed.</p>
+    <figure class="img-light">
+      <img src="img/menu-white.png" alt="Right-click menu, light theme">
+      <figcaption>The right-click context menu on the extension icon.</figcaption>
+    </figure>
+    <figure class="img-dark">
+      <img src="img/menu-black.png" alt="Right-click menu, dark theme">
+      <figcaption>The right-click context menu on the extension icon.</figcaption>
+    </figure>
+    <p>On Firefox for Android, the extension icon is not shown in the toolbar — see <a href="#compact">Compact view</a> below.</p>
+  </div>
+
+  <div class="section" id="desktop">
+    <h2><a href="#toc" class="toc-back">Desktop view <span class="toc-arrow">↑</span></a></h2>
+    <p>The Options page is where you can use a coloured square to return to a block or warning page, modify interface options, edit whitelisted domains and change which languages are permitted. On tablets and desktops the full language table and whitelist editor are shown inline.</p>
+    <figure class="img-light">
+      <img src="img/options-white.png" alt="Options page, light theme">
+      <figcaption>The options page showing coloured tabs, interface options, whitelisted domains and permitted languages all simultaneously.</figcaption>
+    </figure>
+    <figure class="img-dark">
+      <img src="img/options-black.png" alt="Options page, dark theme">
+      <figcaption>The options page showing coloured tabs, interface options, whitelisted domains and permitted languages all simultaneously.</figcaption>
+    </figure>
+  </div>
+
+  <div class="section" id="coloured-squares">
+    <h2><a href="#toc" class="toc-back">Coloured squares <span class="toc-arrow">↑</span></a></h2>
+    <p>When multiple blocked or warning pages are open at once, each tab gets a unique coloured rounded square so you can tell them apart.</p>
+    <ul>
+      <li>Clicking the square on a <strong>blocked or warning page</strong> opens the Options page.</li>
+      <li>From the <strong>Options page</strong>, clicking a square switches browser focus to the page with the matching colour.</li>
+      <li>When a blocked tab is closed or successfully loads its URL, its square disappears automatically.</li>
+    </ul>
+    <p>When you click <strong>Apply changes</strong> in Options, the page closes and focus returns to the blocked tab that opened it.</p>
+    <figure class="img-light">
+      <img src="img/options-coloured-squares-white.png" alt="Coloured squares in options, light theme">
+      <figcaption>The options page with three blocked tabs, each identified by a unique coloured square.</figcaption>
+    </figure>
+    <figure class="img-dark">
+      <img src="img/options-coloured-squares-black.png" alt="Coloured squares in options, dark theme">
+      <figcaption>The options page with three blocked tabs, each identified by a unique coloured square.</figcaption>
+    </figure>
+  </div>
+
+  <div class="section" id="private-browsing">
+    <h2><a href="#toc" class="toc-back">Private browsing protection <span class="toc-arrow">↑</span></a></h2>
+    <p>By default, Firefox does not run extensions in private windows. If you use private browsing and want this extension to protect those windows too, you need to enable it manually.</p>
+    <p>When the extension is not allowed to run in private windows, the Options page shows a warning banner at the top:</p>
+    <figure class="img-light">
+      <img src="img/options-private-warning-white.png" alt="Private browsing warning banner, light theme">
+      <figcaption>The private-browsing warning banner shown in Options.</figcaption>
+    </figure>
+    <figure class="img-dark">
+      <img src="img/options-private-warning-black.png" alt="Private browsing warning banner, dark theme">
+      <figcaption>The private-browsing warning banner shown in Options.</figcaption>
+    </figure>
+    <h3>Enabling protection in private windows</h3>
+    <p>Open the Firefox menu (≡) → <em>Extensions and Themes</em>, find this extension, and set <em>Run in Private Windows</em> to <em>Allow</em>. Alternatively, type <code>about:addons</code> into a new tab's address bar.</p>
+    <h3>Dismissing the warning</h3>
+    <p>If you cannot grant private-window access — for example in a managed Firefox setup where the option is disabled by policy — click <strong>Dismiss this warning</strong> on the banner, or untick <strong>Show private-browsing warning when access is not granted</strong> in the <em>Interface options</em> section. The protection itself remains off; dismissing only hides the banner.</p>
+  </div>
+
+  <div class="section" id="interface-options">
+    <h2><a href="#toc" class="toc-back">Interface options <span class="toc-arrow">↑</span></a></h2>
+    <p>Three preferences that take effect immediately when changed, with no Apply step required.</p>
+    <ul>
+      <li><strong>Show shadows</strong> — controls the drop shadows around panels on every extension page. Untick for a flatter look. Default: on.</li>
+      <li><strong>Show private-browsing warning when access is not granted</strong> — controls whether the private-browsing banner appears on the Options page. Useful in managed Firefox setups where the underlying permission cannot be granted. See <em>Private browsing protection</em> above for details. Default: on.</li>
+      <li><strong>Compact mode</strong> — replaces the full language table and whitelist editor with concise read-only summaries. Tap <strong>Edit permitted languages</strong> or <strong>Edit whitelist</strong> to open each section as an overlay when you need to make changes. On by default on phones; off by default on tablets and desktops.</li>
+    </ul>
+  </div>
+
+  <div class="section" id="whitelisted-domains">
+    <h2><a href="#toc" class="toc-back">Whitelisted domains <span class="toc-arrow">↑</span></a></h2>
+    <p>Domains you have explicitly allowed (via "Allow this domain" on a block or warning page) are listed here with their offending characters annotated. You can remove any domain at any time — it will be blocked or warned again on the next visit.</p>
+    <p>In Compact mode, the whitelist shows each domain with its offending characters highlighted in red. Click <strong>Edit whitelist</strong> to open the full editor.</p>
+  </div>
+
+  <div class="section" id="permitted-languages">
+    <h2><a href="#toc" class="toc-back">Permitted languages <span class="toc-arrow">↑</span></a></h2>
+    <p>Tick the languages whose scripts (character sets) you want to allow in domain names. Your browser's locale is used as the starting point — so if your Firefox language is set to Japanese, then Japanese is already permitted and the Han, Hiragana, and Katakana scripts are allowed. Latin is universally permitted regardless of locale.</p>
+    <p>Each language row shows its scripts as small tags. A <strong>green tag</strong> means that script is currently permitted; a <strong>grey tag</strong> means it is not.</p>
+    <p>Languages that use only a single non-Latin script are enabled automatically when that script turns green — for example, enabling Japanese enables Han, which then causes Chinese (Simplified and Traditional) to be enabled automatically (shown with a dimmed label). Multi-script languages like Korean are never ticked automatically and must be enabled explicitly.</p>
+    <p>Unticking a language removes its scripts from the permitted set. Any other enabled language that relied on those same scripts is also disabled in turn, cascading until the permitted set is stable.</p>
+    <figure class="img-light">
+      <img src="img/options-languages-white.png" alt="Permitted languages section, light theme">
+      <figcaption>The language table with Japanese enabled. Han, Hiragana and Katakana turn green; Chinese (Simplified and Traditional) tick automatically. This is also the view shown when you tap Edit permitted languages in Compact mode.</figcaption>
+    </figure>
+    <figure class="img-dark">
+      <img src="img/options-languages-black.png" alt="Permitted languages section, dark theme">
+      <figcaption>The language table with Japanese enabled.</figcaption>
+    </figure>
+  </div>
+
+  <div class="section" id="latin-languages">
+    <h2><a href="#toc" class="toc-back">Latin-script languages — always permitted <span class="toc-arrow">↑</span></a></h2>
+    <p>Latin is permitted by default, so URLs written in any Latin-script language load normally — the extension doesn't block them or warn you about them. The languages shown in the options panel are the most widely-used ones, but many more Latin-script languages exist and are equally unaffected by this extension.</p>
+
+    <h3>European</h3>
+    <p>Croatian, Slovenian, Lithuanian, Latvian, Estonian, Albanian, Icelandic, Irish (Gaeilge), Welsh, Scottish Gaelic, Maltese, Luxembourgish, Faroese — plus all languages already shown in the options panel.</p>
+
+    <h3>Africa, Oceania and the Americas</h3>
+    <p>Swahili, Somali, Hausa, Yoruba, Igbo, Zulu, Xhosa, Māori, Samoan, Hawaiian, Cebuano.</p>
+
+    <h3>Multi-script languages</h3>
+    <p>Some languages are officially written in Latin but also have significant Cyrillic or other-script usage. Their Latin-script URLs always load normally; URLs using a different script depend on whether that script is enabled in settings.</p>
+    <ul>
+      <li><strong>Bosnian</strong> — Latin and Cyrillic both in use depending on the author's preference.</li>
+      <li><strong>Azerbaijani</strong> — Latin since 1991; Cyrillic still used in some contexts.</li>
+      <li><strong>Uzbek</strong> — Latin officially since 1995, but Cyrillic remains common in print.</li>
+      <li><strong>Turkmen</strong> — Latin officially.</li>
+      <li><strong>Kazakh</strong> — transitioning from Cyrillic to Latin, target completion 2031.</li>
+      <li><strong>Kurdish (Kurmanji)</strong> — Latin in Turkey and Syria; Sorani (Iraq/Iran) uses an Arabic-derived script and falls under separate script-permission rules.</li>
+    </ul>
+  </div>
+
+  <div class="section" id="reset-defaults">
+    <h2><a href="#toc" class="toc-back">Reset to locale defaults <span class="toc-arrow">↑</span></a></h2>
+    <p>Re-checks the languages that match your current Firefox locale setting, and resets to just those language(s). Applied immediately.</p>
+  </div>
+
+  <div class="section" id="apply-changes">
+    <h2><a href="#toc" class="toc-back">Apply changes / Discard changes <span class="toc-arrow">↑</span></a></h2>
+    <p>Changes to language settings are held in memory until you click <strong>Apply changes</strong>. The orange "Unsaved changes" dot appears while there are pending edits. <strong>Discard changes</strong> reverts to the last saved state without closing the page.</p>
+    <figure class="img-light">
+      <img src="img/options-apply-bar-white.png" alt="Options page with unsaved changes banner, light theme">
+      <figcaption>The unsaved changes banner appears when there are pending edits.</figcaption>
+    </figure>
+    <figure class="img-dark">
+      <img src="img/options-apply-bar-black.png" alt="Options page with unsaved changes banner, dark theme">
+      <figcaption>The unsaved changes banner appears when there are pending edits.</figcaption>
+    </figure>
+  </div>
+
+  <div class="section" id="compact">
+    <h2><a href="#toc" class="toc-back">Compact view <span class="toc-arrow">↑</span></a></h2>
+    <p><strong>Compact mode</strong> is enabled by default on phones. On tablets and desktops it can be enabled manually via <strong>Compact mode</strong> in Interface options. The language and whitelist sections are shown as collapsed concise read-only summaries with buttons to show and allow the full functionality of that section. Tap <strong>Edit whitelist</strong> or <strong>Edit permitted languages</strong> to open each section.</p>
+    <p>On Android, there is no toolbar icon — the most reliable way to reach the Options page is via the <strong>Open extension options</strong> button on any block or warning page. The right-click context menu is not available on Android; the <strong>Help</strong> button in the Options page header opens this page.</p>
+    <figure class="img-light compact-img">
+      <img src="img/options-compact-white.png" alt="Options page in compact mode, light theme">
+      <figcaption>The options page in compact mode — language and whitelist sections show read-only summaries.</figcaption>
+    </figure>
+    <figure class="img-dark compact-img">
+      <img src="img/options-compact-black.png" alt="Options page in compact mode, dark theme">
+      <figcaption>The options page in compact mode.</figcaption>
+    </figure>
+
+    <h2 id="compact-whitelist"><a href="#toc" class="toc-back">Whitelist <span class="toc-arrow">↑</span></a></h2>
+    <p>In compact mode, whitelisted domains are shown as a read-only list above the <strong>Edit whitelist</strong> button. Tapping <strong>Edit whitelist</strong> opens the list of whitelisted domains and permits deletion.</p>
+    <figure class="img-light compact-img">
+      <img src="img/options-compact-whitelist-white.png" alt="Whitelist, light theme">
+      <figcaption>The whitelist opened from compact mode.</figcaption>
+    </figure>
+    <figure class="img-dark compact-img">
+      <img src="img/options-compact-whitelist-black.png" alt="Whitelist, dark theme">
+      <figcaption>The whitelist.</figcaption>
+    </figure>
+
+    <h2 id="compact-languages"><a href="#toc" class="toc-back">Permitted languages <span class="toc-arrow">↑</span></a></h2>
+    <p>In compact mode, permitted languages are shown as a read-only list above the <strong>Edit permitted languages</strong> button. Tapping <strong>Edit permitted languages</strong> opens the full language table where languages can be enabled or disabled in the same way as the languages section in the desktop view.</p>
+    <figure class="img-light compact-img">
+      <img src="img/options-compact-languages-white.png" alt="Permitted languages, light theme">
+      <figcaption>The permitted languages page, reached via Edit permitted languages on the compact Options page.</figcaption>
+    </figure>
+    <figure class="img-dark compact-img">
+      <img src="img/options-compact-languages-black.png" alt="Permitted languages, dark theme">
+      <figcaption>The permitted languages page.</figcaption>
+    </figure>
+
+    <h2 id="compact-additional"><a href="#toc" class="toc-back">Additional sections <span class="toc-arrow">↑</span></a></h2>
+    <p>The following sections from the desktop view apply equally in compact mode, where functionality and usage differs from Desktop view ahead it will be mentioned here:</p>
+    <ul>
+      <li><strong>Coloured squares</strong> — functional in compact mode but hard to use on a phone due to the small screen size.</li>
+      <li><strong>Private browsing protection</strong></li>
+      <li><strong>Interface options</strong></li>
+      <li><strong>Latin-script languages — always permitted</strong></li>
+      <li><strong>Reset to locale defaults</strong></li>
+      <li><strong>Apply changes / Discard changes</strong></li>
+    </ul>
+  </div>
+
+  <div class="section" id="about">
+    <h2><a href="#toc" class="toc-back">About <span class="toc-arrow">↑</span></a></h2>
+    <p>© 2026 Lee MacKinnell</p>
+    <p>Dual-licensed under <strong>MPL-2.0 OR GPL-3.0</strong> — the recipient chooses which terms to comply with. AMO releases are distributed under MPL-2.0.</p>
+    <p>Source code, full licence text, and contribution notes: <a href="https://github.com/feldegast/url-lookalike-blocker" target="_blank" rel="noopener">github.com/feldegast/url-lookalike-blocker</a></p>
+  </div>
+
+  <script src="browser-compat.js"></script>
+  <script src="theme.js"></script>
+  <script src="help.js"></script>
+</body>
+</html>

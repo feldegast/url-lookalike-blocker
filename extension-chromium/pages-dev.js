@@ -1,0 +1,1 @@
+../extension/pages-dev.js

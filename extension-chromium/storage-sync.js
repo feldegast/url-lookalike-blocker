@@ -1,0 +1,1 @@
+../extension/storage-sync.js
