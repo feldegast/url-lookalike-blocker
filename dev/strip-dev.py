@@ -1,16 +1,16 @@
-import json, re
+import json, re, sys
 from pathlib import Path
 
-staging = Path("dev/review-staging")
+staging = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("dev/review-staging")
 
 # Strip manifest
 m = json.loads((staging / "manifest.json").read_text())
-m["background"]["scripts"] = [s for s in m["background"]["scripts"] if s != "background-dev.js"]
+if "scripts" in m.get("background", {}):
+    m["background"]["scripts"] = [s for s in m["background"]["scripts"] if s != "background-dev.js"]
+    print("manifest.json: removed background-dev.js from scripts:", m["background"]["scripts"])
 m["permissions"] = [p for p in m["permissions"] if p != "downloads"]
 (staging / "manifest.json").write_text(json.dumps(m, indent=2))
-print("manifest.json: removed background-dev.js and downloads")
-print("  scripts:", m["background"]["scripts"])
-print("  permissions:", m["permissions"])
+print("manifest.json: permissions:", m["permissions"])
 
 # Remove dev-only JS files entirely
 for dev_file in ("background-dev.js", "pages-dev.js"):
