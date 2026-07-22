@@ -109,22 +109,27 @@ def render_master():
     return img
 
 
+master = render_master()
+
 # Output to dev/listing-icons/. These PNGs are uploaded to the AMO listing
 # page and are NOT bundled with the extension itself.
 out_dir = os.path.join(script_dir, 'listing-icons')
 os.makedirs(out_dir, exist_ok=True)
 
-master = render_master()
-
 for size in (32, 64, 128):
-    if size == 128:
-        img = master
-    else:
-        # LANCZOS downscale gives clean antialiasing for the smaller sizes
-        # without re-rendering text at sizes too small for the source fonts
-        # to read well.
-        img = master.resize((size, size), Image.LANCZOS)
+    img = master if size == 128 else master.resize((size, size), Image.LANCZOS)
     img.info = {}
     out_path = os.path.join(out_dir, f'icon-{size}.png')
+    img.save(out_path, format='PNG', optimize=True)
+    print(f'rendered {os.path.normpath(out_path)}  ({os.path.getsize(out_path)} bytes)')
+
+# Output PNG icons into extension-chromium/. Chrome does not support SVG icons,
+# so these PNGs are bundled in the Chromium extension package.
+ext_chromium_dir = os.path.join(script_dir, '..', 'extension-chromium')
+
+for size in (16, 32, 48, 128):
+    img = master if size == 128 else master.resize((size, size), Image.LANCZOS)
+    img.info = {}
+    out_path = os.path.join(ext_chromium_dir, f'icon{size}.png')
     img.save(out_path, format='PNG', optimize=True)
     print(f'rendered {os.path.normpath(out_path)}  ({os.path.getsize(out_path)} bytes)')

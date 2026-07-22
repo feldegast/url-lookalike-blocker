@@ -132,6 +132,9 @@ build_chromium() {
   # Resolve all symlinks to real files
   cp -rL "$EXT_CHROMIUM/." "$tmp/"
 
+  # Chrome cannot decode SVG; the manifest references PNGs only, so drop it.
+  rm -f "$tmp/icon.svg"
+
   # Patch Firefox-specific private-browsing instructions
   sed -i 's|open the Firefox menu (≡) → <em>Extensions and Themes</em>, find this extension, and set <em>Run in Private Windows</em> to <em>Allow</em>. Alternatively, type <code>about:addons</code> in a new tab'\''s address bar\.|go to <code>chrome://extensions</code>, find this extension, and enable <em>Allow in Incognito</em>.|' "$tmp/options.html"
 
